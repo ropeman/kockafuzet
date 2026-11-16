@@ -44,7 +44,7 @@ const M4 = {
     do {
       if (L === 1) { a = ri(300, 999); b = ri(100, a - 1); } else { a = ri(2000, 9999); b = ri(1000, a - 1); }
     } while (g++ < 800 && !(L === 1 ? borrows(a, b) === 0 : L === 2 ? borrows(a, b) === 1 : borrows(a, b) >= 2));
-    return { type: 'input', prompt: 'Számold ki írásban!', visual: col(a, '−', b), answer: a - b, hint: 'Jobbról balra vonj ki. Ha a felső számjegy kisebb, kölcsönözz tízest a szomszédos helyiértékről. Ellenőrzés: a különbség + a kivonandó = a kisebbítendő.' };
+    return { type: 'input', prompt: 'Számold ki írásban!', visual: col(a, '−', b), answer: a - b, hint: 'Jobbról balra haladunk. Az alsó számjegyet egészítsd ki a felsőre: 4 meg mennyi az 7? Ha a felső számjegy kisebb, 10-zel nagyobbra egészíts ki (4 meg mennyi az 12?), és a maradt 1-et add hozzá a következő alsó számjegyhez. Ellenőrzés: különbség + kivonandó = kisebbítendő.' };
   },
   mul(L) {
     if (L === 1) { const a = ri(3, 9), b = ri(3, 9); return { type: 'input', prompt: `${a} · ${b} = <span class="blank">?</span>`, answer: a * b, hint: `Ha nem jut eszedbe, indulj ismert szorzatból: ${a} · ${b} = ${a} · ${b - 1} + ${a}.` }; }

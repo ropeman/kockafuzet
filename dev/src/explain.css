@@ -1,0 +1,64 @@
+/* ===== Így működik player ===== */
+.helprow{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center}
+.exbtn{margin-top:4px;align-self:center}
+.exp-ov{position:fixed;inset:0;z-index:50;background:rgba(15,22,40,.55);display:grid;place-items:center;padding:16px;animation:expfade .2s ease-out}
+.exp-card{width:min(680px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--card);color:var(--ink);border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.35);padding:clamp(16px,3vw,26px);display:flex;flex-direction:column;gap:14px;animation:exppop .25s ease-out}
+.exp-head{display:flex;align-items:center;gap:12px}
+.exp-head .mute{font-size:14px}
+.exp-badge{font:600 18px var(--f-disp);background:var(--accent-soft);color:var(--accent);padding:6px 14px;border-radius:99px}
+.exp-x{margin-left:auto;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:18px;cursor:pointer}
+.exp-vis{min-height:180px;display:grid;place-items:center;background:var(--soft);border-radius:18px;padding:14px;overflow-x:auto}
+.exp-vis .ex-svg{max-width:100%;height:auto}
+.exp-vis .ex-clock{width:220px}
+.exp-txt{font:600 clamp(18px,3.2vw,21px)/1.45 var(--f-body);min-height:3em;text-wrap:pretty}
+.exp-dots{display:flex;gap:6px;justify-content:center}
+.exp-dots i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.exp-dots i.ok{background:var(--accent);opacity:.45}
+.exp-dots i.now{background:var(--accent);transform:scale(1.25)}
+.exp-card .actions{justify-content:space-between}
+.exp-card .actions .btn:disabled{visibility:hidden}
+.ex-new{animation:exin .45s ease-out}
+.ex-big{font:600 clamp(40px,9vw,60px)/1.1 var(--f-disp)}
+@keyframes exin{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:none}}
+@keyframes expfade{0%{opacity:0}}
+@keyframes exppop{0%{transform:scale(.96);opacity:0}}
+
+/* written addition / subtraction grid */
+.cgrid{display:grid;grid-template-columns:1.2em repeat(var(--n),1.25em);font:600 clamp(30px,7vw,44px)/1.15 var(--f-mono);justify-content:center;column-gap:.12em}
+.cg{text-align:center;border-radius:8px;min-height:1.15em;position:relative}
+.cg.cur{background:var(--hi);color:#1d2742}
+.cg.carry{font-size:.45em;color:var(--red);align-self:end;min-height:1.2em}
+.cg.carry.cur{background:none}
+.cg.op{color:var(--mute)}
+.cg.res{color:var(--accent)}
+.cg sup{font-size:.4em;color:var(--red);position:absolute;top:-.2em;right:-.45em}
+.cline{grid-column:1/-1;border-bottom:4px solid var(--ink);margin:2px 0 4px}
+
+/* letter tiles for sounds and syllables */
+.ltiles{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center}
+.lt{font:600 clamp(28px,7vw,40px)/1 var(--f-disp);min-width:1.4em;padding:.25em .3em;text-align:center;border-radius:12px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh-1)}
+.lt.hl{background:var(--hi);color:#1d2742;border-color:transparent}
+.ldiv{font:600 clamp(28px,7vw,40px)/1 var(--f-disp);color:var(--red)}
+.lenbar{width:min(360px,90%);margin:14px auto 0;height:26px;border-radius:99px;background:var(--card);border:1px solid var(--line);position:relative;overflow:hidden}
+.lenbar span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#ffc93c);border-radius:99px}
+.lenbar b{position:absolute;inset:0;display:grid;place-items:center;font:700 14px var(--f-body);color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.ex-new,.exp-ov,.exp-card{animation:none}}
+
+/* ===== Napi 5 perc card and week dots ===== */
+.daily{background:linear-gradient(135deg,var(--accent-soft),var(--card) 70%);border:1px solid var(--line);border-radius:24px;padding:clamp(18px,3vw,26px);box-shadow:var(--sh-1);display:flex;flex-direction:column;gap:16px}
+.daily-main{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.daily-ico{font-size:42px;line-height:1}
+.daily-txt{flex:1;min-width:220px}
+.daily-txt p{margin-top:4px}
+.daily .btn.primary{font-size:20px;padding:.7em 1.5em}
+.daily.done{background:linear-gradient(135deg,var(--good-bg),var(--card) 70%)}
+.week{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.wdots{display:flex;gap:6px}
+.wd{display:flex;flex-direction:column;align-items:center;gap:3px}
+.wd i{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:700 16px var(--f-body);font-style:normal;background:var(--card);border:2px solid var(--line);color:#fff}
+.wd.on i{background:var(--good);border-color:var(--good)}
+.wd.today i{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.wd.fut i{opacity:.5}
+.wd small{font:700 12px var(--f-body);color:var(--mute)}
+.wgoal{font:700 15px var(--f-body);color:var(--mute)}
+.results .week{justify-content:center}

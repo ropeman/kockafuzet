@@ -154,6 +154,7 @@ function szorzoEnd(page, cfg, key, score, wrong) {
   runCleanups();
   const bk = SZ_KEY() + '.best.' + key, best = store.get(bk, 0), rec = score > best;
   if (rec) store.set(bk, score);
+  markDay();
   const uniq = [...new Set(wrong)];
   uniq.forEach(f => { const [lhs, ans] = f.split(' = '); if (typeof rememberMistake === 'function') rememberMistake(page, { id: 'play', name: 'Szorzótábla-bajnok' }, { type: 'input', prompt: `${lhs} = <span class="blank">?</span>`, answer: Number(ans) }); });
   mount(h('div', { class: 'qcard results' },
@@ -190,10 +191,10 @@ function startMistakes(page) {
   const all = getMistakes(), pickd = shuffle(all).slice(0, 10);
   let fixed = 0;
   startList({
-    page, title: 'Hibáim', list: pickd.map(m => ({ ...m.q, _page: m.p, _mk: m.k })), back: () => hibakView(page),
+    page, title: 'Hibáim', list: pickd.map(m => ({ ...m.q, _page: m.p, _topic: m.t, _mk: m.k })), back: () => hibakView(page),
     onAnswer: (q, first) => { if (first) { fixed++; setMistakes(getMistakes().filter(m => m.k !== q._mk)); } },
     onFinish: s => {
-      const left = getMistakes().length;
+      const left = getMistakes().length; markDay();
       mount(h('div', { class: 'qcard results' },
         h('h2', null, `${fixed} hibát kijavítottál`),
         h('div', { class: 'pop sz-trophy', html: fixed === s.total ? '🏆' : '⭐' }),

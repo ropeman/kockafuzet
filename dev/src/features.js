@@ -118,7 +118,7 @@ VIEWS.feladatsor = () => {
     page: sp.page, title: 'Feladatsor', list, level: sp.level, back: () => VIEWS.feladatsor(),
     onAnswer: (q, first) => { if (!first) rememberMistake(sp.page, { id: q._topic }, q); },
     onFinish: s => {
-      const res = { c: s.correct, n: s.total, d: Date.now() }; store.set(rkey, res);
+      const res = { c: s.correct, n: s.total, d: Date.now() }; store.set(rkey, res); markDay();
       const when = new Date(res.d).toLocaleString('hu-HU', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
       mount(h('div', { class: 'qcard results' },
         h('p', { class: 'mute' }, `Feladatsor · ${pageLabel(sp.page.id)}`),
@@ -156,6 +156,7 @@ function progressPanel() {
   const fmtD = d => d ? new Date(d).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }) : '';
   return h('div', { class: 'panel' },
     h('div', { class: 'kpis' },
+      h('div', null, h('b', null, `${weekInfo().count} / ${GOAL}`), h('span', null, 'gyakorló nap ezen a héten')),
       h('div', null, h('b', null, String(rounds)), h('span', null, 'befejezett kör')),
       h('div', null, h('b', null, String(stars)), h('span', null, 'csillag')),
       h('div', null, h('b', null, String(weak.length)), h('span', null, 'gyakorlandó téma')),

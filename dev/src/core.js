@@ -208,6 +208,7 @@ function showHub() {
           h('a', { class: 'btn primary magyar', href: '#magyar' }, 'Magyar nyelv'))),
       h('div', { class: 'hero-art', html: HERO_SVG })),
     profileBar(rerender),
+    ...(typeof hubTop === 'function' ? hubTop() : []),
     ...blocks,
     ...(typeof hubExtras === 'function' ? hubExtras() : []),
     h('div', { class: 'prefs' },
@@ -287,10 +288,12 @@ function renderQ() {
   card.append(ui.el);
   S.ui = ui; S.fb = fb; S.actions = actions;
 
-  if (q.hint) {
-    const hintBox = h('div', { class: 'hint', hidden: true, html: q.hint });
-    const hb = h('button', { class: 'linkbtn', onclick: () => { hintBox.hidden = !hintBox.hidden; } }, 'Segítség');
-    card.append(hb, hintBox);
+  const exSrc = typeof exSource === 'function' ? exSource(q) : null;
+  const exBtn = exSrc && exSrc.gen ? h('button', { class: 'linkbtn', onclick: () => { const e = similarEx(q, exSrc.gen, S.level, exSrc.pid, exSrc.tid); if (e) openExplain(e, 'Egy hasonló példán'); } }, '💡 Így működik') : null;
+  if (q.hint || exBtn) {
+    const hintBox = q.hint ? h('div', { class: 'hint', hidden: true, html: q.hint }) : null;
+    const hb = q.hint ? h('button', { class: 'linkbtn', onclick: () => { hintBox.hidden = !hintBox.hidden; } }, 'Segítség') : null;
+    card.append(h('div', { class: 'helprow' }, hb, exBtn), hintBox);
   }
   card.append(fb, actions);
   if (ui.submitBtn) actions.append(ui.submitBtn);
@@ -347,6 +350,8 @@ function submit(resp) {
     S.ui.lock && S.ui.lock(resp, false);
     const ans = q.answerText || (q.type === 'read' ? q.text : q.type === 'choice' ? (q.options.find(o => o.value === q.answer) || {}).html : q.type === 'build' ? q.answer.join('') : String(q.answer));
     S.fb.append(h('div', { class: 'fb bad', html: `A helyes válasz: <b>${ans}</b>${q.explain ? `<small>${q.explain}</small>` : ''}${extra ? `<small>${extra}</small>` : ''}` }));
+    const exS = typeof exSource === 'function' ? exSource(q) : null;
+    if (exS) S.fb.append(h('button', { class: 'btn small exbtn', onclick: () => openExplain(exS.ex, 'A te feladatod') }, '💡 Mutasd lépésről lépésre'));
     endQ();
   }
 }
@@ -375,6 +380,7 @@ function finish() {
   store.set(pk(page.id, topic.id, 'last'), correct);
   store.set(pk(page.id, topic.id, 'plays'), store.get(pk(page.id, topic.id, 'plays'), 0) + 1);
   store.set(pk(page.id, topic.id, 'date'), Date.now());
+  if (typeof reviewAfterRound === 'function') reviewAfterRound(page, topic, correct);
   const msg = st === 3 ? 'Hibátlan közelében! Nagyszerű munka.' : st === 2 ? 'Nagyon jó! Még egy kör, és meglesz a három csillag.' : st === 1 ? 'Jó kezdés. Gyakoroljunk még egy kört!' : 'Semmi baj, a gyakorlás segít. Próbáld újra!';
   mount(h('div', { class: 'qcard results' },
     h('h2', null, `${correct} / ${total} jó válasz`),
