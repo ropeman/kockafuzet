@@ -6,10 +6,10 @@
   try { saved = localStorage.getItem(KEY); } catch (e) {}
   if (saved === 'light' || saved === 'dark') root.setAttribute('data-theme', saved);
   var current = function () { return root.getAttribute('data-theme') || (dark() ? 'dark' : 'light'); };
+  root.classList.toggle('is-dark', current() === 'dark');
   function label(btn) {
     var d = current() === 'dark';
-    btn.setAttribute('aria-label', d ? 'Világos mód bekapcsolása' : 'Sötét mód bekapcsolása');
-    btn.title = d ? 'Világos mód' : 'Sötét mód';
+    btn.setAttribute('aria-checked', d ? 'true' : 'false');
     root.classList.toggle('is-dark', d);
   }
   document.addEventListener('DOMContentLoaded', function () {

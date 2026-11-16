@@ -335,13 +335,24 @@ a{color:var(--accent)}
 .doc h2{font-size:22px}
 @media (prefers-reduced-motion:reduce){.grade,.tile{transition:none}}
 
-/* theme switch */
-.head-right{display:flex;align-items:center;gap:8px}
-.theme-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;transition:background .15s}
-.theme-btn:hover{background:var(--soft)}
-.theme-btn svg{width:20px;height:20px}
-.theme-btn .i-sun{display:none;color:#ffc93c}
-.is-dark .theme-btn .i-sun{display:block}
-.is-dark .theme-btn .i-moon{display:none}
+/* theme switch: sliding pill, knob shows the current mode */
+.site-nav{margin-left:auto}
+.theme-switch{position:relative;width:66px;height:36px;padding:0;border-radius:99px;border:1px solid var(--line);background:var(--soft);cursor:pointer;flex:none;transition:background .25s,border-color .25s}
+.theme-switch:hover{border-color:var(--accent)}
+.ts-ico{position:absolute;top:50%;width:16px;height:16px;margin-top:-8px;color:var(--mute);opacity:.55;display:block}
+.ts-l{left:9px} .ts-r{right:9px}
+.ts-ico svg,.ts-knob svg{width:100%;height:100%;display:block}
+.ts-knob{position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(20,30,60,.25),0 2px 6px rgba(20,30,60,.15);display:grid;place-items:center;transition:transform .25s cubic-bezier(.3,.7,.4,1.2),background .25s}
+.ts-knob span{width:18px;height:18px}
+.k-sun{color:#f2a900;display:block} .k-moon{color:#c9d6ff;display:none}
+.is-dark .theme-switch{background:#0e1526;border-color:#2c3850}
+.is-dark .ts-knob{transform:translateX(30px);background:#2b3a5e}
+.is-dark .k-sun{display:none} .is-dark .k-moon{display:block}
+@media (max-width:520px){
+  .site-head-in{row-gap:0;padding-top:8px}
+  .site-nav{order:3;width:100%;margin-left:-14px;padding-bottom:6px}
+  .theme-switch{margin-left:auto}
+}
+@media (prefers-reduced-motion:reduce){.ts-knob,.theme-switch{transition:none}}
 :root[data-theme="dark"]{color-scheme:dark}
 :root[data-theme="light"]{color-scheme:light}
