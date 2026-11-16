@@ -334,3 +334,14 @@ a{color:var(--accent)}
 .doc{border:1px solid var(--line);box-shadow:var(--sh-1);border-radius:22px;padding:clamp(20px,3vw,32px);font-weight:600}
 .doc h2{font-size:22px}
 @media (prefers-reduced-motion:reduce){.grade,.tile{transition:none}}
+
+/* theme switch */
+.head-right{display:flex;align-items:center;gap:8px}
+.theme-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;transition:background .15s}
+.theme-btn:hover{background:var(--soft)}
+.theme-btn svg{width:20px;height:20px}
+.theme-btn .i-sun{display:none;color:#ffc93c}
+.is-dark .theme-btn .i-sun{display:block}
+.is-dark .theme-btn .i-moon{display:none}
+:root[data-theme="dark"]{color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}
