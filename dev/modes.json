@@ -1,0 +1,6 @@
+{
+  "jatek-szorzo": ["szorzo", "Szorzótábla-bajnok", "Egy perc, minél több szorzás vagy osztás: döntsd meg a saját rekordodat! Ingyenes szorzótábla-gyakorló alsósoknak."],
+  "jatek-ora": ["ora", "Óra-mester", "Az óra leolvasása lépésről lépésre: egész, fél, negyed, percre pontos idő, eltelt idő. Ingyenes gyakorló alsósoknak."],
+  "jatek-penz": ["penz", "Pénzszámolás", "Forint érmék és bankjegyek számolása, visszajáró, pontos fizetés. Ingyenes gyakorló alsósoknak."],
+  "jatek-hibak": ["hibak", "Hibáim gyakorlása", "A korábban elrontott feladatok újragyakorlása."]
+}

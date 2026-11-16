@@ -1,0 +1,21 @@
+# Kockafüzet – fejlesztői jegyzet
+
+A weboldal a repó gyökerében van (GitHub Pages ezt szolgálja ki). A forrás a `dev/` mappában:
+
+- `dev/src/core.js` – motor: profilok, tárolás, útválasztás, főoldal, feladatkör, válaszfelületek
+- `dev/src/visuals.js` – közös rajzok és segédfüggvények (óra, pénz, tízes rudak, névelők)
+- `dev/src/matek-N.js`, `dev/src/magyar-N.js` – évfolyamonkénti feladatgenerátorok (`PAGES['matek-2'] = {...}`)
+- `dev/src/modes.js` – Játékok: Szorzótábla-bajnok, Óra-mester, Pénzszámolás, Hibáim gyakorlása
+- `dev/src/features.js` – Szülőknek oldal, nyomtatható feladatlap, megosztható feladatsor, telepítés
+- `dev/src/*.css`, `dev/src/theme.js`, `dev/src/sw.js` – megjelenés, világos/sötét mód, offline működés
+
+Építés (a repó gyökeréből):
+
+    python3 dev/build.py --base /kockafuzet/
+
+Tesztek (Playwright kell hozzá):
+
+    dev/tests/stage.sh                # tesztpéldány építése /tmp/kfsite alá
+    python3 dev/tests/fuzz.py 300     # minden generátor ellenőrzése
+    python3 dev/tests/e2e.py          # böngészős végigjátszás
+    python3 dev/tests/sample.py matek-3   # mintakérdések átnézéshez

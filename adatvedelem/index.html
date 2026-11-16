@@ -5,16 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Adatvédelem – Kockafüzet</title>
 <meta name="description" content="Milyen adatot kezel a Kockafüzet oldal.">
+<meta name="theme-color" content="#3563e9">
 <link rel="icon" href="/kockafuzet/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/kockafuzet/assets/icon-192.png">
+<link rel="manifest" href="/kockafuzet/manifest.webmanifest">
 <link rel="preload" href="/kockafuzet/assets/fonts/fredoka-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/kockafuzet/assets/fonts/nunito-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/kockafuzet/assets/app.css?v=ddaa40d7">
-<script src="/kockafuzet/assets/theme.js?v=ddaa40d7"></script>
+<link rel="stylesheet" href="/kockafuzet/assets/app.css?v=e228e30c">
+<script src="/kockafuzet/assets/theme.js?v=e228e30c"></script>
 </head>
 <body>
 <header class="site-head"><div class="site-head-in">
 <a class="brand" href="/kockafuzet/"><svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#3563e9"/><path d="M7 14h26M7 20h26M7 26h26M14 7v26M20 7v26M26 7v26" stroke="#fff" stroke-opacity=".3" stroke-width="1.5"/><path d="M12 21l5.5 5.5L29 14" fill="none" stroke="#ffc93c" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Kockafüzet</span></a>
-<nav class="site-nav" aria-label="Tantárgyak"><a class="m" href="/kockafuzet/#matek">Matematika</a><a class="h" href="/kockafuzet/#magyar">Magyar</a></nav>
+<nav class="site-nav" aria-label="Tantárgyak"><a class="m" href="/kockafuzet/#matek">Matematika</a><a class="h" href="/kockafuzet/#magyar">Magyar</a><a class="x" href="/kockafuzet/#jatekok">Játékok</a></nav>
 <button class="theme-switch" type="button" id="theme-btn" role="switch" aria-checked="false" aria-label="Sötét mód" title="Világos / sötét mód"><span class="ts-ico ts-l"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span class="ts-ico ts-r"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6z" fill="currentColor"/></svg></span><span class="ts-knob"><span class="k-sun"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span class="k-moon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6z" fill="currentColor"/></svg></span></span></button>
 </div></header>
 <main id="app"><div class="wrap">
@@ -24,23 +27,26 @@
 <h2>Milyen adatot kezel az oldal?</h2>
 <ul>
 <li><b>Nem gyűjtünk személyes adatot.</b> Nincs regisztráció, nincs követés, nincs hirdetés és nincsenek analitikai sütik.</li>
-<li>A gyerekek nevét (ha megadod) és a csillagokat csak a te eszközöd böngészője tárolja (localStorage). Ezek nem jutnak el hozzánk, és a böngésző adatainak törlésével bármikor eltávolíthatók.</li>
+<li>A gyerekek nevét (ha megadod), a csillagokat, az eredményeket és a hibásan megoldott feladatokat csak a te eszközöd böngészője tárolja (localStorage). Ezek nem jutnak el hozzánk, és a böngésző adatainak törlésével bármikor eltávolíthatók.</li>
+<li>Az oldal a gyorsabb betöltés és az internet nélküli használat érdekében elmenti a saját fájljait a böngészőbe. Ez sem tartalmaz személyes adatot.</li>
+<li>A tanítói feladatsor linkje csak a feladatok beállításait tartalmazza (tantárgy, témák, szint), nevet vagy eredményt nem.</li>
 <li>A betűtípusok is erről az oldalról töltődnek be, külső szolgáltatót nem hívunk.</li>
-<li>Az oldalt a Cloudflare tárhelye szolgálja ki. Mint minden webszerver, ez is látja a látogató IP-címét a kérés teljesítéséhez.</li>
+<li>Az oldalt a GitHub Pages szolgálja ki. Mint minden webszerver, ez is látja a látogató IP-címét a kérés teljesítéséhez.</li>
 </ul>
 <h2>Mikrofon és felolvasás</h2>
 <ul>
 <li>A „Mondd ki!” gombnál a böngésző beépített beszédfelismerését használjuk. A mikrofon csak a gomb megnyomása után és csak a böngésző engedélyével kapcsol be.</li>
 <li>Egyes böngészők (például a Chrome) a hangfelvételt a böngésző gyártójának szerverén dolgozzák fel. Ha ezt nem szeretnéd, ne használd a mikrofonos feladatot: a többi feladat mikrofon nélkül is működik.</li>
-<li>A felolvasás a készülék saját magyar hangjával történik, ehhez nincs szükség internetkapcsolatra.</li>
+<li>A felolvasás a készülék saját magyar hangjával történik.</li>
 </ul>
 <h2>A feladatokról</h2>
 <p>A feladatok a Nemzeti alaptanterv alsós témáihoz igazodnak, de nem hivatalos tananyagok.</p>
 </div>
-</div></main>
+</div>
+</main>
 <footer class="site-foot"><div class="site-foot-in">
 <span><b>Kockafüzet</b> · ingyenes gyakorló feladatok alsósoknak</span>
-<a href="/kockafuzet/adatvedelem/">Adatvédelem és tudnivalók</a>
+<span class="foot-links"><a href="/kockafuzet/szuloknek/">Szülőknek és tanítóknak</a><a href="/kockafuzet/adatvedelem/">Adatvédelem</a></span>
 </div></footer>
 
 <noscript><p style="padding:20px">Az oldal használatához engedélyezd a JavaScriptet.</p></noscript>
