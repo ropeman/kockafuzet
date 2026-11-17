@@ -311,6 +311,7 @@ function renderQ() {
 }
 
 function judge(q, resp) {
+  if (UI[q.type] && UI[q.type].judge) return UI[q.type].judge(q, resp);
   switch (q.type) {
     case 'choice': return resp === q.answer;
     case 'input': return String(resp).trim() !== '' && Number(resp) === Number(q.answer);

@@ -68,6 +68,10 @@ function staticQ(q, i) {
   if (q.type === 'choice') body.append(h('div', { class: 'pq-o' }, q.options.map((o, k) => h('span', { class: 'pq-opt' }, h('b', null, 'ABCDEF'[k] + ')'), h('span', { html: o.html })))));
   else if (q.type === 'input') body.append(h('div', { class: 'pq-a' }, 'Válasz: ', h('span', { class: 'pq-line' })));
   else if (q.type === 'find') body.append(h('div', { class: 'pq-grid' }, q.cells.map(c => h('span', null, c))));
+  else if (q.type === 'sort') body.append(h('div', { class: 'pq-words' }, q.items.map(it => h('span', null, it.text))), h('div', { class: 'pq-sort', style: `--n:${q.bins.length}` }, q.bins.map(b => h('div', null, b.label))));
+  else if (q.type === 'label') { const f = h('div', { class: 'pq-lfig', html: q.img }); q.spots.forEach((s, k) => f.append(h('span', { style: `left:${s.x}%;top:${s.y}%` }, String(k + 1)))); body.append(f, h('div', { class: 'pq-words' }, 'Írd a számok mellé: ', ...q.labels.map(l => h('span', null, l.text)))); }
+  else if (q.type === 'set') body.append(h('div', { class: 'pq-v', html: q.kind === 'thermo' ? thermo(-10).replace(/<rect x="52"[^>]*class="f-red"\/>/, '') : compass(null, [0, 2, 4, 6]) }), h('div', { class: 'pq-a' }, q.kind === 'thermo' ? 'Színezd be a hőmérőt a megfelelő magasságig!' : 'Rajzold be a nyilat!'));
+  else if (q.type === 'riddle') body.append(h('ol', { class: 'pq-clues' }, q.clues.map(c => h('li', null, c))), h('div', { class: 'pq-o' }, q.options.map((o, k) => h('span', { class: 'pq-opt' }, h('b', null, 'ABCDEF'[k] + ')'), h('span', { html: o.html })))));
   else if (q.type === 'build') {
     const words = q.answer.some(x => x.length > 3);
     body.append(h('div', { class: 'pq-tiles' }, q.tiles.map(t => h('span', null, t))), h('div', { class: 'pq-a' }, words ? h('span', { class: 'pq-line wide' }) : q.answer.map(() => h('span', { class: 'pq-box' }))));
@@ -78,6 +82,8 @@ function keyText(q) {
   if (q.type === 'choice') { const k = q.options.findIndex(o => o.value === q.answer); const txt = stripTags(q.options[k] && q.options[k].html); return `${'ABCDEF'[k]})${txt ? ' ' + txt : q.answerText ? ' ' + stripTags(q.answerText) : ''}`; }
   if (q.type === 'find') return `${q.targets.length} db: ${q.targets.map(i => i + 1).join(', ')}. hely`;
   if (q.type === 'build') return q.answer.join(q.answer.some(x => x.length > 3) ? ', ' : '');
+  if (q.type === 'sort' || q.type === 'label' || q.type === 'set') return stripTags(String(q.answerText).replace(/<br>/g, '; '));
+  if (q.type === 'riddle') { const k = q.options.findIndex(o => o.value === q.answer); return `${'ABCDEF'[k]}) ${q.answer}`; }
   return String(q.answer).replace('-', '−');
 }
 

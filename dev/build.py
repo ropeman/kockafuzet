@@ -25,7 +25,7 @@ BASE = args.base.rstrip("/") + "/"
 OUT = Path(args.out)
 SITE = "Kockafüzet"
 
-ORDER = ["core.js", "visuals.js",
+ORDER = ["core.js", "visuals.js", "interact.js",
          "matek-1.js", "matek-2.js", "matek-3.js", "matek-4.js",
          "magyar-1.js", "magyar-2.js", "magyar-3.js", "magyar-4.js", "kornyezet-4.js",
          "modes.js", "features.js", "explain.js", "review.js", "zz-boot.js"]
@@ -55,7 +55,7 @@ for family, pkg, weights in [("Fredoka", "fredoka", (500, 600)), ("Nunito", "nun
             assert (OUT / "assets" / "fonts" / fn).exists(), fn
             faces.append(f"@font-face{{font-family:'{family}';font-style:normal;font-weight:{w};font-display:swap;"
                          f"src:url({BASE}assets/fonts/{fn}) format('woff2');unicode-range:{rng}}}")
-css = "\n".join(faces) + "\n" + "".join((SRC / f).read_text(encoding="utf-8") + "\n" for f in ("base.css", "theme.css", "features.css", "explain.css") if (SRC / f).exists())
+css = "\n".join(faces) + "\n" + "".join((SRC / f).read_text(encoding="utf-8") + "\n" for f in ("base.css", "theme.css", "features.css", "explain.css", "interact.css") if (SRC / f).exists())
 (OUT / "assets" / "app.css").write_text(css, encoding="utf-8")
 (OUT / "assets" / "theme.js").write_text((SRC / "theme.js").read_text(encoding="utf-8"), encoding="utf-8")
 

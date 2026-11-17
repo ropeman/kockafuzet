@@ -38,6 +38,21 @@ JS = r"""
             if (String(Math.abs(a)).length > 7) add(where, 'answer too long', q);
           } else if (q.type === 'build') {
             const tiles = q.tiles.slice(); for (const g of q.answer) { const k = tiles.indexOf(g); if (k < 0) { add(where, 'tile missing ' + g, q); break; } tiles.splice(k, 1); }
+          } else if (q.type === 'sort') {
+            const bins = new Set(q.bins.map(b => b.id)), ids = q.items.map(i => i.id);
+            if (q.items.some(it => !bins.has(it.bin))) add(where, 'item in unknown bin', q);
+            if (new Set(ids).size !== ids.length) add(where, 'duplicate item ids', q);
+            if (new Set(q.items.map(i => i.text)).size !== ids.length) add(where, 'duplicate item text', q);
+            if (q.bins.some(b => !q.items.some(it => it.bin === b.id))) add(where, 'empty bin', q);
+          } else if (q.type === 'label') {
+            if (q.spots.some(s => !q.labels.some(l => l.id === q.answer[s.id]))) add(where, 'label answer missing', q);
+            if (q.spots.some(s => s.x < 0 || s.x > 100 || s.y < 0 || s.y > 100)) add(where, 'spot outside picture', q);
+          } else if (q.type === 'set') {
+            if (q.answer === q.start) add(where, 'starts at the answer', q);
+            if (q.kind === 'thermo' && (q.answer < q.min || q.answer > q.max)) add(where, 'target out of range', q);
+          } else if (q.type === 'riddle') {
+            if (!q.options.some(o => o.value === q.answer) || new Set(q.options.map(o => o.value)).size !== q.options.length) add(where, 'riddle options bad', q);
+            if (q.clues.slice(0, -1).some(c => c.toLowerCase().includes(String(q.answer).toLowerCase()))) add(where, 'clue gives the answer away', q);
           } else if (q.type === 'find') {
             if (!q.targets.length || q.targets.some(i => i < 0 || i >= q.cells.length)) add(where, 'bad targets', q);
           }

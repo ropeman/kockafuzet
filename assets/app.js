@@ -316,6 +316,7 @@ function renderQ() {
 }
 
 function judge(q, resp) {
+  if (UI[q.type] && UI[q.type].judge) return UI[q.type].judge(q, resp);
   switch (q.type) {
     case 'choice': return resp === q.answer;
     case 'input': return String(resp).trim() !== '' && Number(resp) === Number(q.answer);
@@ -678,6 +679,166 @@ const esN = n => n + '-' + ({ 1: 'es', 2: 'es', 3: 'as', 4: 'es', 5: 'ös', 6: '
 // accusative and allative forms of small numbers: 3-at, 5-öt; 3-hoz, 5-höz
 const accN = n => n + '-' + ({ 1: 'et', 2: 't', 3: 'at', 4: 'et', 5: 'öt', 6: 'ot', 7: 'et', 8: 'at', 9: 'et', 10: 'et', 11: 'et', 12: 't', 13: 'at', 14: 'et', 15: 'öt' }[n] || 't');
 const hozN = n => n + '-' + ({ 1: 'hez', 2: 'höz', 3: 'hoz', 4: 'hez', 5: 'höz', 6: 'hoz', 7: 'hez', 8: 'hoz', 9: 'hez', 10: 'hez' }[n] || 'hoz');
+
+/* ===== Interactive question types: sort, label, set, riddle ===== */
+// Tap-to-select + tap-to-place, and drag with mouse or finger. Targets carry data-drop="id".
+function makeDraggable(el, id, onPick, onDrop) {
+  let sx = 0, sy = 0, ghost = null, moved = false;
+  el.style.touchAction = 'none';
+  el.addEventListener('pointerdown', e => {
+    if (el.disabled || e.button > 0) return;
+    sx = e.clientX; sy = e.clientY; moved = false;
+    try { el.setPointerCapture(e.pointerId); } catch (x) {}
+  });
+  el.addEventListener('pointermove', e => {
+    if (!el.hasPointerCapture || !el.hasPointerCapture(e.pointerId)) return;
+    if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) < 8) return;
+    if (!moved) { moved = true; onPick(id, true); ghost = el.cloneNode(true); ghost.classList.add('drag-ghost'); document.body.append(ghost); }
+    ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px';
+    document.querySelectorAll('.drop-hover').forEach(x => x.classList.remove('drop-hover'));
+    const t = dropTargetAt(e.clientX, e.clientY); if (t) t.classList.add('drop-hover');
+  });
+  const end = e => {
+    document.querySelectorAll('.drop-hover').forEach(x => x.classList.remove('drop-hover'));
+    if (ghost) { ghost.remove(); ghost = null; }
+    if (moved) { const t = dropTargetAt(e.clientX, e.clientY); onDrop(id, t ? t.dataset.drop : null); el._suppressClick = true; setTimeout(() => { el._suppressClick = false; }, 50); }
+    moved = false;
+  };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+  el.addEventListener('click', e => { if (el._suppressClick) { e.preventDefault(); return; } onPick(id, false); });
+}
+function dropTargetAt(x, y) { const el = document.elementFromPoint(x, y); return el && el.closest('[data-drop]'); }
+
+/* ---------- Válogató: sort items into baskets ---------- */
+UI.sort = (q, send) => {
+  const place = {}; let sel = null;
+  const chip = it => { const b = h('button', { class: 'sitem', html: it.html, 'data-id': it.id }); makeDraggable(b, it.id, pickIt, dropIt); return b; };
+  const chips = Object.fromEntries(q.items.map(it => [it.id, chip(it)]));
+  const pool = h('div', { class: 'spool', 'data-drop': '_pool', 'aria-label': 'Szétválogatandó kártyák' });
+  const binEls = Object.fromEntries(q.bins.map(b => [b.id, h('div', { class: 'sbin-items' })]));
+  const bins = h('div', { class: 'sbins', style: `--n:${q.bins.length}` }, q.bins.map(b => h('div', { class: 'sbin', 'data-drop': b.id, onclick: e => { if (e.target.closest('.sitem')) return; if (sel) dropIt(sel, b.id); } },
+    h('button', { class: 'sbin-h', onclick: () => sel && dropIt(sel, b.id) }, b.label), binEls[b.id])));
+  const sb = h('button', { class: 'btn primary', disabled: true, onclick: () => send({ ...place }) }, 'Kész');
+  function pickIt(id, dragging) { sel = dragging || sel !== id ? id : null; draw(); }
+  function dropIt(id, target) { if (!target) { sel = null; draw(); return; } if (target === '_pool') delete place[id]; else place[id] = target; sel = null; draw(); }
+  function draw() {
+    q.items.forEach(it => { const c = chips[it.id], home = place[it.id] ? binEls[place[it.id]] : pool; if (c.parentNode !== home) home.append(c); c.classList.toggle('sel', sel === it.id); c.setAttribute('aria-pressed', String(sel === it.id)); });
+    pool.classList.toggle('empty', Object.keys(place).length === q.items.length);
+    bins.classList.toggle('armed', !!sel);
+    sb.disabled = Object.keys(place).length !== q.items.length;
+  }
+  draw();
+  return {
+    el: h('div', { class: 'sortwrap' }, h('p', { class: 'mute ihelp' }, 'Húzd a kártyákat a helyükre, vagy koppints egy kártyára, aztán a kosárra.'), pool, bins), submitBtn: sb,
+    wrong(r) { q.items.forEach(it => { if (r[it.id] !== it.bin) { delete place[it.id]; chips[it.id].classList.add('was-wrong'); } else chips[it.id].classList.add('right', 'fixed'); }); draw(); },
+    lock(r) { q.items.forEach(it => { const c = chips[it.id]; c.disabled = true; c.classList.remove('sel', 'was-wrong'); binEls[it.bin].append(c); c.classList.add(r[it.id] === it.bin ? 'right' : 'wrong'); }); bins.classList.remove('armed'); },
+    done() { sb.remove(); }
+  };
+};
+UI.sort.judge = (q, r) => q.items.every(it => r[it.id] === it.bin);
+
+/* ---------- Címkézd fel: put labels on a picture ---------- */
+UI.label = (q, send) => {
+  const put = {}; let sel = null;           // spotId -> labelId
+  const lab = Object.fromEntries(q.labels.map(l => [l.id, l]));
+  const chips = Object.fromEntries(q.labels.map(l => { const b = h('button', { class: 'sitem lchip', 'data-id': l.id }, l.text); makeDraggable(b, l.id, pickL, dropL); return [l.id, b]; }));
+  const bank = h('div', { class: 'spool lbank', 'data-drop': '_pool' });
+  const spots = Object.fromEntries(q.spots.map((s, i) => [s.id, h('button', { class: 'lspot', 'data-drop': s.id, style: `left:${s.x}%;top:${s.y}%`, 'aria-label': `${i + 1}. hely`, onclick: () => spotClick(s.id) }, String(i + 1))]));
+  const fig = h('div', { class: 'lfig', html: q.img }); Object.values(spots).forEach(s => fig.append(s));
+  const sb = h('button', { class: 'btn primary', disabled: true, onclick: () => send({ ...put }) }, 'Kész');
+  function pickL(id, dragging) { sel = dragging || sel !== id ? id : null; draw(); }
+  function dropL(id, target) {
+    Object.keys(put).forEach(k => { if (put[k] === id) delete put[k]; });
+    if (target && target !== '_pool') put[target] = id;
+    sel = null; draw();
+  }
+  function spotClick(sid) { if (sel) dropL(sel, sid); else if (put[sid]) { delete put[sid]; draw(); } }
+  function draw() {
+    q.spots.forEach((s, i) => { const sp = spots[s.id], l = put[s.id]; sp.textContent = l ? lab[l].text : String(i + 1); sp.classList.toggle('filled', !!l); });
+    q.labels.forEach(l => { const used = Object.values(put).includes(l.id), c = chips[l.id]; c.classList.toggle('used', used); c.classList.toggle('sel', sel === l.id); c.setAttribute('aria-pressed', String(sel === l.id)); });
+    fig.classList.toggle('armed', !!sel);
+    sb.disabled = Object.keys(put).length !== q.spots.length;
+  }
+  bank.append(...Object.values(chips));
+  draw();
+  return {
+    el: h('div', { class: 'labelwrap' }, h('p', { class: 'mute ihelp' }, 'Húzd a neveket a számokra, vagy koppints egy névre, aztán a helyére.'), fig, bank), submitBtn: sb,
+    wrong(r) { q.spots.forEach(s => { if (r[s.id] !== q.answer[s.id]) delete put[s.id]; else spots[s.id].classList.add('right'); }); draw(); },
+    lock(r) { q.spots.forEach(s => { const sp = spots[s.id]; sp.disabled = true; sp.textContent = lab[q.answer[s.id]].text; sp.classList.add('filled', r[s.id] === q.answer[s.id] ? 'right' : 'wrong'); }); Object.values(chips).forEach(c => c.disabled = true); },
+    done() { sb.remove(); }
+  };
+};
+UI.label.judge = (q, r) => q.spots.every(s => r[s.id] === q.answer[s.id]);
+
+/* ---------- Állítsd be: set an instrument (thermometer, compass) ---------- */
+UI.set = (q, send) => {
+  let v = q.start;
+  const box = h('div', { class: 'setfig' }), readout = h('div', { class: 'setval', 'aria-live': 'polite' });
+  const fmtV = x => q.kind === 'thermo' ? `${String(x).replace('-', '−')} °C` : DIRS[x];
+  const draw = () => { box.innerHTML = q.kind === 'thermo' ? thermo(v) : compass(v, q.labels || [0, 2, 4, 6]); readout.textContent = fmtV(v); };
+  const setV = x => { v = q.kind === 'thermo' ? Math.max(q.min, Math.min(q.max, x)) : (x + 8) % 8; draw(); };
+  const fromPoint = e => {
+    const s = box.querySelector('svg'); if (!s) return; const r = s.getBoundingClientRect(), vb = s.viewBox.baseVal;
+    const px = (e.clientX - r.left) * vb.width / r.width, py = (e.clientY - r.top) * vb.height / r.height;
+    if (q.kind === 'thermo') setV(Math.round(-10 + (216 - py) / 200 * 40));
+    else { const ang = Math.atan2(px - 110, 110 - py) * 180 / Math.PI; setV(Math.round(((ang + 360) % 360) / 45) % 8); }
+  };
+  let drag = false;
+  box.addEventListener('pointerdown', e => { drag = true; try { box.setPointerCapture(e.pointerId); } catch (x) {} fromPoint(e); });
+  box.addEventListener('pointermove', e => { if (drag) fromPoint(e); });
+  box.addEventListener('pointerup', () => { drag = false; });
+  box.style.touchAction = 'none';
+  const step = d => setV(v + d);
+  const ctr = q.kind === 'thermo'
+    ? h('div', { class: 'chips setctl' }, h('button', { class: 'btn', onclick: () => step(-5) }, '−5'), h('button', { class: 'btn', onclick: () => step(-1) }, '−1'), h('button', { class: 'btn', onclick: () => step(1) }, '+1'), h('button', { class: 'btn', onclick: () => step(5) }, '+5'))
+    : h('div', { class: 'chips setctl' }, h('button', { class: 'btn', onclick: () => step(-1) }, '↺ Balra'), h('button', { class: 'btn', onclick: () => step(1) }, 'Jobbra ↻'));
+  const onKey = e => { if (expOpen) return; if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { e.preventDefault(); step(1); } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { e.preventDefault(); step(-1); } };
+  document.addEventListener('keydown', onKey); cleanups.push(() => document.removeEventListener('keydown', onKey));
+  const sb = h('button', { class: 'btn primary', onclick: () => send(v) }, 'Kész');
+  draw();
+  return {
+    el: h('div', { class: 'setwrap' }, h('p', { class: 'mute ihelp' }, q.kind === 'thermo' ? 'Húzd a hőmérő oszlopát, vagy használd a gombokat.' : 'Koppints arra az irányra a körön, vagy forgasd a gombokkal.'), box, readout, ctr), submitBtn: sb,
+    wrong() {},
+    lock(r, ok) { ctr.querySelectorAll('button').forEach(b => b.disabled = true); document.removeEventListener('keydown', onKey); if (!ok) { v = q.answer; draw(); readout.classList.add('fix'); } },
+    done() { sb.remove(); }
+  };
+};
+UI.set.judge = (q, r) => r === q.answer;
+
+/* ---------- Ki vagyok én? clue riddle ---------- */
+UI.riddle = (q, send) => {
+  let shown = 1;
+  const list = h('ol', { class: 'clues' });
+  const more = h('button', { class: 'btn small', onclick: () => reveal() }, '💡 Még egy tipp');
+  const choice = UI.choice(q, send);
+  const reveal = () => { if (shown < q.clues.length) { shown++; draw(); if (autoRead() && canSpeak()) speak(q.clues[shown - 1]); } };
+  const draw = () => { list.replaceChildren(...q.clues.slice(0, shown).map((c, i) => h('li', { class: i === shown - 1 ? 'ex-new' : '' }, c))); more.hidden = shown >= q.clues.length; more.textContent = `💡 Még egy tipp (${q.clues.length - shown} maradt)`; };
+  draw();
+  return {
+    el: h('div', { class: 'riddlewrap' }, list, more, choice.el),
+    wrong(v) { choice.wrong(v); reveal(); },
+    lock(v, ok) { choice.lock(v, ok); more.hidden = true; if (ok) list.after(h('p', { class: 'riddle-note pop' }, shown === 1 ? 'Már az első tippből kitaláltad! 🌟' : `${shown} tippből kitaláltad!`)); shown = q.clues.length; draw(); }
+  };
+};
+UI.riddle.judge = (q, r) => r === q.answer;
+
+/* ---------- builders used by the content files ---------- */
+let _sid = 0;
+function sortQ(prompt, groups, perBin, opts = {}) {      // groups: { binLabel: [item, …] }, items may be 'word' or ['word', '🐝']
+  const labels = Object.keys(groups), items = [];
+  labels.forEach((b, bi) => shuffle(groups[b]).slice(0, perBin).forEach(x => { const [w, em] = Array.isArray(x) ? x : [x, opts.emoji && opts.emoji(x)]; items.push({ id: 'i' + (++_sid), html: em ? `<span class="se">${em}</span>${w}` : w, text: w, bin: 'b' + bi }); }));
+  const bins = labels.map((b, bi) => ({ id: 'b' + bi, label: b }));
+  return { type: 'sort', prompt, bins, items: shuffle(items), hint: opts.hint, answerText: labels.map((b, bi) => `${b}: ${items.filter(it => it.bin === 'b' + bi).map(it => it.text).join(', ')}`).join('<br>') };
+}
+function labelQ(prompt, img, spots, opts = {}) {            // spots: [{ name, x, y }]
+  const sp = spots.map((s, i) => ({ id: 's' + i, x: s.x, y: s.y })), labels = shuffle(spots.map((s, i) => ({ id: 'l' + i, text: s.name })));
+  const answer = Object.fromEntries(spots.map((s, i) => [sp[i].id, 'l' + i]));
+  return { type: 'label', prompt, img, spots: sp, labels, answer, hint: opts.hint, answerText: spots.map((s, i) => `${i + 1}. ${s.name}`).join(', ') };
+}
+function riddleQ(clues, answer, wrongs, hint) {
+  return { type: 'riddle', prompt: 'Ki vagyok én? Olvasd el a tippet, és találd ki!', clues, answer, options: shuffle([answer, ...wrongs]).map(v => ({ value: v, html: v })), answerText: answer, hint: hint || 'Ha nem tudod, kérj még egy tippet! Minél kevesebb tippből találod ki, annál ügyesebb vagy.', speak: 'Ki vagyok én? ' + clues[0] };
+}
 
 /* ===== Matematika 1 (számkör 20, 100) ===== */
 const M1 = {
@@ -2002,10 +2163,90 @@ const K4 = {
     return mcq(`Mi a székhelye ennek a megyének: <b>${m}</b>?`, sz, shuffle(MS.filter(x => x[1] !== sz)).slice(0, 3).map(x => x[1]), { fmt: v => v, hint: 'Magyarországnak 19 megyéje van, mindegyiknek van székhelye. Pest megye székhelye Budapest, a főváros.' });
   }
 };
+
+/* ---------- interactive variants (sort, label, set, riddle) ---------- */
+function bodySvg() {
+  let s = `<circle cx="110" cy="52" r="40" fill="#f3c9a5" stroke="#1d2742" stroke-width="2.5"/>`;
+  s += `<path d="M84 46 C84 26 136 24 136 46 C138 60 84 62 84 46Z" fill="#f4a6c1" stroke="#c2255c" stroke-width="2"/><path d="M96 38 q6 6 0 12 M110 32 q-6 8 0 16 M124 38 q-6 6 0 12" fill="none" stroke="#c2255c" stroke-width="1.5"/>`;
+  s += `<rect x="99" y="88" width="22" height="18" fill="#f3c9a5" stroke="#1d2742" stroke-width="2.5"/>`;
+  s += `<rect x="45" y="100" width="130" height="192" rx="44" fill="#f3c9a5" stroke="#1d2742" stroke-width="2.5"/>`;
+  s += `<ellipse cx="86" cy="158" rx="22" ry="36" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/><ellipse cx="134" cy="158" rx="22" ry="36" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>`;
+  s += `<path d="M118 172 c-7 -9 -20 -2 -14 8 l14 14 l14 -14 c6 -10 -7 -17 -14 -8z" fill="#e03131" stroke="#a51111" stroke-width="1.5"/>`;
+  s += `<path d="M120 214 c18 -6 30 8 22 24 c-6 12 -24 14 -34 6 c-6 -6 -2 -14 6 -14 c8 0 10 -8 6 -16z" fill="#f2b48a" stroke="#c46a2c" stroke-width="2"/>`;
+  return svg(220, 300, s, 'bodyfig');
+}
+const SORTS = {
+  state: L => sortQ('Válogasd szét halmazállapot szerint!', { 'szilárd': ['jég', 'kő', 'vaj', 'fa', 'homok', 'vas', 'üveg'], 'folyékony': ['víz', 'tej', 'olaj', 'méz', 'szörp', 'tea'], 'légnemű': ['levegő', 'vízgőz', 'füst'] }, L === 3 ? 3 : 2, { hint: 'Szilárd: megtartja az alakját. Folyékony: folyik. Légnemű: kitölti a teret.' }),
+  animal: L => { const g = shuffle(Object.keys(ANIMALS)).slice(0, 3), src = {}; g.forEach(k => src[k] = ANIMALS[k].filter(a => L === 3 || !TRICKY.includes(a)).map(a => [a, EMO[a]])); return sortQ('Válogasd szét az állatokat csoportjuk szerint!', src, 2, { hint: 'Emlős: szőr, szoptat. Madár: toll. Hal: kopoltyú. Kétéltű: csupasz bőr. Hüllő: pikkely. Rovar: 6 láb.' }); },
+  light: L => sortQ('Természetes vagy mesterséges fényforrás?', { 'természetes': ['a Nap', 'a villám', 'a csillagok', 'a szentjánosbogár'], 'mesterséges': ['zseblámpa', 'villanykörte', 'gyertya', 'utcai lámpa'] }, 3, { hint: 'A természetes fényforrás magától világít. A mesterségeset az ember készítette.' }),
+  burn: L => sortQ('Mi ég, és mi nem?', { 'éghető': ['fa', 'papír', 'szén', 'gyertyaviasz', 'száraz levél', 'fenyőtoboz'], 'éghetetlen': ['kő', 'vas', 'üveg', 'homok', 'víz', 'tégla'] }, 3, { hint: 'Ami meggyullad és elég, az éghető.' }),
+  habitat: L => sortQ('Hol élnek? Válogasd szét!', Object.fromEntries(Object.entries(HABITAT).map(([k, v]) => [k, v.map(a => [a, EMO[a]])])), 2, { hint: 'Erdő: fák között. Mező: füves, nyílt terület. Víz, vízpart: tó, folyó és partja.' }),
+  health: L => sortQ('Egészséges vagy egészségtelen szokás?', { 'egészséges': ['zöldséget eszem', 'sokat mozgok a szabadban', 'eleget alszom', 'kezet mosok evés előtt', 'vizet iszom'], 'egészségtelen': ['sok cukros üdítőt iszom', 'késő éjjelig tévézek', 'nem reggelizem', 'egész nap ülök', 'nem mosok fogat'] }, 3, { hint: 'Ami jót tesz a testednek, az egészséges szokás.' }),
+  water: L => sortQ('Állóvíz vagy folyóvíz?', { 'állóvíz': ['tó', 'mocsár', 'halastó', 'Balaton'], 'folyóvíz': ['patak', 'folyó', 'Duna', 'Tisza'] }, 3, { hint: 'Az állóvíz egy helyben marad, a folyóvíz egy irányba folyik.' }),
+  edible: L => sortQ('Melyik részét esszük?', { 'gyökerét': ['répa', 'retek', 'cékla', 'petrezselyemgyökér'], 'levelét': ['saláta', 'káposzta', 'spenót', 'sóska'], 'termését': ['alma', 'paradicsom', 'paprika', 'uborka', 'szilva'] }, 2, { hint: 'A gyökér a földben nő, a levél a száron, a termés a virágból fejlődik.' }),
+  move: L => sortQ('Helyváltoztató vagy helyzetváltoztató mozgás?', { 'helyváltoztató': ['futás', 'úszás', 'séta', 'kerékpározás'], 'helyzetváltoztató': ['guggolás', 'hajolás', 'karkörzés', 'bólintás'] }, 3, { hint: 'Helyváltoztató: máshová kerülsz. Helyzetváltoztató: helyben maradsz.' }),
+  weather: L => sortQ('Csapadék vagy nem csapadék?', { 'csapadék': ['eső', 'hó', 'jégeső', 'dér', 'harmat'], 'nem csapadék': ['szél', 'napsütés', 'villám', 'felhő'] }, 3, { hint: 'Csapadék a levegőből lehulló vagy kicsapódó víz.' })
+};
+const LABELS = {
+  plant: () => labelQ('Címkézd fel a növény részeit!', plantSvg(null), [{ name: 'virág', x: 45.5, y: 16 }, { name: 'levél', x: 64, y: 40 }, { name: 'szár', x: 45.5, y: 60 }, { name: 'gyökér', x: 45.5, y: 86 }], { hint: 'Alulról felfelé: gyökér, szár, levél, virág.' }),
+  body: () => labelQ('Címkézd fel a szerveket!', bodySvg(), [{ name: 'agy', x: 50, y: 15 }, { name: 'tüdő', x: 39, y: 50 }, { name: 'szív', x: 54, y: 61 }, { name: 'gyomor', x: 60, y: 77 }], { hint: 'Az agy a fejben van. A mellkasban a két tüdő és köztük a szív. Lejjebb, a hasban a gyomor.' }),
+  compass4: () => labelQ('Írd be a fővilágtájakat!', compass(null, []), [{ name: 'észak', x: 50, y: 25 }, { name: 'kelet', x: 75, y: 50 }, { name: 'dél', x: 50, y: 75 }, { name: 'nyugat', x: 25, y: 50 }], { hint: 'Fent az észak, lent a dél, jobbra a kelet, balra a nyugat.' }),
+  compassX: () => labelQ('Írd be a mellékvilágtájakat! (Az észak fent van.)', compass(null, [0]), [{ name: 'északkelet', x: 70, y: 31 }, { name: 'délkelet', x: 70, y: 69 }, { name: 'délnyugat', x: 30, y: 69 }, { name: 'északnyugat', x: 30, y: 31 }], { hint: 'A mellékvilágtájak két fővilágtáj között vannak: északkelet az észak és a kelet között.' })
+};
+const thermoSet = L => { const t = L === 1 ? ri(0, 6) * 5 : L === 2 ? ri(0, 30) : ri(-10, -1); return { type: 'set', kind: 'thermo', prompt: `Állítsd be a hőmérőt erre: <b>${String(t).replace('-', '−')} °C</b>`, answer: t, start: t === 10 ? 0 : 10, min: -10, max: 30, answerText: `${String(t).replace('-', '−')} °C`, hint: 'A hosszú vonalak 10 fokonként, a közepesek 5 fokonként vannak. 0 alatt mínusz fokok vannak.' }; };
+const compassSet = L => { const i = L === 1 ? pick([0, 2, 4, 6]) : pick([1, 3, 5, 7]); return { type: 'set', kind: 'compass', prompt: `Fordítsd a nyilat erre: <b>${DIRS[i]}</b>`, answer: i, start: (i + 3) % 8, answerText: DIRS[i], hint: 'Fent az észak, lent a dél, jobbra a kelet, balra a nyugat. A mellékvilágtájak kettő között vannak.' }; };
+const RIDDLES = [
+  ['állat', ['Hat lábam van, és tudok repülni.', 'Virágról virágra szállok.', 'A kaptárban lakom a társaimmal.', 'Mézet készítek.'], 'méh', ['katica', 'lepke', 'hangya']],
+  ['állat', ['Emlős vagyok, éjszaka járok élelem után.', 'Bogarakat, csigákat, gilisztákat eszem.', 'Télen téli álmot alszom.', 'A hátamon sok hegyes tüske van.'], 'sün', ['mókus', 'vakond', 'nyúl']],
+  ['állat', ['Madár vagyok, ősszel délre költözöm.', 'Hosszú a lábam és a csőröm.', 'Békát és egeret is eszem.', 'Gyakran villanyoszlop tetején fészkelek.'], 'gólya', ['gém', 'hattyú', 'sas']],
+  ['állat', ['A bőröm csupasz és nedves.', 'Ebihalként kezdtem az életemet a vízben.', 'Hosszú, ragadós nyelvemmel kapom el a rovarokat.', 'Nagyokat ugrom, és brekegek.'], 'béka', ['gyík', 'gőte', 'teknős']],
+  ['állat', ['Emlős vagyok, fákon élek.', 'Ügyesen ugrálok ágról ágra.', 'Ősszel diót és makkot rejtek el télire.', 'Hosszú, bozontos a farkam.'], 'mókus', ['nyest', 'sün', 'harkály']],
+  ['állat', ['Madár vagyok, az erdőben élek.', 'Erős, hegyes csőröm van.', 'A fák kérge alól szedem ki a rovarokat.', 'Kopogással vájok odút a fába.'], 'harkály', ['bagoly', 'cinege', 'rigó']],
+  ['állat', ['Emlős vagyok, de alig látok.', 'A föld alatt ásom a járataimat.', 'Gilisztákat és rovarlárvákat eszem.', 'Földkupacokat túrok a kertben.'], 'vakond', ['egér', 'sün', 'ürge']],
+  ['állat', ['Rovar vagyok, hat lábam van.', 'A levéltetveket eszem, ezért a kertészek szeretnek.', 'A szárnyfedőm piros.', 'Fekete pöttyök vannak a hátamon.'], 'katica', ['méh', 'hangya', 'szöcske']],
+  ['állat', ['Madár vagyok.', 'Éjszaka vadászom, nappal alszom.', 'A sötétben is jól látok, és a fejemet messzire hátra tudom fordítani.', 'Egereket fogok, és huhogok.'], 'bagoly', ['sas', 'gólya', 'harkály']],
+  ['állat', ['A vízben élek.', 'Kopoltyúval lélegzem.', 'Pikkelyek borítanak, uszonyokkal úszom.', 'Halastavakban is tenyésztenek, karácsonykor sok családnál halászlé lesz belőlem.'], 'ponty', ['csuka', 'harcsa', 'cápa']],
+  ['állat', ['Emlős vagyok, növényevő.', 'Háziállat vagyok, régen szekeret is húztam.', 'Patám és sörényem van.', 'Lépésben, ügetésben és vágtában is tudok haladni.'], 'ló', ['tehén', 'szamár', 'kecske']],
+  ['állat', ['Háziállat vagyok, a mezőn legelek.', 'Kérődző vagyok.', 'Szarvam van.', 'Tejet adok, és bőgök.'], 'tehén', ['ló', 'kecske', 'juh']],
+  ['növény', ['Magas növény vagyok, a mezőn termesztenek.', 'Nagy, sárga virágom van.', 'A virágom a Nap felé fordul.', 'A magomból olajat préselnek.'], 'napraforgó', ['kukorica', 'búza', 'pipacs']],
+  ['növény', ['Fa vagyok, az erdőben élek.', 'Nagyon sok évig élhetek.', 'Karéjos a levelem.', 'A termésem a makk.'], 'tölgyfa', ['bükkfa', 'fenyőfa', 'nyírfa']],
+  ['növény', ['Vadvirág vagyok, a mezőn és a búzaföldek szélén növök.', 'Vékony, szőrös a szárom.', 'A szirmaim vékonyak, mint a selyempapír.', 'Élénkpiros a virágom.'], 'pipacs', ['búzavirág', 'kamilla', 'napraforgó']],
+  ['növény', ['Gyümölcsfa termése vagyok.', 'Ősszel érek meg.', 'Lehetek piros, sárga vagy zöld.', 'Belőlem készül a rétes és a pite, és ropogós vagyok.'], 'alma', ['körte', 'szilva', 'szőlő']],
+  ['növény', ['Az erdőben, a nedves talajon élek.', 'Nem vagyok se növény, se állat.', 'Nincs zöld levelem, virágom sem.', 'Kalapom és tönköm van.'], 'gomba', ['páfrány', 'moha', 'tölgyfa']],
+  ['test', ['A mellkasodban vagyok.', 'Egész életedben dolgozom, sosem pihenek.', 'Ha futsz, gyorsabban dobogok.', 'Én pumpálom a vért az egész testedbe.'], 'szív', ['tüdő', 'gyomor', 'agy']],
+  ['test', ['A mellkasodban vagyok, ketten vagyunk.', 'Ha futsz, gyorsabban dolgozom.', 'Rajtam keresztül jut a levegő oxigénje a véredbe.', 'Velem lélegzel.'], 'tüdő', ['szív', 'máj', 'gyomor']],
+  ['test', ['Érzékszerv vagyok.', 'Ketten vagyunk, az arcodon.', 'Pislogással védekezem a por ellen.', 'Velem látod a színeket.'], 'szem', ['fül', 'orr', 'nyelv']],
+  ['test', ['Érzékszerv vagyok, ketten vagyunk.', 'A fejed két oldalán vagyok.', 'A túl hangos zene árthat nekem.', 'Velem hallod a hangokat.'], 'fül', ['szem', 'orr', 'bőr']],
+  ['táj', ['Állóvíz vagyok a Dunántúlon.', 'Nyáron sokan fürdenek bennem.', 'Közép-Európa legnagyobb tava vagyok.', 'A partomon van Siófok és Tihany.'], 'Balaton', ['Velencei-tó', 'Fertő tó', 'Tisza-tó']],
+  ['táj', ['Folyó vagyok.', 'Németországban erednek a forrásaim, és a Fekete-tengerbe ömlök.', 'Átfolyok Budapesten.', 'Európa második leghosszabb folyója vagyok.'], 'Duna', ['Tisza', 'Rába', 'Dráva']],
+  ['táj', ['Folyó vagyok.', 'Ukrajnában, a Kárpátokban erednek a forrásaim.', 'Átszelem az Alföldet, Szeged mellett is elfolyok.', 'Az országon belül én vagyok hazánk leghosszabb folyója.'], 'Tisza', ['Duna', 'Körös', 'Maros']],
+  ['táj', ['Hegycsúcs vagyok.', 'Az Északi-középhegységben vagyok.', 'A Mátrában emelkedem.', 'Magyarország legmagasabb pontja vagyok, 1014 méter magas.'], 'Kékes', ['Dobogókő', 'Istállós-kő', 'Írott-kő']],
+  ['táj', ['Nagytáj vagyok.', 'Sík, alacsony vidék vagyok.', 'A Duna és a Tisza is átfolyik rajtam.', 'Hazánk legnagyobb nagytája vagyok, rajtam van a Hortobágy.'], 'Alföld', ['Kisalföld', 'Dunántúli-dombság', 'Északi-középhegység']],
+  ['táj', ['Város vagyok.', 'A Duna két partján terülök el.', 'Hazánk legnagyobb városa vagyok.', 'Magyarország fővárosa vagyok.'], 'Budapest', ['Debrecen', 'Szeged', 'Győr']],
+  ['jelenség', ['Az égen látsz, de nem vagyok felhő.', 'Eső után jelenhetek meg, ha közben süt a nap.', 'Ív alakú vagyok.', 'Sok színem van: piros, narancs, sárga, zöld, kék, lila.'], 'szivárvány', ['villám', 'dér', 'köd']],
+  ['jelenség', ['Csapadék vagyok.', 'Télen hullok.', 'Apró jégkristályokból állok, fehér vagyok.', 'Ha sok esik belőlem, lehet szánkózni.'], 'hó', ['eső', 'jégeső', 'harmat']],
+  ['jelenség', ['Szilárd halmazállapotú vagyok.', 'Ha melegítenek, elolvadok.', '0 fok alatt a vízből keletkezem.', 'Korcsolyázni lehet rajtam.'], 'jég', ['hó', 'vízgőz', 'üveg']]
+];
+const kiQ = L => { const cats = L === 1 ? ['állat', 'növény'] : L === 2 ? ['test', 'jelenség', 'állat'] : ['táj', 'növény', 'jelenség']; const [, clues, ans, wr] = pick(RIDDLES.filter(r => cats.includes(r[0]))); return riddleQ(clues, ans, wr); };
+const mix = (base, alts, p) => L => { const a = alts(L); return a && Math.random() < p ? a() : base(L); };
+K4.state = mix(K4.state, L => L === 1 ? () => SORTS.state(L) : L === 3 ? () => thermoSet(pick([1, 2, 3])) : null, .4);
+K4.energy = mix(K4.energy, L => () => (L === 1 ? SORTS.light : L === 2 ? SORTS.burn : SORTS.move)(L), .4);
+K4.plant = mix(K4.plant, L => L === 1 ? LABELS.plant : L === 3 ? () => SORTS.edible(L) : null, .45);
+K4.animal = mix(K4.animal, L => L !== 2 ? () => SORTS.animal(L) : null, .35);
+K4.habitat = mix(K4.habitat, L => L === 1 ? () => SORTS.habitat(L) : null, .4);
+K4.body = mix(K4.body, L => L === 2 ? LABELS.body : null, .45);
+K4.health = mix(K4.health, L => L === 1 ? () => SORTS.health(L) : null, .4);
+K4.weather = mix(K4.weather, L => L === 3 ? () => SORTS.weather(L) : null, .4);
+K4.compass = mix(K4.compass, L => L === 1 ? (Math.random() < .5 ? LABELS.compass4 : () => compassSet(1)) : L === 2 ? (Math.random() < .5 ? LABELS.compassX : () => compassSet(2)) : null, .45);
+K4.landform = mix(K4.landform, L => L === 2 ? () => SORTS.water(L) : null, .4);
+K4.sorter = L => { const k = pick(Object.keys(SORTS)); return SORTS[k](L); };
+K4.ki = kiQ;
 PAGES['kornyezet-4'] = {
   id: 'kornyezet-4', title: 'Környezetismeret', grade: 4,
   blurb: 'Halmazállapotok és mérés, időjárás, tűz, fény és mozgás, a növények és állatok, életközösségek, testünk és egészségünk, világtájak, hazánk tájai és megyéi. Egy kör 10 feladat.',
   topics: [
+    { id: 'sorter', sample: '🧺', name: 'Válogató', desc: 'Válogasd szét a kártyákat a kosarakba!', gen: K4.sorter },
+    { id: 'ki', sample: '❓', name: 'Ki vagyok én?', desc: 'Találós kérdések: minél kevesebb tippből!', gen: K4.ki },
     { id: 'state', sample: 'jég · víz · gőz', name: 'Halmazállapotok', desc: 'Szilárd, folyékony, légnemű; olvadás, fagyás; a hőmérő.', gen: K4.state },
     { id: 'measure', sample: '°C · kg · dl', name: 'Mérés', desc: 'Mérőeszközök és mértékegységek.', gen: K4.measure },
     { id: 'weather', sample: '☀️ 🌧️ 💨', name: 'Időjárás', desc: 'Időjárásjelek, csapadék, mérőeszközök.', gen: K4.weather },
@@ -2314,6 +2555,10 @@ function staticQ(q, i) {
   if (q.type === 'choice') body.append(h('div', { class: 'pq-o' }, q.options.map((o, k) => h('span', { class: 'pq-opt' }, h('b', null, 'ABCDEF'[k] + ')'), h('span', { html: o.html })))));
   else if (q.type === 'input') body.append(h('div', { class: 'pq-a' }, 'Válasz: ', h('span', { class: 'pq-line' })));
   else if (q.type === 'find') body.append(h('div', { class: 'pq-grid' }, q.cells.map(c => h('span', null, c))));
+  else if (q.type === 'sort') body.append(h('div', { class: 'pq-words' }, q.items.map(it => h('span', null, it.text))), h('div', { class: 'pq-sort', style: `--n:${q.bins.length}` }, q.bins.map(b => h('div', null, b.label))));
+  else if (q.type === 'label') { const f = h('div', { class: 'pq-lfig', html: q.img }); q.spots.forEach((s, k) => f.append(h('span', { style: `left:${s.x}%;top:${s.y}%` }, String(k + 1)))); body.append(f, h('div', { class: 'pq-words' }, 'Írd a számok mellé: ', ...q.labels.map(l => h('span', null, l.text)))); }
+  else if (q.type === 'set') body.append(h('div', { class: 'pq-v', html: q.kind === 'thermo' ? thermo(-10).replace(/<rect x="52"[^>]*class="f-red"\/>/, '') : compass(null, [0, 2, 4, 6]) }), h('div', { class: 'pq-a' }, q.kind === 'thermo' ? 'Színezd be a hőmérőt a megfelelő magasságig!' : 'Rajzold be a nyilat!'));
+  else if (q.type === 'riddle') body.append(h('ol', { class: 'pq-clues' }, q.clues.map(c => h('li', null, c))), h('div', { class: 'pq-o' }, q.options.map((o, k) => h('span', { class: 'pq-opt' }, h('b', null, 'ABCDEF'[k] + ')'), h('span', { html: o.html })))));
   else if (q.type === 'build') {
     const words = q.answer.some(x => x.length > 3);
     body.append(h('div', { class: 'pq-tiles' }, q.tiles.map(t => h('span', null, t))), h('div', { class: 'pq-a' }, words ? h('span', { class: 'pq-line wide' }) : q.answer.map(() => h('span', { class: 'pq-box' }))));
@@ -2324,6 +2569,8 @@ function keyText(q) {
   if (q.type === 'choice') { const k = q.options.findIndex(o => o.value === q.answer); const txt = stripTags(q.options[k] && q.options[k].html); return `${'ABCDEF'[k]})${txt ? ' ' + txt : q.answerText ? ' ' + stripTags(q.answerText) : ''}`; }
   if (q.type === 'find') return `${q.targets.length} db: ${q.targets.map(i => i + 1).join(', ')}. hely`;
   if (q.type === 'build') return q.answer.join(q.answer.some(x => x.length > 3) ? ', ' : '');
+  if (q.type === 'sort' || q.type === 'label' || q.type === 'set') return stripTags(String(q.answerText).replace(/<br>/g, '; '));
+  if (q.type === 'riddle') { const k = q.options.findIndex(o => o.value === q.answer); return `${'ABCDEF'[k]}) ${q.answer}`; }
   return String(q.answer).replace('-', '−');
 }
 
