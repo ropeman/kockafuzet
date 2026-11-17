@@ -740,6 +740,166 @@ K4.terkepolv = L => {
   if (L === 2) return r < .3 ? symQ() : r < .5 ? colorQ() : r < .8 ? fact() : scaleQ();
   return r < .5 ? scaleQ() : r < .7 ? symQ() : r < .85 ? colorQ() : fact();
 };
+/* ---------- NAT 2020 / kerettanterv: further units of grade 4 ---------- */
+const topicFrom = (facts, extras) => L => { const ex = (extras[L] || []).filter(Boolean); if (ex.length && Math.random() < ex.length * .15) return pick(ex)(L); const pool = facts.filter(f => f[0] === L); return factQ(pick(pool.length ? pool : facts)); };
+
+/* Hang és fény */
+const SOUND_LIGHT = [
+  [1, 'Mi továbbítja a hangot a fülünkig?', 'a levegő rezgése', ['a fény', 'a szél', 'a meleg'], 'A hangforrás rezeg, a rezgést a levegő viszi tovább a fülünkig.'],
+  [1, 'Mivel érzékeljük a hangokat?', 'a fülünkkel', ['a szemünkkel', 'az orrunkkal', 'a nyelvünkkel'], 'A hallás érzékszerve a fül.'],
+  [1, 'Mi keletkezik, ha egy tárgy útját állja a fénynek?', 'árnyék', ['szivárvány', 'visszhang', 'tükörkép'], 'A fény nem tud átmenni az átlátszatlan tárgyon, mögötte sötét folt, árnyék lesz.'],
+  [1, 'Mi veri vissza a fényt, úgyhogy látjuk benne magunkat?', 'a tükör', ['a fal', 'a fa', 'a kő'], 'A sima, fényes felület visszaveri a fényt.'],
+  [1, 'Melyik hang mély?', 'a medve brummogása', ['a kismadár csipogása', 'a síp hangja', 'a szúnyog zümmögése'], 'A nagy testű állatok és a nagy hangszerek hangja általában mély.'],
+  [2, 'Mi a visszhang?', 'a hang visszaverődése egy falról vagy hegyoldalról', ['a nagyon halk hang', 'a madarak éneke', 'a fény visszaverődése'], 'A hang nekiütközik egy nagy felületnek, és visszajön hozzánk.'],
+  [2, 'Hogyan terjed a fény?', 'egyenes vonalban', ['csak körbe-körbe', 'cikcakkban', 'csak felfelé'], 'Ezért nem látunk be a sarok mögé.'],
+  [2, 'Mivé bontja a prizma a fehér fényt?', 'a szivárvány színeire', ['fekete és fehér csíkokra', 'hanggá', 'meleggé'], 'A fehér fény valójában sok szín keveréke.'],
+  [2, 'Miért hallunk hangot, amikor megpendítjük a gitár húrját?', 'mert a húr rezeg', ['mert a húr világít', 'mert a húr meleg lesz', 'mert a húr elszakad'], 'Minden hang rezgésből születik.'],
+  [2, 'Mit tehetsz a füled védelmében?', 'nem hallgatok túl hangos zenét fülhallgatóval', ['mindig nagyon hangosan hallgatok zenét', 'ceruzával tisztítom a fülem', 'semmit sem kell tennem'], 'A túl erős hang tartósan károsíthatja a hallást.'],
+  [3, 'Miért nincs hang a világűrben?', 'mert nincs levegő, ami továbbítaná', ['mert túl hideg van', 'mert túl sötét van', 'mert túl messze van a Nap'], 'A hanghoz kell valami (levegő, víz), ami rezgésbe jön.'],
+  [3, 'Mikor a legrövidebb az árnyékunk egy napsütéses napon?', 'délben', ['reggel', 'este', 'egész nap ugyanakkora'], 'Délben áll a Nap a legmagasabban, ezért ekkor a legrövidebb az árnyék.'],
+  [3, 'Miért látjuk a Holdat éjszaka?', 'mert visszaveri a Nap fényét', ['mert maga világít', 'mert a Föld megvilágítja lámpákkal', 'mert benne tűz ég'], 'A Hold nem fényforrás, csak visszaveri a fényt.'],
+  [3, 'Mi szükséges ahhoz, hogy lássunk egy tárgyat?', 'a tárgyról fény jusson a szemünkbe', ['a tárgy legyen hangos', 'a tárgy legyen meleg', 'csukott szem'], 'Sötétben ezért nem látunk semmit.']
+];
+const LIGHT_SORT = L => sortQ('Átlátszó, áttetsző vagy átlátszatlan? Válogasd szét!', { 'átlátszó': ['ablaküveg', 'tiszta víz', 'celofán', 'szemüveglencse'], 'áttetsző': ['tejüveg', 'sütőpapír', 'jégvirágos ablak', 'vékony függöny'], 'átlátszatlan': ['fa', 'kő', 'karton', 'tégla', 'vaslap'] }, L === 1 ? 1 : 2, { hint: 'Átlátszó: tisztán átlátsz rajta. Áttetsző: átjut a fény, de homályosan látsz. Átlátszatlan: a fény nem jut át.' });
+K4.hangfeny = topicFrom(SOUND_LIGHT, { 1: [LIGHT_SORT], 2: [LIGHT_SORT], 3: [LIGHT_SORT] });
+
+/* Mozgás */
+const MOTION = [
+  [1, 'Hogyan mozog a hal?', 'úszik', ['repül', 'ugrik', 'kúszik'], 'A hal uszonyaival úszik a vízben.'],
+  [1, 'Hogyan mozog a kígyó?', 'kúszik', ['repül', 'fut', 'ugrik'], 'Nincs lába, a testével kígyózva halad.'],
+  [1, 'Melyik állat repül?', 'a denevér', ['a vakond', 'a sün', 'a csiga'], 'A denevér emlős, de bőrszárnyaival repül.'],
+  [1, 'Mi segíti a kacsát az úszásban?', 'az úszóhártyás lába', ['a hosszú farka', 'a csőre', 'a fülei'], 'Az ujjai között bőrhártya van, mint egy evező.'],
+  [1, 'Mi segíti a vakondot az ásásban?', 'a lapátszerű mellső lába', ['a hosszú farka', 'a szárnya', 'a nagy füle'], 'Erős, széles mellső lábával túrja a földet.'],
+  [2, 'Milyen mozgás, amikor az elinduló autó egyre gyorsabban megy?', 'gyorsuló mozgás', ['egyenletes mozgás', 'lassuló mozgás', 'nem mozog'], 'Ha egyre nagyobb lesz a sebesség, a mozgás gyorsuló.'],
+  [2, 'Milyen mozgás, amikor a mozgólépcső mindig ugyanolyan sebesen halad?', 'egyenletes mozgás', ['gyorsuló mozgás', 'lassuló mozgás', 'ütközés'], 'Ha a sebesség nem változik, a mozgás egyenletes.'],
+  [2, 'Mi történik, amikor a biciklis fékez?', 'lassul a mozgása', ['gyorsul a mozgása', 'egyenletesen halad tovább', 'felfelé repül'], 'A fékezés csökkenti a sebességet.'],
+  [2, 'Mi segíti a madarat a repülésben?', 'a szárnya, a tollai és a könnyű csontjai', ['a nehéz csontjai', 'a négy lába', 'a pikkelyei'], 'A madár csontjai üregesek, ezért könnyűek.'],
+  [2, 'Mivel kapaszkodik a mókus a fán?', 'éles karmaival', ['úszóhártyájával', 'a csőrével', 'a patájával'], 'Ügyesen fut fel a fatörzsön, és ágról ágra ugrál.'],
+  [2, 'Melyik a ló leglassabb járásmódja?', 'lépés', ['ügetés', 'vágta', 'galopp'], 'A ló járásmódjai: lépés, ügetés, vágta (galopp).'],
+  [3, 'Mi segíti a lovat a gyors futásban?', 'hosszú, erős lábai és kemény patái', ['rövid lábai', 'úszóhártyája', 'szárnyai'], 'A ló testfelépítése a gyors futáshoz alkalmazkodott.'],
+  [3, 'Mi történik, amikor két biliárdgolyó összeütközik?', 'megváltozik a mozgásuk iránya és sebessége', ['mindkettő megáll örökre', 'összeolvadnak', 'semmi sem változik'], 'Ütközéskor a testek mozgása megváltozik.'],
+  [3, 'Miért áramvonalas a hal teste?', 'hogy könnyebben haladjon a vízben', ['hogy jobban lásson', 'hogy repülni tudjon', 'hogy melegebb legyen'], 'A hegyes, sima test könnyen hasítja a vizet.'],
+  [3, 'Melyik szárazföldi állat a leggyorsabb futó?', 'a gepárd', ['a ló', 'a nyúl', 'az elefánt'], 'Rövid távon a gepárd fut a leggyorsabban.']
+];
+const MOVE_SORT = L => sortQ('Hogyan mozognak? Válogasd szét!', { 'repül': [['fecske', '🐦'], ['denevér', '🦇'], ['lepke', '🦋'], ['méh', '🐝']], 'úszik': [['ponty', '🐟'], ['delfin', '🐬'], ['bálna', '🐋']], 'ugrik': [['béka', '🐸'], ['kenguru', '🦘'], ['szöcske', '🦗']], 'kúszik, csúszik': [['kígyó', '🐍'], ['csiga', '🐌'], ['giliszta', '🪱']] }, L === 3 ? 2 : 1, { hint: 'Gondold végig, mije van az állatnak: szárnya, uszonya, erős hátsó lába, vagy egyáltalán nincs lába.' });
+K4.mozgas = topicFrom(MOTION, { 1: [MOVE_SORT], 2: [MOVE_SORT], 3: [MOVE_SORT] });
+
+/* Haszonnövények, háziállatok, idénygyümölcsök */
+const FARM = [
+  [1, 'Mit kapunk a tehéntől?', 'tejet', ['gyapjút', 'tojást', 'mézet'], 'A tehén tejéből vaj, sajt, túró is készül.'],
+  [1, 'Mit kapunk a juhtól?', 'gyapjút', ['tojást', 'mézet', 'tollat'], 'A juh gyapjából fonal, abból pulóver készül.'],
+  [1, 'Mit kapunk a méhektől?', 'mézet', ['tejet', 'gyapjút', 'tojást'], 'A méhek a virágok nektárjából készítik.'],
+  [1, 'Hogy hívják a tehén kicsinyét?', 'borjú', ['csikó', 'bárány', 'malac'], 'Tehén – borjú, ló – csikó, juh – bárány, disznó – malac.'],
+  [1, 'Hogy hívják a ló kicsinyét?', 'csikó', ['borjú', 'gida', 'malac'], 'Tehén – borjú, ló – csikó, juh – bárány, disznó – malac.'],
+  [1, 'Hogy hívják a juh kicsinyét?', 'bárány', ['csikó', 'borjú', 'gida'], 'Tehén – borjú, ló – csikó, juh – bárány, kecske – gida.'],
+  [1, 'Hogy hívják a kecske kicsinyét?', 'gida', ['bárány', 'csikó', 'borjú'], 'A kecske kicsinye a gida.'],
+  [1, 'Melyik növény magjából lesz a liszt, abból pedig a kenyér?', 'a búza', ['a napraforgó', 'a cukorrépa', 'a burgonya'], 'A búzát learatják, megőrlik, a lisztből kenyeret sütnek.'],
+  [2, 'Miből készül a cukor nálunk?', 'cukorrépából', ['búzából', 'burgonyából', 'napraforgóból'], 'A cukorrépa gyökerében sok cukor van.'],
+  [2, 'Melyik növény magjából préselnek étolajat?', 'a napraforgóéból', ['a búzáéból', 'a cukorrépáéból', 'a burgonyáéból'], 'A napraforgó és a repce magjából olaj készül.'],
+  [2, 'Melyik részét esszük a burgonyának?', 'a gumóját', ['a virágát', 'a levelét', 'a termését'], 'A gumó a föld alatt fejlődik.'],
+  [2, 'Mi a neve a tyúk párjának?', 'kakas', ['bika', 'kos', 'bak'], 'Tyúk – kakas, tehén – bika, juh – kos, kecske – bak.'],
+  [2, 'Mi a neve a tehén párjának?', 'bika', ['kakas', 'kos', 'kan'], 'Tyúk – kakas, tehén – bika, juh – kos, disznó – kan.'],
+  [2, 'Mi a neve a juh párjának?', 'kos', ['bika', 'bak', 'kakas'], 'Juh – kos, kecske – bak, tehén – bika.'],
+  [2, 'Melyik gyümölcs érik nálunk ősszel?', 'a szőlő', ['a cseresznye', 'a kajszibarack', 'a görögdinnye'], 'Ősszel érik a szőlő, az alma, a dió.'],
+  [2, 'Melyik gyümölcs érik nálunk kora nyáron?', 'a cseresznye', ['a szőlő', 'a dió', 'a gesztenye'], 'Júniusban érik a cseresznye.'],
+  [3, 'Miért jó az idényzöldséget és -gyümölcsöt választani?', 'frissebb, és nem kell messziről szállítani', ['mert drágább', 'mert télen terem', 'mert nincs benne vitamin'], 'Ami nálunk éppen megérik, azt nem kell sokáig szállítani és tárolni.'],
+  [3, 'Mi a háziállat?', 'olyan állat, amelyet az ember tart és gondoz', ['olyan állat, amely csak az erdőben él', 'csak a kutya', 'minden vadon élő állat'], 'A háziállatokat az ember szelídítette meg, és gondoskodik róluk.'],
+  [3, 'Mi a haszonnövény?', 'olyan növény, amelyet az ember termeszt valamilyen haszonért', ['minden vadvirág', 'a gyom', 'csak a fa'], 'Például élelemnek, takarmánynak, olajnak, cukornak.'],
+  [3, 'Miből készül a vászon (régen nagyon sokat termesztették)?', 'lenből vagy kenderből', ['búzából', 'cukorrépából', 'tökből'], 'A len és a kender szárának rostjaiból fonalat, abból vásznat szőttek.']
+];
+const BREAD = { type: 'build', prompt: 'Hogyan lesz a búzából kenyér? Rakd sorba! Koppints rájuk sorban.', answer: ['vetés', 'aratás', 'őrlés', 'sütés'], hint: 'Először elvetik a búzát, nyáron learatják, a malomban megőrlik lisztté, végül a pék kenyeret süt.', explain: 'vetés → aratás → őrlés → sütés' };
+const breadQ = () => ({ ...BREAD, tiles: shuffle(BREAD.answer) });
+const FARM_SORT = L => Math.random() < .5
+  ? sortQ('Háziállat vagy vadon élő állat? Válogasd szét!', { 'háziállat': [['tehén', '🐄'], ['tyúk', '🐔'], ['kecske', '🐐'], ['liba', '🪿'], ['ló', '🐴'], ['juh', '🐑']], 'vadon élő': [['róka', '🦊'], ['őz', '🦌'], ['vaddisznó', '🐗'], ['mókus', '🐿️'], ['farkas', '🐺']] }, L === 1 ? 2 : 3, { hint: 'A háziállatokról az ember gondoskodik. A vadon élők maguk keresik a táplálékukat.' })
+  : sortQ('Mikor érik nálunk? Válogasd szét!', { 'tavasszal': ['spárga', 'sóska', 'újhagyma', 'retek'], 'nyáron': ['cseresznye', 'kajszibarack', 'görögdinnye', 'paradicsom', 'uborka'], 'ősszel': ['szőlő', 'alma', 'dió', 'tök', 'gesztenye'] }, L === 3 ? 2 : 1, { hint: 'Tavasszal a korai zöldségek, nyáron a cseresznye, a barack és a dinnye, ősszel a szőlő, az alma és a dió.' });
+K4.haszon = topicFrom(FARM, { 1: [FARM_SORT], 2: [FARM_SORT, breadQ], 3: [FARM_SORT, breadQ] });
+
+/* Környezetvédelem */
+const ECO = [
+  [1, 'Melyik szelektív kukába dobod a régi újságot?', 'a kékbe (papír)', ['a sárgába (műanyag)', 'a zöldbe (üveg)', 'a barnába (bio)'], 'Kék: papír. Sárga: műanyag és fém. Zöld: üveg. Barna: komposztálható hulladék.'],
+  [1, 'Melyik szelektív kukába dobod az üres műanyag flakont?', 'a sárgába (műanyag)', ['a kékbe (papír)', 'a zöldbe (üveg)', 'a barnába (bio)'], 'Kék: papír. Sárga: műanyag és fém. Zöld: üveg. Barna: komposztálható hulladék.'],
+  [1, 'Melyik szelektív kukába dobod az üres befőttesüveget?', 'a zöldbe (üveg)', ['a kékbe (papír)', 'a sárgába (műanyag)', 'a barnába (bio)'], 'Kék: papír. Sárga: műanyag és fém. Zöld: üveg. Barna: komposztálható hulladék.'],
+  [1, 'Hogyan takarékoskodhatsz a vízzel fogmosáskor?', 'elzárom a csapot, amíg mosom a fogam', ['végig folyatom a vizet', 'kétszer annyi vizet használok', 'nem mosok fogat'], 'Így sok liter víz marad meg minden nap.'],
+  [1, 'Mit tegyél, ha kimész a szobából?', 'lekapcsolom a villanyt', ['égve hagyom a villanyt', 'bekapcsolom a tévét is', 'kinyitom az ablakot'], 'Így áramot takarítunk meg.'],
+  [1, 'Szabad-e leszakítani egy védett virágot?', 'nem, a védett növényeket nem szabad leszedni', ['igen, ha szép', 'igen, ha csak egyet', 'igen, ha senki sem látja'], 'A védett növényeket és állatokat a törvény is óvja.'],
+  [2, 'Mi kerülhet a komposztba?', 'almacsutka, krumplihéj, falevél', ['műanyag zacskó', 'elem', 'üvegpalack'], 'A komposztban a növényi maradékokból értékes táptalaj lesz.'],
+  [2, 'Hová kerüljön a lemerült elem?', 'külön elemgyűjtőbe (például a boltban)', ['a kommunális kukába', 'a komposztba', 'a patakba'], 'Az elemben mérgező anyagok vannak.'],
+  [2, 'Melyik bomlik le a leggyorsabban a természetben?', 'a banánhéj', ['a műanyag palack', 'az üvegpalack', 'az alumíniumdoboz'], 'A növényi maradékokat a lebontók néhány hét alatt lebontják.'],
+  [2, 'Melyik megújuló energiaforrás?', 'a napenergia', ['a szén', 'a kőolaj', 'a földgáz'], 'Megújuló: nap, szél, víz. Ezek nem fogynak el.'],
+  [2, 'Miért jó a szelektív hulladékgyűjtés?', 'mert a szétválogatott hulladékból új dolgok készülhetnek', ['mert így több lesz a szemét', 'mert így szebb a kuka', 'nem jó semmire'], 'Ezt hívjuk újrahasznosításnak.'],
+  [2, 'Mi a nemzeti park célja?', 'hogy megvédje egy táj élővilágát és értékeit', ['hogy gyárat építsenek benne', 'hogy szemetet gyűjtsenek oda', 'hogy kivágják az erdőt'], 'Hazánkban 10 nemzeti park van.'],
+  [3, 'Melyik nem megújuló energiaforrás?', 'a kőolaj', ['a szélenergia', 'a napenergia', 'a víz energiája'], 'A szén, a kőolaj és a földgáz egyszer elfogy, és szennyezi a levegőt.'],
+  [3, 'Mi szennyezi a levegőt?', 'az autók és gyárak füstje', ['a fák', 'a szél', 'az eső'], 'Ezért jó gyalog, biciklivel vagy tömegközlekedéssel menni.'],
+  [3, 'Mit jelent az újrahasznosítás?', 'a hulladékból új terméket készítenek', ['a szemetet elássák', 'a szemetet elégetik', 'mindent kidobunk'], 'Például a régi papírból új füzet lehet.'],
+  [3, 'Hazánk legnagyobb (legnehezebb) repülő madara, fokozottan védett:', 'a túzok', ['a fecske', 'a veréb', 'a cinege'], 'A túzok az Alföld füves pusztáin él.'],
+  [3, 'Mi volt az ártéri (fok-) gazdálkodás lényege?', 'az áradó folyó vizét csatornákon vezették az árterekre, és ott halásztak, legeltettek', ['a folyót teljesen elzárták', 'az ártéren gyárakat építettek', 'a folyóból kiszivattyúzták a vizet'], 'Az emberek a természet ritmusához igazodtak, és megőrizték az ártér élővilágát.']
+];
+const BIN_SORT = L => sortQ('Melyik kukába való? Válogasd szét!', { '🟦 papír': ['újság', 'kartondoboz', 'régi füzet', 'papírzacskó'], '🟨 műanyag': ['műanyag flakon', 'joghurtos pohár', 'fóliazacskó', 'üdítős kupak'], '🟩 üveg': ['befőttesüveg', 'üvegpalack', 'parfümös üveg'], '🟫 bio': ['almacsutka', 'banánhéj', 'krumplihéj', 'falevél'] }, L === 3 ? 2 : 1, { hint: 'Kék: papír. Sárga: műanyag. Zöld: üveg. Barna: komposztálható, növényi hulladék.' });
+K4.kornyvedelem = topicFrom(ECO, { 1: [BIN_SORT], 2: [BIN_SORT], 3: [BIN_SORT] });
+
+/* Idő és naptár */
+const MONTHS = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
+const DAYS31 = ['január', 'március', 'május', 'július', 'augusztus', 'október', 'december'];
+const TIME_FACTS = [
+  [1, 'Hány nap van egy héten?', '7', ['5', '10', '12'], 'Hétfő, kedd, szerda, csütörtök, péntek, szombat, vasárnap.'],
+  [1, 'Hány hónapból áll egy év?', '12', ['10', '7', '52'], 'Januártól decemberig 12 hónap.'],
+  [1, 'Melyik a téli hónap?', 'január', ['július', 'április', 'szeptember'], 'Téli hónapok: december, január, február.'],
+  [1, 'Melyik a nyári hónap?', 'július', ['január', 'október', 'március'], 'Nyári hónapok: június, július, augusztus.'],
+  [1, 'Melyik napszak jön a délután után?', 'este', ['reggel', 'délelőtt', 'dél'], 'Reggel, délelőtt, dél, délután, este, éjszaka.'],
+  [1, 'Melyik évszakban van a karácsony?', 'télen', ['nyáron', 'tavasszal', 'ősszel'], 'Karácsony december 24–26.'],
+  [2, 'Hány napból áll egy év?', '365 (szökőévben 366)', ['100', '300', '52'], 'Szökőévben február 29 napos.'],
+  [2, 'Hány napos a február szökőévben?', '29', ['28', '30', '31'], 'Négyévente van szökőév.'],
+  [2, 'Hány év egy évtized?', '10', ['100', '5', '1000'], 'Évtized: 10 év. Évszázad: 100 év. Évezred: 1000 év.'],
+  [2, 'Hány év egy évszázad?', '100', ['10', '50', '1000'], 'Évtized: 10 év. Évszázad: 100 év. Évezred: 1000 év.'],
+  [2, 'Hány hét van körülbelül egy évben?', '52', ['12', '30', '100'], '365 nap : 7 = 52 hét és 1 nap.'],
+  [3, 'Hány napos a november?', '30', ['31', '28', '29'], 'Az öklödön számolhatod: a bütyök 31 napos hónap, a mélyedés 30 (vagy február).'],
+  [3, 'Melyik évszázadban élünk?', 'a 21. században', ['a 20. században', 'a 19. században', 'a 2. században'], 'A 2001 és 2100 közötti évek tartoznak a 21. századba.'],
+  [3, 'Mit mutat a naptár?', 'az év napjait, heteit és hónapjait', ['a hőmérsékletet', 'a világtájakat', 'az időjárást'], 'A naptárban az ünnepeket és a fontos dátumokat is megtaláljuk.']
+];
+const monthsBuild = L => { const st = ri(0, L === 3 ? 11 : 8), n = L === 1 ? 3 : 4, ans = Array.from({ length: n }, (_, i) => MONTHS[(st + i) % 12]); return { type: 'build', prompt: 'Rakd sorba a hónapokat! Koppints rájuk sorban.', answer: ans, tiles: shuffle(ans), hint: 'Január, február, március, április, május, június, július, augusztus, szeptember, október, november, december.', explain: ans.join(' → ') }; };
+const lifeBuild = () => { const ans = ['csecsemőkor', 'kisgyermekkor', 'iskoláskor', 'serdülőkor', 'felnőttkor', 'időskor']; const k = ri(0, 2), part = ans.slice(k, k + 4); return { type: 'build', prompt: 'Rakd sorba az ember életszakaszait! Koppints rájuk sorban.', answer: part, tiles: shuffle(part), hint: 'Csecsemőkor, kisgyermekkor, iskoláskor, serdülőkor, felnőttkor, időskor.', explain: part.join(' → ') }; };
+const monthDays = () => { const m = pick(MONTHS), d = m === 'február' ? '28 vagy 29' : DAYS31.includes(m) ? '31' : '30'; return mcq(`Hány napos ${artOf(m)} <b>${m}</b>?`, d, ['31', '30', '28 vagy 29', '27'].filter(x => x !== d).slice(0, 3), { fmt: v => v, hint: 'Ökölszámolás: a bütykök a 31 napos hónapok, a mélyedések a 30 naposak (és a február).' }); };
+K4.ido = topicFrom(TIME_FACTS, { 1: [monthsBuild], 2: [monthsBuild, lifeBuild], 3: [lifeBuild, monthDays] });
+
+/* additions to existing topics */
+SPACE_FACTS.push(
+  [2, 'Mi az a csillagkép?', 'csillagok csoportja, amelyet egy alakzatnak képzelünk', ['egy bolygó', 'egy holdfázis', 'egy felhő'], 'Ilyen a Göncölszekér, az Orion vagy a Kis Göncöl.'],
+  [2, 'Melyik csillagkép segít megtalálni a Sarkcsillagot?', 'a Göncölszekér', ['az Orion', 'a Skorpió', 'a Hattyú'], 'A Göncölszekér hátsó két csillagát meghosszabbítva eljutunk a Sarkcsillaghoz.'],
+  [3, 'Ki fordította elsőként távcsövét az égbolt felé, és fedezte fel a Jupiter holdjait?', 'Galileo Galilei', ['Kolumbusz Kristóf', 'Isaac Newton', 'Neil Armstrong'], '1609-ben vizsgálta az eget távcsővel.'],
+  [3, 'Ki volt az első magyar űrhajós?', 'Farkas Bertalan', ['Neil Armstrong', 'Jurij Gagarin', 'Kapu Tibor'], 'Farkas Bertalan 1980-ban repült az űrbe; Kapu Tibor 2025-ben, a második magyarként.'],
+  [3, 'Mire való a távcső?', 'a távoli tárgyakat közelebbinek és nagyobbnak mutatja', ['a hőmérsékletet méri', 'a hangot erősíti', 'az időt méri'], 'A csillagászok távcsővel vizsgálják az égitesteket.']);
+MAP_FACTS.push(
+  [2, 'Melyik térkép mutatja a megyéket, a határokat és a településeket?', 'a közigazgatási térkép', ['a domborzati térkép', 'a turistatérkép', 'az alaprajz'], 'A közigazgatási térképen minden megye más színű.'],
+  [2, 'Melyik térkép mutatja színekkel a hegyeket, dombokat és síkságokat?', 'a domborzati térkép', ['a közigazgatási térkép', 'az autóstérkép', 'az alaprajz'], 'Zöld: síkság, sárga: dombság, barna: hegység.'],
+  [2, 'Melyik térképen találod a jelzett turistautakat?', 'a turistatérképen', ['az autóstérképen', 'a közigazgatási térképen', 'a földgömbön'], 'Az erdei utakat színes jelzések (pl. kék sáv, piros kereszt) mutatják.'],
+  [2, 'Melyik térképet használod, ha autóval utazol?', 'az autóstérképet', ['a turistatérképet', 'a domborzati térképet', 'az alaprajzot'], 'Ezen az utak, az autópályák és a benzinkutak látszanak.']);
+MORE.health.push(
+  [1, 'Hová mész, ha beteg vagy, és meg kell vizsgálni?', 'a háziorvoshoz (körzeti orvoshoz)', ['a postára', 'a fodrászhoz', 'a pékségbe'], 'A háziorvos megvizsgál, és ha kell, gyógyszert ír fel.'],
+  [1, 'Hol kapod meg az orvos által felírt gyógyszert?', 'a gyógyszertárban (patikában)', ['a könyvtárban', 'a játékboltban', 'az iskolában'], 'A gyógyszerész adja ki a gyógyszert.'],
+  [2, 'Hogyan védheted a szemedet?', 'jó fénynél olvasok, és szünetet tartok a képernyő előtt', ['sötétben olvasok', 'egész nap a telefont nézem', 'a napba nézek'], 'A szem a legfontosabb érzékszervünk, vigyázz rá!'],
+  [2, 'Mi okozhat túlsúlyt?', 'sok édesség és kevés mozgás', ['sok zöldség', 'sok víz', 'sok alvás'], 'A kiegyensúlyozott étrend és a mozgás segít megőrizni az egészséget.'],
+  [3, 'Mi jellemző az influenzára?', 'magas láz, fáradtság, izomfájdalom', ['csak egy kis orrfolyás', 'viszkető pöttyök', 'fogfájás'], 'Az influenza súlyosabb a náthánál, ilyenkor pihenni kell.'],
+  [3, 'Hová viszik a mentők a súlyos beteget?', 'a kórházba', ['a gyógyszertárba', 'az iskolába', 'a fogorvoshoz'], 'A kórházban orvosok és ápolók gyógyítják a betegeket.']);
+/* item-based generators: many different questions from the sort lists */
+const fromGroups = (groups, ask, hint, opts = {}) => () => { const bins = Object.keys(groups), b = pick(bins), it = pick(groups[b]), w = Array.isArray(it) ? it[0] : it, em = Array.isArray(it) ? it[1] : '';
+  return { type: 'choice', prompt: ask(w), visual: em ? `<div class="big-emoji">${em}</div>` : undefined, answer: b, options: (opts.keep ? bins : shuffle(bins)).map(v => ({ value: v, html: v })), answerText: b, hint }; };
+const lightItem = fromGroups({ 'átlátszó': ['ablaküveg', 'tiszta víz', 'celofán', 'szemüveglencse', 'befőttesüveg'], 'áttetsző': ['tejüveg', 'sütőpapír', 'jégvirágos ablak', 'vékony függöny', 'zsírpapír'], 'átlátszatlan': ['fa', 'kő', 'karton', 'tégla', 'vaslap', 'könyv'] },
+  w => `Átlátszó, áttetsző vagy átlátszatlan: <b>${w}</b>?`, 'Átlátszó: tisztán átlátsz rajta. Áttetsző: átjut a fény, de homályosan látsz. Átlátszatlan: a fény nem jut át.', { keep: true });
+const moveItem = fromGroups({ 'repül': [['fecske', '🐦'], ['denevér', '🦇'], ['lepke', '🦋'], ['méh', '🐝'], ['sas', '🦅'], ['katica', '🐞']], 'úszik': [['ponty', '🐟'], ['delfin', '🐬'], ['bálna', '🐋'], ['cápa', '🦈']], 'ugrik': [['béka', '🐸'], ['kenguru', '🦘'], ['szöcske', '🦗']], 'kúszik, csúszik': [['kígyó', '🐍'], ['csiga', '🐌'], ['giliszta', '🪱']] },
+  w => `Hogyan mozog ${artOf(w)} <b>${w}</b>?`, 'Gondold végig, mije van az állatnak: szárnya, uszonya, erős hátsó lába, vagy egyáltalán nincs lába.');
+const binItem = fromGroups({ 'kék (papír)': ['újság', 'kartondoboz', 'régi füzet', 'papírzacskó', 'tojástartó'], 'sárga (műanyag)': ['műanyag flakon', 'joghurtos pohár', 'fóliazacskó', 'üdítős kupak', 'samponos flakon'], 'zöld (üveg)': ['befőttesüveg', 'üvegpalack', 'parfümös üveg', 'lekváros üveg'], 'barna (bio)': ['almacsutka', 'banánhéj', 'krumplihéj', 'falevél', 'levágott fű'] },
+  w => `Melyik szelektív kukába való: <b>${w}</b>?`, 'Kék: papír. Sárga: műanyag. Zöld: üveg. Barna: komposztálható, növényi hulladék.', { keep: true });
+const YOUNG = [['tehén', 'borjú'], ['ló', 'csikó'], ['juh', 'bárány'], ['disznó', 'malac'], ['kecske', 'gida'], ['tyúk', 'csibe'], ['kutya', 'kölyökkutya'], ['macska', 'kiscica'], ['kacsa', 'kiskacsa']];
+const youngItem = () => { const [a, y] = pick(YOUNG); return mcq(`Hogy hívják ${artOf(a)} <b>${a}</b> kicsinyét?`, y, shuffle(YOUNG.filter(x => x[1] !== y)).slice(0, 3).map(x => x[1]), { fmt: v => v, hint: 'Tehén – borjú, ló – csikó, juh – bárány, disznó – malac, kecske – gida, tyúk – csibe.' }); };
+const PRODUCT = [['tehén', 'tej'], ['juh', 'gyapjú'], ['tyúk', 'tojás'], ['méh', 'méz'], ['liba', 'toll'], ['búza', 'liszt'], ['napraforgó', 'étolaj'], ['cukorrépa', 'cukor'], ['szőlő', 'must'], ['len', 'vászon']];
+const productItem = () => { const [a, p] = pick(PRODUCT); return mcq(`Mit ad nekünk, vagy mi készül belőle: <b>${a}</b>?`, p, shuffle(PRODUCT.filter(x => x[1] !== p)).slice(0, 3).map(x => x[1]), { fmt: v => v, hint: 'Tehén – tej, juh – gyapjú, tyúk – tojás, méh – méz, búza – liszt, napraforgó – olaj, cukorrépa – cukor.' }); };
+const monthAfter = () => { const i = ri(0, 11), m = MONTHS[i], nx = MONTHS[(i + 1) % 12]; return mcq(`Melyik hónap következik ${m} után?`, nx, shuffle(MONTHS.filter(x => x !== nx && x !== m)).slice(0, 3), { fmt: v => v, hint: MONTHS.join(', ') + '.' }); };
+const seasonOf = () => { const i = ri(0, 11), m = MONTHS[i], s = ['tél', 'tél', 'tavasz', 'tavasz', 'tavasz', 'nyár', 'nyár', 'nyár', 'ősz', 'ősz', 'ősz', 'tél'][i]; return { type: 'choice', prompt: `Melyik évszakhoz tartozik <b>${m}</b>?`, answer: s, options: ['tavasz', 'nyár', 'ősz', 'tél'].map(v => ({ value: v, html: v })), answerText: s, hint: 'Tavasz: március, április, május. Nyár: június, július, augusztus. Ősz: szeptember, október, november. Tél: december, január, február.' }; };
+K4.hangfeny = topicFrom(SOUND_LIGHT, { 1: [LIGHT_SORT, lightItem, lightItem], 2: [LIGHT_SORT, lightItem], 3: [LIGHT_SORT, lightItem] });
+K4.mozgas = topicFrom(MOTION, { 1: [MOVE_SORT, moveItem, moveItem], 2: [MOVE_SORT, moveItem], 3: [MOVE_SORT, moveItem] });
+K4.haszon = topicFrom(FARM, { 1: [FARM_SORT, youngItem, productItem], 2: [FARM_SORT, breadQ, productItem], 3: [FARM_SORT, breadQ, productItem] });
+K4.kornyvedelem = topicFrom(ECO, { 1: [BIN_SORT, binItem, binItem], 2: [BIN_SORT, binItem], 3: [BIN_SORT, binItem] });
+K4.ido = topicFrom(TIME_FACTS, { 1: [monthsBuild, monthAfter, seasonOf], 2: [monthsBuild, lifeBuild, monthAfter, seasonOf], 3: [lifeBuild, monthDays, monthAfter] });
 PAGES['kornyezet-4'] = {
   id: 'kornyezet-4', title: 'Környezetismeret', grade: 4,
   blurb: 'Halmazállapotok és mérés, időjárás, tűz, fény és mozgás, a növények és állatok, életközösségek, testünk és egészségünk, világtájak és térképolvasás, a Föld és a Naprendszer, folyóink és tavaink, hazánk tájai, megyéi és nevezetességei, Budapest hídjai. Egy kör 10 feladat.',
@@ -748,12 +908,17 @@ PAGES['kornyezet-4'] = {
     { id: 'ki', sample: '❓', name: 'Ki vagyok én?', desc: 'Találós kérdések: minél kevesebb tippből!', gen: K4.ki },
     { id: 'lab', sample: '🧪', name: 'Kísérletező', desc: 'Mit gondolsz? Próbáld ki! Mit láttál?', gen: K4.lab },
     { id: 'state', sample: 'jég · víz · gőz', name: 'Halmazállapotok', desc: 'Szilárd, folyékony, légnemű; olvadás, fagyás; a hőmérő.', gen: K4.state },
+    { id: 'ido', sample: '📅 ⏳', name: 'Idő és naptár', desc: 'Hónapok, napok, évszakok, életszakaszok.', gen: K4.ido },
     { id: 'measure', sample: '°C · kg · dl', name: 'Mérés', desc: 'Mérőeszközök és mértékegységek.', gen: K4.measure },
     { id: 'weather', sample: '☀️ 🌧️ 💨', name: 'Időjárás', desc: 'Időjárásjelek, csapadék, mérőeszközök.', gen: K4.weather },
     { id: 'energy', sample: '🔥 💡 🏃', name: 'Tűz, fény, mozgás', desc: 'Fényforrások, éghető anyagok, mozgásformák.', gen: K4.energy },
+    { id: 'hangfeny', sample: '🔊 💡', name: 'Hang és fény', desc: 'Rezgés, visszhang; árnyék, tükör, átlátszó anyagok.', gen: K4.hangfeny },
+    { id: 'mozgas', sample: '🐎 🐟 🦅', name: 'Mozgás', desc: 'Mozgásfajták; hogyan mozognak az állatok?', gen: K4.mozgas },
     { id: 'plant', sample: '🌱 🌼', name: 'A növények', desc: 'Részeik és szerepük, életszakaszok, ehető részek.', gen: K4.plant },
     { id: 'animal', sample: '🦇 🐋 🐧', name: 'Az állatok csoportjai', desc: 'Emlős, madár, hal, kétéltű, hüllő, rovar.', gen: K4.animal },
     { id: 'habitat', sample: '🌳 🌾 🌊', name: 'Életközösségek', desc: 'Erdő, mező, vízpart; tápláléklánc.', gen: K4.habitat },
+    { id: 'haszon', sample: '🌾 🐄 🍎', name: 'Haszonnövények, háziállatok', desc: 'Búza, cukorrépa, napraforgó; háziállatok és kicsinyeik; idénygyümölcsök.', gen: K4.haszon },
+    { id: 'kornyvedelem', sample: '♻️', name: 'Környezetvédelem', desc: 'Szelektív gyűjtés, komposzt, takarékosság, természetvédelem.', gen: K4.kornyvedelem },
     { id: 'body', sample: '👁️ 👂 ❤️', name: 'Testünk', desc: 'Érzékszervek, szervek és feladatuk.', gen: K4.body },
     { id: 'health', sample: '🩺 112', name: 'Egészségünk', desc: 'Egészséges szokások, betegségek, segélyhívás.', gen: K4.health },
     { id: 'compass', sample: 'É · K · D · Ny', name: 'Világtájak', desc: 'Fő- és mellékvilágtájak, tájékozódás.', gen: K4.compass },
