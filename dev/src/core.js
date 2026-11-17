@@ -106,11 +106,12 @@ const autoRead = () => store.get('tt.autoread', false);
 /* ===== router & shell ===== */
 const PAGES = {};
 const VIEWS = {};   // utility pages (parents' page, shared set, print) registered by features.js
-const SUBJ_NAV = { matek: ['Matematika', '#matek'], magyar: ['Magyar nyelv és olvasás', '#magyar'], jatek: ['Játékok', '#jatekok'] };
+const SUBJ_NAV = { matek: ['Matematika', '#matek'], magyar: ['Magyar nyelv és olvasás', '#magyar'], kornyezet: ['Környezetismeret', '#kornyezet'], jatek: ['Játékok', '#jatekok'] };
 const subjOf = id => id.split('-')[0];
 const PLAN = [
   { s: 'matek', name: 'Matematika' },
-  { s: 'magyar', name: 'Magyar nyelv és olvasás' }
+  { s: 'magyar', name: 'Magyar nyelv és olvasás' },
+  { s: 'kornyezet', name: 'Környezetismeret', grades: [3, 4] }
 ];
 let S = null;            // active practice session
 let cleanups = [];
@@ -180,7 +181,7 @@ function showHub() {
   const rerender = () => showHub();
   const blocks = PLAN.map(sub => {
     const grid = h('div', { class: 'grades' });
-    [1, 2, 3, 4].forEach(g => {
+    (sub.grades || [1, 2, 3, 4]).forEach(g => {
       const id = `${sub.s}-${g}`, pg = PAGES[id];
       if (pg) {
         const got = pageStars(pg), max = pg.topics.length * 3;
@@ -394,7 +395,10 @@ function finish() {
 /* ===== answer UIs ===== */
 const UI = {
   choice(q, send) {
-    const el = h('div', { class: 'opts' });
+    const txt = o => String(o.html).includes('<svg') ? '' : String(o.html).replace(/<[^>]+>/g, '');
+    const longest = Math.max(...q.options.map(o => Math.max(...txt(o).split(' ').map(w => w.length))));
+    const total = Math.max(...q.options.map(o => txt(o).length));
+    const el = h('div', { class: 'opts' + (total > 26 ? ' xlong' : longest > 8 || total > 14 ? ' long' : '') });
     const btns = q.options.map(o => {
       const b = h('button', { class: 'opt', html: o.html, onclick: () => send(o.value) });
       b._v = o.value; return b;

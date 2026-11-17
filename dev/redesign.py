@@ -107,3 +107,6 @@ def apply(sub, js_get):
 
 ICON_MOD = ('<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5l3.6 7.6 8.2 1-6 5.7 1.5 8.2L16 22l-7.3 4 1.5-8.2-6-5.7 8.2-1z" '
             'fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>')
+
+ICON_ENV = ('<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+            '<path d="M7 25C7 13 15 6 27 5c0 12-7 20-19 20z"/><path d="M7 25c4-6 9-10 14-13"/></svg>')

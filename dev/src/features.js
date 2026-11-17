@@ -182,7 +182,7 @@ function setBuilder() {
   const spec = () => ({ page, topics: page.topics.filter(t => chosen.has(t.id)), level, n, seed: newSeed(), letters: page.id === 'magyar-1' ? [...Lset()] : null, key: true });
   const draw = () => {
     const sel = h('select', { id: 'b-page', onchange: e => { page = PAGES[e.target.value]; chosen = new Set([page.topics.find(t => printable(t)).id]); save(); draw(); } });
-    [['Matematika', 'matek'], ['Magyar', 'magyar'], ['Játékok', 'jatek']].forEach(([lab, s]) => {
+    [['Matematika', 'matek'], ['Magyar', 'magyar'], ['Környezetismeret', 'kornyezet'], ['Játékok', 'jatek']].forEach(([lab, s]) => {
       const g = h('optgroup', { label: lab });
       pages.filter(p => subjOf(p.id) === s).forEach(p => { const o = h('option', { value: p.id }, pageLabel(p.id)); if (p === page) o.selected = true; g.append(o); });
       if (g.children.length) sel.append(g);

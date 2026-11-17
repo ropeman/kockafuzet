@@ -27,7 +27,7 @@ SITE = "Kockafüzet"
 
 ORDER = ["core.js", "visuals.js",
          "matek-1.js", "matek-2.js", "matek-3.js", "matek-4.js",
-         "magyar-1.js", "magyar-2.js", "magyar-3.js", "magyar-4.js",
+         "magyar-1.js", "magyar-2.js", "magyar-3.js", "magyar-4.js", "kornyezet-4.js",
          "modes.js", "features.js", "explain.js", "review.js", "zz-boot.js"]
 
 # ---------- JS ----------
@@ -37,9 +37,9 @@ mode_ids = re.findall(r"^PAGES\['(jatek-[a-z]+)'\] = \{", body, re.M)
 consts = (f"const BASE = {BASE!r};\n"
           f"const PAGE_IDS = {json.dumps(page_ids)};\n"
           "const HERO_SVG = " + json.dumps(redesign.HERO) + ";\n"
-          "const SUBJ_ICON = " + json.dumps({"matek": redesign.ICON_MATEK, "magyar": redesign.ICON_MAGYAR, "jatek": redesign.ICON_MOD}) + ";\n"
+          "const SUBJ_ICON = " + json.dumps({"matek": redesign.ICON_MATEK, "magyar": redesign.ICON_MAGYAR, "kornyezet": redesign.ICON_ENV, "jatek": redesign.ICON_MOD}) + ";\n"
           "const SUBJ_DESC = " + json.dumps({"matek": "Számolás, számok, mértékegységek, geometria és szöveges feladatok.",
-                                             "magyar": "Betűk, olvasás, helyesírás, nyelvtan és szövegértés."}, ensure_ascii=False) + ";\n")
+                                             "magyar": "Betűk, olvasás, helyesírás, nyelvtan és szövegértés.", "kornyezet": "Természet, időjárás, testünk és egészségünk, hazánk tájai."}, ensure_ascii=False) + ";\n")
 app_js = "'use strict';\n" + consts + body.replace("'use strict';\n", "", 1)
 (OUT / "assets").mkdir(exist_ok=True)
 (OUT / "assets" / "app.js").write_text(app_js, encoding="utf-8")
@@ -86,7 +86,7 @@ def page_html(title, desc, data_page="", body_extra="", script=True, path=""):
 <body{dp}>
 <header class="site-head"><div class="site-head-in">
 <a class="brand" href="{BASE}">{redesign.LOGO}<span>Kockafüzet</span></a>
-<nav class="site-nav" aria-label="Tantárgyak"><a class="m" href="{BASE}#matek">Matematika</a><a class="h" href="{BASE}#magyar">Magyar</a><a class="x" href="{BASE}#jatekok">Játékok</a></nav>
+<nav class="site-nav" aria-label="Tantárgyak"><a class="m" href="{BASE}#matek">Matematika</a><a class="h" href="{BASE}#magyar">Magyar</a><a class="k" href="{BASE}#kornyezet">Környezet</a><a class="x" href="{BASE}#jatekok">Játékok</a></nav>
 <button class="theme-switch" type="button" id="theme-btn" role="switch" aria-checked="false" aria-label="Sötét mód" title="Világos / sötét mód"><span class="ts-ico ts-l">{SUN}</span><span class="ts-ico ts-r">{MOON}</span><span class="ts-knob"><span class="k-sun">{SUN}</span><span class="k-moon">{MOON}</span></span></button>
 </div></header>
 <main id="app">{body_extra}</main>
@@ -108,7 +108,7 @@ def write(rel, html):
 write("index.html", page_html(f"{SITE} – gyakorló feladatok alsósoknak",
       "Ingyenes, interaktív gyakorló feladatok alsósoknak matematikából és magyarból, a NAT témái szerint. Regisztráció és reklám nélkül."))
 
-SUBJ = {"matek": ("Matematika", "matematika"), "magyar": ("Magyar nyelv és olvasás", "magyar nyelv, olvasás és helyesírás")}
+SUBJ = {"matek": ("Matematika", "matematika"), "magyar": ("Magyar nyelv és olvasás", "magyar nyelv, olvasás és helyesírás"), "kornyezet": ("Környezetismeret", "környezetismeret")}
 for pid in page_ids:
     s, g = pid.split("-")
     name, words = SUBJ[s]

@@ -106,3 +106,18 @@ table.prog{width:100%;border-collapse:collapse;font-size:15px}
 a.btn{text-decoration:none}
 .pq-p .blank{color:transparent}
 @media print{.pq-v .vis{max-height:110px}.pq{padding:10px 0}}
+
+/* Környezetismeret: green */
+body[data-page^="kornyezet"],.subj-kornyezet{--accent:#2f9e44;--accent-deep:#237a35;--accent-soft:#e6f6e9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-page^="kornyezet"],:root:not([data-theme="light"]) .subj-kornyezet{--accent:#69db7c;--accent-deep:#40c057;--accent-soft:#1d3a26}}
+:root[data-theme="dark"] body[data-page^="kornyezet"],:root[data-theme="dark"] .subj-kornyezet{--accent:#69db7c;--accent-deep:#40c057;--accent-soft:#1d3a26}
+.site-nav a.k{color:#2f9e44}
+.is-dark .site-nav a.k{color:#69db7c}
+.vis.thermo{width:120px}.vis.compass{width:200px}.vis.plant{width:200px}
+
+/* answer buttons with long words or sentences */
+.opts.long{grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))}
+.opts.long .opt{font-size:clamp(18px,3.6vw,22px);overflow-wrap:anywhere;hyphens:auto}
+.opts.xlong{grid-template-columns:minmax(0,1fr);max-width:560px}
+.opts.xlong .opt{font:700 clamp(16px,3.2vw,19px)/1.35 var(--f-body);justify-content:flex-start;text-align:left;min-height:56px;padding:.6em 1em}
+.vis.thermo{width:150px}.vis.compass{width:240px}.vis.plant{width:250px}
