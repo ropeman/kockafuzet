@@ -90,3 +90,7 @@ function danubeSvg(o = {}) {
   if (!o.names) s += `<text x="${(mx + 13).toFixed(1)}" y="112" font-size="10" class="f-ink">Margit-sziget</text><text x="${(dcx(330) + 14).toFixed(1)}" y="334" font-size="10" class="f-ink">Csepel-sziget</text>`;
   return svg(260, 340, s, 'danube');
 }
+
+// questions keep only a short reference to a map; it is drawn when shown (keeps saved mistakes small)
+const mapRef = (o, region) => `<i data-map="${encodeURIComponent(JSON.stringify({ ...o, region: !!region }))}"></i>`;
+const expandVis = v => String(v || '').replace(/<i data-map="([^"]*)"><\/i>/g, (_, j) => { const o = JSON.parse(decodeURIComponent(j)); return o.region ? regionMap(o) : huMap(o); });

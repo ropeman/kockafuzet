@@ -295,7 +295,7 @@ function renderQ() {
       h('button', { class: 'btn small', onclick: () => speak(spoken) }, '🔊 Felolvasom'), ar));
   }
   card.append(h('div', { class: 'prompt', html: q.prompt }));
-  if (q.visual) card.append(h('div', { class: 'visual', html: q.visual }));
+  if (q.visual) card.append(h('div', { class: 'visual', html: expandVis(q.visual) }));
   if (q.say && canSpeak()) card.append(h('button', { class: 'btn small', onclick: () => speak(q.say) }, '🔊 Meghallgatom'));
 
   const ui = UI[q.type](q, resp => submit(resp));

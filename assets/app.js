@@ -300,7 +300,7 @@ function renderQ() {
       h('button', { class: 'btn small', onclick: () => speak(spoken) }, '🔊 Felolvasom'), ar));
   }
   card.append(h('div', { class: 'prompt', html: q.prompt }));
-  if (q.visual) card.append(h('div', { class: 'visual', html: q.visual }));
+  if (q.visual) card.append(h('div', { class: 'visual', html: expandVis(q.visual) }));
   if (q.say && canSpeak()) card.append(h('button', { class: 'btn small', onclick: () => speak(q.say) }, '🔊 Meghallgatom'));
 
   const ui = UI[q.type](q, resp => submit(resp));
@@ -945,6 +945,10 @@ function danubeSvg(o = {}) {
   if (!o.names) s += `<text x="${(mx + 13).toFixed(1)}" y="112" font-size="10" class="f-ink">Margit-sziget</text><text x="${(dcx(330) + 14).toFixed(1)}" y="334" font-size="10" class="f-ink">Csepel-sziget</text>`;
   return svg(260, 340, s, 'danube');
 }
+
+// questions keep only a short reference to a map; it is drawn when shown (keeps saved mistakes small)
+const mapRef = (o, region) => `<i data-map="${encodeURIComponent(JSON.stringify({ ...o, region: !!region }))}"></i>`;
+const expandVis = v => String(v || '').replace(/<i data-map="([^"]*)"><\/i>/g, (_, j) => { const o = JSON.parse(decodeURIComponent(j)); return o.region ? regionMap(o) : huMap(o); });
 
 /* ===== Kísérletező: predict → try → observe mini-lab ===== */
 // q = { type:'lab', lab:'heat'|'float'|'dissolve', prompt, options, answer, ...lab params }
@@ -2355,10 +2359,10 @@ const K4 = {
   },
   landform(L) {
     if (L === 1) {
-      const [q, a] = pick([['Hogy hívjuk a nagy, sík, alacsony területet?', 'síkság'], ['Hogy hívjuk az egymás melletti dombok csoportját?', 'dombság'], ['Hogy hívjuk az egymás melletti hegyek csoportját?', 'hegység'], ['Hogy hívjuk a két hegy vagy domb közötti mélyedést?', 'völgy'], ['Hogy hívjuk a kis, keskeny folyóvizet?', 'patak'], ['Hogy hívjuk a nagy folyóvizet?', 'folyó']]);
+      const [q, a] = pick([['Hogy hívjuk a nagy, sík, alacsony területet?', 'síkság'], ['Hogy hívjuk az egymás melletti dombok csoportját?', 'dombság'], ['Hogy hívjuk az egymás melletti hegyek csoportját?', 'hegység'], ['Hogy hívjuk a két hegy vagy domb közötti mélyedést?', 'völgy'], ['Hogy hívjuk a kis, keskeny folyóvizet?', 'patak'], ['Hogy hívjuk a patakoknál sokkal nagyobb, széles, sok vizet szállító vízfolyást?', 'folyó']]);
       return mcq(q, a, shuffle(['síkság', 'dombság', 'hegység', 'völgy', 'patak', 'folyó', 'tó'].filter(x => x !== a)).slice(0, 3), { fmt: v => v, hint: 'Felszínformák: síkság, domb, dombság, hegy, hegység, völgy. Vizek: forrás, patak, folyó, tó.' });
     }
-    if (L === 2) { const flow = Math.random() < .5, a = pick(flow ? ['patak', 'folyó', 'csatorna'] : ['tó', 'mocsár', 'halastó']); return mcq(`Melyik ${flow ? 'folyóvíz' : 'állóvíz'}?`, a, shuffle(flow ? ['tó', 'mocsár', 'halastó'] : ['patak', 'folyó', 'csatorna']).slice(0, 2), { fmt: v => v, hint: 'A folyóvíz mozog, folyik egy irányba (patak, folyó). Az állóvíz egy helyben marad (tó, mocsár).' }); }
+    if (L === 2) { const flow = Math.random() < .5, a = pick(flow ? ['patak', 'csermely', 'csatorna'] : ['tó', 'mocsár', 'halastó']); return mcq(`Melyik ${flow ? 'folyóvíz' : 'állóvíz'}?`, a, shuffle(flow ? ['tó', 'mocsár', 'halastó'] : ['patak', 'csermely', 'csatorna']).slice(0, 2), { fmt: v => v, hint: 'A folyóvíz mozog, folyik egy irányba (patak, folyó). Az állóvíz egy helyben marad (tó, mocsár).' }); }
     const [q, a, w] = pick([['Mi hazánk legmagasabb pontja?', 'a Kékes', ['a Gellért-hegy', 'a Mecsek', 'a Badacsony']], ['Melyik hazánk leghosszabb folyója (az országon belül mért hossz alapján)?', 'a Tisza', ['a Duna', 'a Rába', 'a Dráva']], ['Melyik Közép-Európa legnagyobb tava?', 'a Balaton', ['a Velencei-tó', 'a Fertő tó', 'a Tisza-tó']], ['Melyik folyó szeli ketté Budapestet?', 'a Duna', ['a Tisza', 'a Rába', 'a Zagyva']], ['Melyik hazánk legnagyobb nagytája?', 'az Alföld', ['a Kisalföld', 'az Északi-középhegység', 'a Dunántúli-dombság']], ['Melyik hegységben van a Kékes?', 'a Mátrában', ['a Bükkben', 'a Mecsekben', 'a Bakonyban']]]);
     return mcq(q, a, w, { fmt: v => v, hint: 'Kékes: 1014 m, a Mátrában. A Tisza a leghosszabb folyónk az országon belül, a Balaton a legnagyobb tavunk.' });
   },
@@ -2379,7 +2383,7 @@ const K4 = {
     if (L === 1) { const odd = pick(['Lengyelország', 'Csehország', 'Németország', 'Olaszország', 'Bulgária']); return mcq('Melyik ország NEM szomszédos Magyarországgal?', odd, shuffle(NB).slice(0, 3), { fmt: v => v, hint: 'Hazánknak hét szomszédja van: Ausztria, Szlovákia, Ukrajna, Románia, Szerbia, Horvátország, Szlovénia.' }); }
     if (L === 2) { const [c, d] = pick([['Ausztria', 'nyugat'], ['Szlovákia', 'észak'], ['Ukrajna', 'északkelet'], ['Románia', 'kelet'], ['Szerbia', 'dél'], ['Horvátország', 'délnyugat']]); return mcq(`Magyarországtól milyen irányban van ${c}?`, d, shuffle(farDirs(d)).slice(0, 3), { fmt: v => v, hint: 'Nyugaton Ausztria, északon Szlovákia, északkeleten Ukrajna, keleten Románia, délen Szerbia, délnyugaton Horvátország és Szlovénia.' }); }
     const MS = [['Bács-Kiskun', 'Kecskemét'], ['Baranya', 'Pécs'], ['Békés', 'Békéscsaba'], ['Borsod-Abaúj-Zemplén', 'Miskolc'], ['Csongrád-Csanád', 'Szeged'], ['Fejér', 'Székesfehérvár'], ['Győr-Moson-Sopron', 'Győr'], ['Hajdú-Bihar', 'Debrecen'], ['Heves', 'Eger'], ['Jász-Nagykun-Szolnok', 'Szolnok'], ['Komárom-Esztergom', 'Tatabánya'], ['Nógrád', 'Salgótarján'], ['Pest', 'Budapest'], ['Somogy', 'Kaposvár'], ['Szabolcs-Szatmár-Bereg', 'Nyíregyháza'], ['Tolna', 'Szekszárd'], ['Vas', 'Szombathely'], ['Veszprém', 'Veszprém'], ['Zala', 'Zalaegerszeg']];
-    const [m, sz] = pick(MS);
+    const [m, sz] = pick(MS.filter(([m, sz]) => !m.includes(sz) && m !== 'Pest'));
     return mcq(`Mi a székhelye ennek a megyének: <b>${m}</b>?`, sz, shuffle(MS.filter(x => x[1] !== sz)).slice(0, 3).map(x => x[1]), { fmt: v => v, hint: 'Magyarországnak 19 megyéje van, mindegyiknek van székhelye. Pest megye székhelye Budapest, a főváros.' });
   }
 };
@@ -2470,7 +2474,7 @@ const SEATS = { 'Bács-Kiskun': 'Kecskemét', 'Baranya': 'Pécs', 'Békés': 'B�
 const TOWNS = { 'Sopron': 'Győr-Moson-Sopron', 'Esztergom': 'Komárom-Esztergom', 'Gödöllő': 'Pest', 'Gyula': 'Békés', 'Hódmezővásárhely': 'Csongrád-Csanád', 'Kalocsa': 'Bács-Kiskun', 'Siófok': 'Somogy', 'Keszthely': 'Zala', 'Tihany': 'Veszprém', 'Tokaj': 'Borsod-Abaúj-Zemplén', 'Mohács': 'Baranya', 'Paks': 'Tolna', 'Kőszeg': 'Vas', 'Gyöngyös': 'Heves', 'Balassagyarmat': 'Nógrád', 'Jászberény': 'Jász-Nagykun-Szolnok', 'Mátészalka': 'Szabolcs-Szatmár-Bereg', 'Dunaújváros': 'Fejér', 'Pápa': 'Veszprém', 'Szentendre': 'Pest', 'Hajdúszoboszló': 'Hajdú-Bihar', 'Nagykanizsa': 'Zala' };
 const mega = n => `<b>${n}</b> megye`;
 const otherCounties = (c, k = 3, ex = []) => shuffle(COUNTIES.filter(x => x !== c && !ex.includes(x))).slice(0, k);
-const countyTap = (c, extra = '') => mapQ(`Hol van ${mega(c)}? Koppints rá a térképen!${extra}`, c, { hint: `${artOf(c) === 'az' ? 'Az' : 'A'} ${c} megye székhelye ${SEATS[c] || 'Budapest'}. ${MAP_HINTS[c] || ''}`.trim(), speak: `Hol van ${c} megye? Koppints rá a térképen!` });
+const countyTap = (c, extra = '') => mapQ(`Hol van ${mega(c)}? Koppints rá a térképen!${extra}`, c, { hint: `${c} megye székhelye ${SEATS[c] || 'Budapest'}. ${MAP_HINTS[c] || ''}`.trim(), speak: `Hol van ${c} megye? Koppints rá a térképen!` });
 const MAP_HINTS = {
   'Pest': 'Budapestet öleli körül, az ország közepén.', 'Baranya': 'Az ország legdélebbi része, a Mecsek környéke.', 'Bács-Kiskun': 'A Duna és a Tisza között, délen; ez a legnagyobb megye.', 'Borsod-Abaúj-Zemplén': 'Északkeleten, Szlovákia mellett.',
   'Hajdú-Bihar': 'Keleten, Románia mellett; itt van a Hortobágy.', 'Győr-Moson-Sopron': 'Északnyugaton, Ausztria és Szlovákia mellett.', 'Csongrád-Csanád': 'Délen, a Tisza mentén, Szerbia mellett.', 'Somogy': 'A Balaton déli partja mentén.',
@@ -2478,10 +2482,10 @@ const MAP_HINTS = {
   'Veszprém': 'A Balaton északi partja mentén.', 'Fejér': 'Budapesttől délnyugatra, itt a Velencei-tó.', 'Tolna': 'Délen, a Duna jobb partján.', 'Komárom-Esztergom': 'Északon, a Duna mentén, Szlovákia mellett.',
   'Nógrád': 'Északon, Szlovákia mellett, Pesttől északra.', 'Heves': 'Északon, itt a Mátra és a Kékes.', 'Jász-Nagykun-Szolnok': 'Az ország közepén, keletre, a Tisza mentén.'
 };
-const hlChoice = c => ({ type: 'choice', prompt: 'Melyik megye van kiemelve a térképen?', visual: huMap({ hl: c }), answer: c, options: shuffle([c, ...otherCounties(c)]).map(v => ({ value: v, html: v })), answerText: c, hint: MAP_HINTS[c] });
-const townQ = () => { const [t, c] = pick(Object.entries(TOWNS)); return mcq(`Melyik megyében van <b>${t}</b>?`, c, otherCounties(c), { fmt: v => v, hint: `${t} ${artOf(c)} ${c} megyében van. ${MAP_HINTS[c] || ''}`.trim() }); };
-const seatQ = () => { const [m, sz] = pick(Object.entries(SEATS)); return mcq(`Mi a székhelye ennek a megyének: <b>${m}</b>?`, sz, shuffle(Object.values(SEATS).filter(x => x !== sz)).slice(0, 3), { fmt: v => v, hint: 'A megyeszékhely általában a megye legnagyobb városa.' }); };
-const seatTap = () => { const c = pick(Object.keys(SEATS)), t = SEATS[c]; const dots = shuffle([t, ...shuffle(Object.values(SEATS).filter(x => x !== t)).slice(0, 5)]); return mapQ(`Hol van <b>${t}</b>, ${artOf(c)} ${c} megye székhelye? Koppints a pontra!`, t, { pick: 'dot', dots, hint: MAP_HINTS[c] }); };
+const hlChoice = c => ({ type: 'choice', prompt: 'Melyik megye van kiemelve a térképen?', visual: mapRef({ hl: c }), answer: c, options: shuffle([c, ...otherCounties(c)]).map(v => ({ value: v, html: v })), answerText: c, hint: MAP_HINTS[c] });
+const townQ = () => { const [t, c] = pick(Object.entries(TOWNS)); return mcq(`Melyik megyében van <b>${t}</b>?`, c, otherCounties(c), { fmt: v => v, hint: `${t} ${c} megyében van. ${MAP_HINTS[c] || ''}`.trim() }); };
+const seatQ = () => { const [m, sz] = pick(Object.entries(SEATS).filter(([m, sz]) => !m.includes(sz))); return mcq(`Mi a székhelye ennek a megyének: <b>${m}</b>?`, sz, shuffle(Object.values(SEATS).filter(x => x !== sz)).slice(0, 3), { fmt: v => v, hint: 'A megyeszékhely általában a megye legnagyobb városa.' }); };
+const seatTap = () => { const c = pick(Object.keys(SEATS)), t = SEATS[c]; const dots = shuffle([t, ...shuffle(Object.values(SEATS).filter(x => x !== t)).slice(0, 5)]); return mapQ(`Hol van <b>${t}</b>, ${c} megye székhelye? Koppints a pontra!`, t, { pick: 'dot', dots, hint: MAP_HINTS[c] }); };
 K4.megyek = L => {
   const r = Math.random();
   if (L === 1) return r < .55 ? countyTap(pick(BIG_COUNTIES)) : r < .8 ? hlChoice(pick(BIG_COUNTIES)) : seatQ();
@@ -2500,19 +2504,19 @@ const SIGHTS = {
 };
 const sightTap = () => { const s = pick(Object.keys(SIGHTS)); const near = Object.keys(SIGHTS).filter(x => x !== s && Math.hypot(MAPDATA.places[x][0] - MAPDATA.places[s][0], MAPDATA.places[x][1] - MAPDATA.places[s][1]) > 45);
   return mapQ(`Hol van ${SIGHTS[s]}? Koppints a pontra!`, s, { pick: 'dot', dots: shuffle([s, ...shuffle(near).slice(0, 4)]), hint: SIGHT_HINT[s] }); };
-const SIGHT_HINT = { 'Kékes': 'A Mátrában, északon, Eger közelében.', 'Tihany': 'A Balaton északi partján, egy félszigeten.', 'Tokaj': 'Északkeleten, ahol a Bodrog a Tiszába ömlik.', 'Aggtelek': 'Egészen északon, a szlovák határ mellett.', 'Hortobágy': 'Keleten, Debrecentől nyugatra, az Alföldön.',
+const SIGHT_HINT = { 'Kékes': 'A Mátrában, északon, Gyöngyös fölött.', 'Tihany': 'A Balaton északi partján, egy félszigeten.', 'Tokaj': 'Északkeleten, ahol a Bodrog a Tiszába ömlik.', 'Aggtelek': 'Egészen északon, a szlovák határ mellett.', 'Hortobágy': 'Keleten, Debrecentől nyugatra, az Alföldön.',
   'Esztergom': 'Északon, a Duna partján, a szlovák határon.', 'Visegrád': 'A Duna-kanyarban, Budapesttől északra.', 'Hollókő': 'Északon, Nógrád megyében.', 'Kőszeg': 'Nyugaton, az osztrák határ mellett.', 'Pannonhalma': 'Északnyugaton, Győr közelében.',
   'Bugac': 'Az Alföldön, Kecskemét közelében.', 'Badacsony': 'A Balaton északi partjának nyugati részén.', 'Villány': 'Egészen délen, Baranyában.', 'Ópusztaszer': 'Délen, Szeged közelében.', 'Őriszentpéter': 'Az ország délnyugati sarkában, a határ mellett.' };
 K4.terkep = L => {
   const r = Math.random();
   if (L === 1) {
     if (r < .55) { const n = pick(NEIGHBOURS); return mapQ(`Hol van <b>${n}</b>? Koppints rá a térképen!`, n, { map: 'region', hint: NB_HINT, speak: `Hol van ${n}? Koppints rá a térképen!` }); }
-    if (r < .8) { const n = pick(NEIGHBOURS); return { type: 'choice', prompt: 'Melyik szomszédos ország van kiemelve?', visual: regionMap({ hl: n }), answer: n, options: shuffle([n, ...shuffle(NEIGHBOURS.filter(x => x !== n)).slice(0, 3)]).map(v => ({ value: v, html: v })), answerText: n, hint: NB_HINT }; }
+    if (r < .8) { const n = pick(NEIGHBOURS); return { type: 'choice', prompt: 'Melyik szomszédos ország van kiemelve?', visual: mapRef({ hl: n }, true), answer: n, options: shuffle([n, ...shuffle(NEIGHBOURS.filter(x => x !== n)).slice(0, 3)]).map(v => ({ value: v, html: v })), answerText: n, hint: NB_HINT }; }
     return mcq('Hány szomszédos országa van Magyarországnak?', 7, [5, 6, 8], { hint: 'Számold meg: Ausztria, Szlovákia, Ukrajna, Románia, Szerbia, Horvátország, Szlovénia.' });
   }
   if (L === 2) return r < .6 ? sightTap() : r < .8 ? (() => { const [d, n] = pick(DIR_NB); return mapQ(`Koppints arra az országra, amelyik Magyarországtól <b>${d}</b> van!`, n, { map: 'region', hint: 'Az északi irány a térképen felfelé van, a keleti jobbra, a déli lefelé, a nyugati balra.' }); })() : hlChoice(pick(COUNTIES));
   if (r < .45) return sightTap();
-  if (r < .7) { const n = pick(NEIGHBOURS); return { type: 'choice', prompt: 'Melyik ország van kiemelve? Mi a fővárosa?', visual: regionMap({ hl: n }), answer: CAPITALS[n], options: shuffle([CAPITALS[n], ...shuffle(NEIGHBOURS.filter(x => x !== n)).slice(0, 3).map(x => CAPITALS[x])]).map(v => ({ value: v, html: v })), answerText: `${n}, fővárosa ${CAPITALS[n]}`, hint: NB_HINT }; }
+  if (r < .7) { const n = pick(NEIGHBOURS); return { type: 'choice', prompt: 'Melyik ország van kiemelve? Mi a fővárosa?', visual: mapRef({ hl: n }, true), answer: CAPITALS[n], options: shuffle([CAPITALS[n], ...shuffle(NEIGHBOURS.filter(x => x !== n)).slice(0, 3).map(x => CAPITALS[x])]).map(v => ({ value: v, html: v })), answerText: `${n}, fővárosa ${CAPITALS[n]}`, hint: NB_HINT }; }
   if (r < .85) { const [d, n] = pick(DIR_NB); return mapQ(`Koppints arra az országra, amelyik Magyarországtól <b>${d}</b> van!`, n, { map: 'region', hint: 'Az északi irány a térképen felfelé van, a keleti jobbra, a déli lefelé, a nyugati balra.' }); }
   return mcq('Melyik folyó szeli ketté Budapestet és az egész országot észak–déli irányban?', 'Duna', ['Tisza', 'Dráva', 'Rába'], { fmt: v => v, hint: 'Európa második leghosszabb folyója.' });
 };
@@ -2525,7 +2529,7 @@ const TAJ_COUNTY = [['a Hortobágy', 'Hajdú-Bihar', ['Jász-Nagykun-Szolnok', '
 const TAJ_FACTS = [
   [1, 'Melyik tájon legelnek szürkemarhák és rackajuhok a végtelen pusztán?', 'a Hortobágyon', ['az Őrségben', 'a Mecsekben', 'a Szigetközben'], 'Ez a táj az Alföldön van, Debrecen közelében.'],
   [1, 'Melyik hegységben van a Kékes, hazánk legmagasabb pontja?', 'a Mátrában', ['a Bükkben', 'a Mecsekben', 'a Börzsönyben'], 'Az Északi-középhegység egyik hegysége, Gyöngyös fölött.'],
-  [1, 'Melyik tó nagyobb része van Ausztriában?', 'a Fertő tóé', ['a Balatoné', 'a Velencei-tóé', 'a Tisza-tóé'], 'Sopron közelében fekszik, a nyugati határon.'],
+  [1, 'Melyik tónak van a nagyobb része Ausztriában?', 'a Fertő tónak', ['a Balatonnak', 'a Velencei-tónak', 'a Tisza-tónak'], 'Sopron közelében fekszik, a nyugati határon.'],
   [1, 'Melyik hazánk legnagyobb mesterséges tava?', 'a Tisza-tó', ['a Balaton', 'a Velencei-tó', 'a Fertő tó'], 'Egy gát duzzasztotta fel egy folyó vizét. Melyik folyóról kapta a nevét?'],
   [1, 'Melyik félszigeten áll híres apátság, és virágzik nyáron a levendula a Balatonnál?', 'Tihany', ['Siófok', 'Keszthely', 'Badacsony'], 'A Balaton északi partján benyúlik a tóba.'],
   [1, 'Melyik városban áll hazánk legnagyobb temploma, a bazilika?', 'Esztergomban', ['Egerben', 'Pécsen', 'Debrecenben'], 'A Duna partján van, a szlovák határon.'],
@@ -2538,13 +2542,13 @@ const TAJ_FACTS = [
   [2, 'Hogy hívják a hazánk nyugati szélén, az Alpok lábánál fekvő tájat?', 'Alpokalja', ['Alföld', 'Nyírség', 'Mátra'], 'A neve elárulja: az Alpok „alja”, vagyis lába.'],
   [2, 'Melyik vár magasodik a Duna-kanyar fölött?', 'a visegrádi vár', ['az egri vár', 'a szigetvári vár', 'a budai vár'], 'Budapesttől északra, ahol a Duna dél felé fordul.'],
   [2, 'Melyik hegységben van a Szalajka-völgy és a Fátyol-vízesés?', 'a Bükkben', ['a Mátrában', 'a Mecsekben', 'a Börzsönyben'], 'Eger és Miskolc között emelkedik.'],
-  [2, 'Melyik a hazánk legnagyobb szigete, a Duna és a Mosoni-Duna között?', 'a Szigetköz', ['a Csepel-sziget', 'a Margit-sziget', 'a Szentendrei-sziget'], 'Győr közelében, a Kisalföldön van.'],
+  [2, 'Melyik hazánk legnagyobb szigete, a Duna és a Mosoni-Duna között?', 'a Szigetköz', ['a Csepel-sziget', 'a Margit-sziget', 'a Szentendrei-sziget'], 'Győr közelében, a Kisalföldön van.'],
   [3, 'Hol van az Írott-kő, a Dunántúl legmagasabb pontja?', 'a Kőszegi-hegységben', ['a Mecsekben', 'a Bakonyban', 'a Mátrában'], 'Az Alpokalján, az osztrák határon.'],
   [3, 'Melyik két hegység tartozik az Alpokaljához?', 'a Soproni- és a Kőszegi-hegység', ['a Bükk és a Mátra', 'a Mecsek és a Villányi-hegység', 'a Pilis és a Börzsöny'], 'Mindkettő a nyugati határ mellett van, egy-egy városról kapta a nevét.'],
   [3, 'Mi a nagytáj neve, amelyhez az Alpokalja tartozik?', 'Nyugat-magyarországi-peremvidék', ['Dunántúli-dombság', 'Kisalföld', 'Északi-középhegység'], 'Az ország nyugati peremén, szélén van.'],
   [3, 'Hol látható a Feszty-körkép, amely a honfoglalást mutatja be?', 'Ópusztaszeren', ['Budapesten', 'Visegrádon', 'Esztergomban'], 'Csongrád-Csanád megyében, Szeged közelében van.'],
   [3, 'Hogy hívják a Duna menti ártéri erdőt Tolna megyében, ahol sok gímszarvas él?', 'Gemenc', ['Zselic', 'Bakony', 'Őrség'], 'A Duna–Dráva Nemzeti Parkhoz tartozik.'],
-  [3, 'Hol van csillagpark, ahol különösen sötét és csillagos az éjszakai égbolt?', 'a Zselicben', ['a Hortobágyon', 'a Szigetközben', 'a Jászságban'], 'Somogy megyei erdős, dombos táj, Kaposvár közelében.'],
+  [3, 'Melyik tájon van csillagpark, ahol különösen sötét és csillagos az éjszakai égbolt?', 'a Zselicben', ['a Hortobágyon', 'a Szigetközben', 'a Jászságban'], 'Somogy megyei erdős, dombos táj, Kaposvár közelében.'],
   [3, 'Mit őriz Hollókő, a Nógrád megyei kis falu?', 'a palócok hagyományait', ['a kunok hagyományait', 'a jászok hagyományait', 'a matyók hagyományait'], 'Északon, a Cserhátban élő népcsoport hagyományait.'],
   [3, 'Melyik nemzeti parkhoz tartozik a Baradla-barlang?', 'Aggteleki Nemzeti Park', ['Bükki Nemzeti Park', 'Duna–Ipoly Nemzeti Park', 'Őrségi Nemzeti Park'], 'A barlang abban a karsztban van, amelyről a park a nevét kapta.']
 ];
@@ -2636,7 +2640,7 @@ const MORE = {
     [2, 'Hány óra egy nap?', '24 óra', ['12 óra', '60 óra', '10 óra'], 'Egy nap 24 óra: ennyi idő alatt fordul meg a Föld.'],
     [2, 'Melyik a legnehezebb?', '1 kg kenyér', ['80 dkg liszt', '50 dkg alma', '10 dkg csoki'], 'Váltsd át: 1 kg = 100 dkg.'],
     [2, 'Melyik a leghosszabb?', '1 m', ['90 cm', '9 dm', '50 cm'], 'Váltsd át: 1 m = 100 cm, 9 dm = 90 cm.'],
-    [2, 'Melyik fér el több vízben?', '2 literes üveg', ['15 dl-es kancsó', '5 dl-es pohár', '1 literes üveg'], 'Váltsd át: 1 l = 10 dl, tehát 2 l = 20 dl.']
+    [2, 'Melyikbe fér több víz?', '2 literes üveg', ['15 dl-es kancsó', '5 dl-es pohár', '1 literes üveg'], 'Váltsd át: 1 l = 10 dl, tehát 2 l = 20 dl.']
   ],
   weather: [
     [1, 'Melyik évszakban esik leggyakrabban hó?', 'télen', ['nyáron', 'tavasszal', 'ősszel'], 'A hó akkor esik, amikor fagypont alatt van a hőmérséklet.'],
@@ -2741,7 +2745,7 @@ MORE.animal = [
   [2, 'Melyik állat rak tojást?', 'a tyúk', ['a kutya', 'a tehén', 'a macska'], 'A madarak, a hüllők, a kétéltűek és a halak tojással szaporodnak.'],
   [2, 'Hány lába van a rovaroknak?', '6', ['4', '8', '10'], 'Minden rovarnak hat lába van.'],
   [2, 'Hány lába van a póknak?', '8', ['6', '4', '10'], 'A pók nem rovar: nyolc lába van.'],
-  [2, 'Melyik állat alszik téli álmot?', 'a sün', ['a róka', 'a veréb', 'a szarvas'], 'Téli álmot alszik a sün, a medve, a denevér és az ürge.'],
+  [2, 'Melyik állat alszik téli álmot?', 'a sün', ['a róka', 'a veréb', 'a szarvas'], 'Téli álmot alszik például a sün, a denevér és az ürge.'],
   [2, 'Melyik madár költözik ősszel melegebb vidékre?', 'a fecske', ['a veréb', 'a cinege', 'a varjú'], 'A fecske és a gólya ősszel délre költözik.']
 ];
 MORE.habitat = [
@@ -2764,7 +2768,7 @@ for (const [k, facts] of Object.entries(MORE)) K4[k] = withFacts(K4[k], facts, .
 /* Folyóink és tavaink */
 const RIVER_HL = ['Duna', 'Tisza', 'Rába', 'Körös', 'Maros', 'Zagyva', 'Sajó', 'Bodrog', 'Sió', 'Zala'];
 const RIVER_HINT = { 'Duna': 'Hazánk legnagyobb folyója: északnyugatról érkezik, a Duna-kanyarnál dél felé fordul, és Budapesten is átfolyik.', 'Tisza': 'Északkeleten lép be, és dél felé kanyarog az Alföldön, Szegednél hagyja el az országot.', 'Rába': 'Nyugatról, Ausztriából érkezik, és Győrnél ömlik a Mosoni-Dunába.', 'Körös': 'Keletről, Romániából érkezik, és Csongrádnál ömlik a Tiszába.', 'Maros': 'Keletről, Romániából érkezik, és Szegednél ömlik a Tiszába.', 'Zagyva': 'Északról, a Mátra mellől folyik dél felé, és Szolnoknál ömlik a Tiszába.', 'Sajó': 'Északról, Szlovákiából érkezik, Miskolc mellett folyik el, és a Tiszába ömlik.', 'Bodrog': 'Északkeletről érkezik, és Tokajnál ömlik a Tiszába.', 'Sió': 'A Balatonból indul Siófoknál, és a Dunába ömlik.', 'Zala': 'Nyugatról érkezik, és a Balaton nyugati csücskébe ömlik.' };
-const riverHl = () => { const r = pick(RIVER_HL); return { type: 'choice', prompt: 'Melyik folyó van kiemelve a térképen?', visual: huMap({ hlRiver: r, rivers: false }), answer: r, options: shuffle([r, ...shuffle(RIVER_HL.filter(x => x !== r)).slice(0, 3)]).map(v => ({ value: v, html: v })), answerText: r, hint: RIVER_HINT[r] }; };
+const riverHl = () => { const r = pick(RIVER_HL); return { type: 'choice', prompt: 'Melyik folyó van kiemelve a térképen?', visual: mapRef({ hlRiver: r, rivers: false }), answer: r, options: shuffle([r, ...shuffle(RIVER_HL.filter(x => x !== r)).slice(0, 3)]).map(v => ({ value: v, html: v })), answerText: r, hint: RIVER_HINT[r] }; };
 const TISZA_TRIB = ['Maros', 'Körös', 'Zagyva', 'Sajó', 'Bodrog'], DUNA_TRIB = ['Rába', 'Sió', 'Dráva', 'Ipoly'];
 const tribQ = () => Math.random() < .5
   ? mcq('Melyik folyó a <b>Tisza</b> mellékfolyója?', pick(TISZA_TRIB), shuffle(DUNA_TRIB).slice(0, 3), { fmt: v => v, hint: 'A Tiszába ömlik: Szamos, Bodrog, Sajó, Zagyva, Körös, Maros. A Dunába ömlik: Rába, Sió, Ipoly, Dráva (és maga a Tisza is).' })
@@ -3242,7 +3246,7 @@ const printPrompt = s => String(s || '')
 function staticQ(q, i) {
   if (q.type === 'lab') q = { ...q, type: 'choice' };
   const body = h('div', { class: 'pq-b' }, h('div', { class: 'pq-p', html: printPrompt(q.prompt) }));
-  if (q.visual) body.append(h('div', { class: 'pq-v', html: q.visual }));
+  if (q.visual) body.append(h('div', { class: 'pq-v', html: expandVis(q.visual) }));
   if (q.type === 'choice') body.append(h('div', { class: 'pq-o' }, q.options.map((o, k) => h('span', { class: 'pq-opt' }, h('b', null, 'ABCDEF'[k] + ')'), h('span', { html: o.html })))));
   else if (q.type === 'input') body.append(h('div', { class: 'pq-a' }, 'Válasz: ', h('span', { class: 'pq-line' })));
   else if (q.type === 'find') body.append(h('div', { class: 'pq-grid' }, q.cells.map(c => h('span', null, c))));

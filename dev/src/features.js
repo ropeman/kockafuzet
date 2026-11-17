@@ -66,7 +66,7 @@ const printPrompt = s => String(s || '')
 function staticQ(q, i) {
   if (q.type === 'lab') q = { ...q, type: 'choice' };
   const body = h('div', { class: 'pq-b' }, h('div', { class: 'pq-p', html: printPrompt(q.prompt) }));
-  if (q.visual) body.append(h('div', { class: 'pq-v', html: q.visual }));
+  if (q.visual) body.append(h('div', { class: 'pq-v', html: expandVis(q.visual) }));
   if (q.type === 'choice') body.append(h('div', { class: 'pq-o' }, q.options.map((o, k) => h('span', { class: 'pq-opt' }, h('b', null, 'ABCDEF'[k] + ')'), h('span', { html: o.html })))));
   else if (q.type === 'input') body.append(h('div', { class: 'pq-a' }, 'Válasz: ', h('span', { class: 'pq-line' })));
   else if (q.type === 'find') body.append(h('div', { class: 'pq-grid' }, q.cells.map(c => h('span', null, c))));
