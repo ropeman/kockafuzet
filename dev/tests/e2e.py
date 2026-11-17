@@ -34,7 +34,7 @@ try:
         print("hub")
         pg.goto(B + "/"); pg.wait_for_timeout(500)
         grades = pg.eval_on_selector_all(".grade:not(.off):not(.mode)", "e => e.map(x => x.getAttribute('href'))")
-        check(len(grades) == 9, f"9 grade cards ({len(grades)})")
+        check(len(grades) == 10, f"10 grade cards ({len(grades)})")
         check(pg.locator(".grade.mode").count() == 4, "4 game cards")
         check(pg.locator(".parent-cta").count() == 1, "parents' link card")
         pg.screenshot(path="/tmp/kfshots/hub.png", full_page=True)

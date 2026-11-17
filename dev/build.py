@@ -27,7 +27,7 @@ SITE = "Kockafüzet"
 
 ORDER = ["core.js", "visuals.js", "interact.js", "mapdata.js", "map.js", "lab.js",
          "matek-1.js", "matek-2.js", "matek-3.js", "matek-4.js",
-         "magyar-1.js", "magyar-2.js", "magyar-3.js", "magyar-4.js", "kornyezet-4.js",
+         "magyar-1.js", "magyar-2.js", "magyar-3.js", "magyar-4.js", "kornyezet-4.js", "kornyezet-3.js",
          "modes.js", "features.js", "explain.js", "review.js", "zz-boot.js"]
 
 # ---------- JS ----------
