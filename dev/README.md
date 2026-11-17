@@ -10,6 +10,7 @@ A weboldal a repó gyökerében van (GitHub Pages ezt szolgálja ki). A forrás 
 - `dev/src/explain.js` – Így működik: lépésenkénti magyarázatok (a kérdésből ismeri fel a típust)
 - `dev/src/review.js` – Napi 5 perc: ismétlés témánkénti dobozokkal (1–5), heti cél
 - `dev/src/kornyezet-3.js`, `dev/src/kornyezet-4.js` – Környezetismeret (NAT 2020 kerettanterv); a 3. osztály a 4. osztály segédfüggvényeit is használja, ezért utána töltődik be
+- `dev/src/matek-extra.js` – további matekfeladatok minden évfolyamra: számegyenes, számpiramis, bűvös négyzet, párosító, számkártyák, nyitott mondatok, oszthatóság, diagramok, testek, szimmetria, szabályjáték, kombinatorika, óra beállítása
 - `dev/src/interact.js` – interaktív típusok: Válogató (húzd a kosárba), Címkézd fel!, Állítsd be (hőmérő, iránytű), Ki vagyok én?
 - `dev/src/lab.js` – Kísérletező: „Mit gondolsz? → Próbáld ki! → Mit láttál?” kísérletek (melegítés-hűtés, úszik vagy elsüllyed, oldódás)
 - `dev/src/map.js` – térképek: Magyarország megyékkel, a szomszédos országok, Budapest Duna-hídjai; „Koppints a térképre!” feladattípus

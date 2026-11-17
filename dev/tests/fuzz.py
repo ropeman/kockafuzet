@@ -53,6 +53,8 @@ JS = r"""
           } else if (q.type === 'riddle') {
             if (!q.options.some(o => o.value === q.answer) || new Set(q.options.map(o => o.value)).size !== q.options.length) add(where, 'riddle options bad', q);
             if (q.clues.slice(0, -1).some(c => c.toLowerCase().includes(String(q.answer).toLowerCase()))) add(where, 'clue gives the answer away', q);
+          } else if (q.type === 'numline') {
+            if (q.answer < q.min || q.answer > q.max || (q.answer - q.min) % q.step !== 0) add(where, 'numline answer off grid', q);
           } else if (q.type === 'lab') {
             const vals = q.options.map(o => o.value);
             if (!vals.includes(q.answer) || new Set(vals).size !== vals.length || vals.length < 2) add(where, 'lab options bad', q);

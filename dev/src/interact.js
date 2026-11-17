@@ -90,13 +90,14 @@ UI.label.judge = (q, r) => q.spots.every(s => r[s.id] === q.answer[s.id]);
 UI.set = (q, send) => {
   let v = q.start;
   const box = h('div', { class: 'setfig' }), readout = h('div', { class: 'setval', 'aria-live': 'polite' });
-  const fmtV = x => q.kind === 'thermo' ? `${String(x).replace('-', '−')} °C` : DIRS[x];
-  const draw = () => { box.innerHTML = q.kind === 'thermo' ? thermo(v) : compass(v, q.labels || [0, 2, 4, 6]); readout.textContent = fmtV(v); };
-  const setV = x => { v = q.kind === 'thermo' ? Math.max(q.min, Math.min(q.max, x)) : (x + 8) % 8; draw(); };
+  const fmtV = x => q.kind === 'thermo' ? `${String(x).replace('-', '−')} °C` : q.kind === 'clock' ? '' : DIRS[x];
+  const draw = () => { box.innerHTML = q.kind === 'thermo' ? thermo(v) : q.kind === 'clock' ? clockSvg(Math.floor(v / 60) || 12, v % 60, 230) : compass(v, q.labels || [0, 2, 4, 6]); readout.textContent = fmtV(v); readout.hidden = q.kind === 'clock'; };
+  const setV = x => { v = q.kind === 'thermo' ? Math.max(q.min, Math.min(q.max, x)) : q.kind === 'clock' ? ((x % 720) + 720) % 720 : (x + 8) % 8; draw(); };
   const fromPoint = e => {
     const s = box.querySelector('svg'); if (!s) return; const r = s.getBoundingClientRect(), vb = s.viewBox.baseVal;
     const px = (e.clientX - r.left) * vb.width / r.width, py = (e.clientY - r.top) * vb.height / r.height;
     if (q.kind === 'thermo') setV(Math.round(-10 + (216 - py) / 200 * 40));
+    else if (q.kind === 'clock') { const ang = (Math.atan2(px - 70, 70 - py) * 180 / Math.PI + 360) % 360, d = Math.hypot(px - 70, py - 70); if (d < 34) setV(((Math.round(ang / 30) % 12) * 60) + v % 60); else setV(Math.floor(v / 60) * 60 + (Math.round(ang / 30) % 12) * 5); }
     else { const ang = Math.atan2(px - 110, 110 - py) * 180 / Math.PI; setV(Math.round(((ang + 360) % 360) / 45) % 8); }
   };
   let drag = false;
@@ -104,8 +105,10 @@ UI.set = (q, send) => {
   box.addEventListener('pointermove', e => { if (drag) fromPoint(e); });
   box.addEventListener('pointerup', () => { drag = false; });
   box.style.touchAction = 'none';
-  const step = d => setV(v + d);
-  const ctr = q.kind === 'thermo'
+  const step = d => setV(v + (q.kind === 'clock' ? d * 5 : d));
+  const ctr = q.kind === 'clock'
+    ? h('div', { class: 'chips setctl' }, h('button', { class: 'btn', onclick: () => setV(v - 60) }, '− 1 óra'), h('button', { class: 'btn', onclick: () => setV(v + 60) }, '+ 1 óra'), h('button', { class: 'btn', onclick: () => setV(v - 5) }, '− 5 perc'), h('button', { class: 'btn', onclick: () => setV(v + 5) }, '+ 5 perc'))
+    : q.kind === 'thermo'
     ? h('div', { class: 'chips setctl' }, h('button', { class: 'btn', onclick: () => step(-5) }, '−5'), h('button', { class: 'btn', onclick: () => step(-1) }, '−1'), h('button', { class: 'btn', onclick: () => step(1) }, '+1'), h('button', { class: 'btn', onclick: () => step(5) }, '+5'))
     : h('div', { class: 'chips setctl' }, h('button', { class: 'btn', onclick: () => step(-1) }, '↺ Balra'), h('button', { class: 'btn', onclick: () => step(1) }, 'Jobbra ↻'));
   const onKey = e => { if (expOpen) return; if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { e.preventDefault(); step(1); } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { e.preventDefault(); step(-1); } };
@@ -113,7 +116,7 @@ UI.set = (q, send) => {
   const sb = h('button', { class: 'btn primary', onclick: () => send(v) }, 'Kész');
   draw();
   return {
-    el: h('div', { class: 'setwrap' }, h('p', { class: 'mute ihelp' }, q.kind === 'thermo' ? 'Húzd a hőmérő oszlopát, vagy használd a gombokat.' : 'Koppints arra az irányra a körön, vagy forgasd a gombokkal.'), box, readout, ctr), submitBtn: sb,
+    el: h('div', { class: 'setwrap' }, h('p', { class: 'mute ihelp' }, q.kind === 'thermo' ? 'Húzd a hőmérő oszlopát, vagy használd a gombokat.' : q.kind === 'clock' ? 'Koppints a számlap szélére a nagy mutatóhoz, a közepe közelébe a kis mutatóhoz, vagy használd a gombokat.' : 'Koppints arra az irányra a körön, vagy forgasd a gombokkal.'), box, readout, ctr), submitBtn: sb,
     wrong() {},
     lock(r, ok) { ctr.querySelectorAll('button').forEach(b => b.disabled = true); document.removeEventListener('keydown', onKey); if (!ok) { v = q.answer; draw(); readout.classList.add('fix'); } },
     done() { sb.remove(); }

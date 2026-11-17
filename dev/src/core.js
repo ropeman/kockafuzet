@@ -261,7 +261,7 @@ function qKey(q) {
   const ans = q.answer !== null && typeof q.answer === 'object' && !Array.isArray(q.answer) ? '' : JSON.stringify(q.answer);
   const extra = q.type === 'sort' ? q.bins.map(b => b.label).join(',')
     : q.type === 'label' ? q.spots.map(s => q.labels.find(l => l.id === q.answer[s.id]).text).join(',')
-    : q.type === 'riddle' ? q.clues[0] : q.type === 'lab' ? (q.mode || q.item || '') : q.type === 'map' ? q.map + (q.dots || []).length : '';
+    : q.type === 'riddle' ? q.clues[0] : q.type === 'lab' ? (q.mode || q.item || '') : q.type === 'map' ? q.map + (q.dots || []).length : q.type === 'find' ? q.cells.join(',') : q.type === 'numline' ? q.min + '-' + q.max : '';
   return [q.type, plain(q.prompt), ans, extra, q.text || '', q.type === 'sort' || q.type === 'label' ? '' : String(q.visual || '').length].join('|');
 }
 function nextQ() {

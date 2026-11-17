@@ -160,3 +160,22 @@ button{font-family:inherit;color:inherit}
 .slots.words{flex-direction:column;align-items:center;counter-reset:sl}
 .slots.words .slot{min-width:min(260px,80vw);height:48px;font-size:20px;counter-increment:sl;position:relative}
 .slots.words .slot::before{content:counter(sl) '.';position:absolute;left:12px;font-size:15px;color:var(--mute)}
+/* maths extras */
+.vis.numline{width:min(620px,100%);height:auto;touch-action:none}
+.nlwrap{width:100%;display:flex;justify-content:center;cursor:pointer}
+.nl-mark{fill:var(--accent)} .nl-mark.ok{fill:var(--good)} .nl-mark.fix{fill:var(--warn)}
+.pyr{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pyr-row{display:flex;gap:6px}
+.pyr-b{min-width:58px;padding:10px 8px;border:2.5px solid var(--ink);border-radius:8px;background:var(--card);font:700 22px var(--f-disp);text-align:center}
+.pyr-b.q{background:var(--hi);color:#1d2742}
+.magic{display:grid;grid-template-columns:repeat(3,64px);gap:6px;justify-content:center}
+.magic span{height:64px;display:grid;place-items:center;border:2.5px solid var(--ink);border-radius:8px;background:var(--card);font:700 24px var(--f-disp)}
+.magic b.q{color:#1d2742;background:var(--hi);border-radius:6px;padding:2px 12px}
+.pat{letter-spacing:.08em;font-size:clamp(28px,7vw,44px)}
+.pictwrap{display:flex;flex-direction:column;gap:6px;align-items:flex-start;font-size:26px}
+.pict b{display:inline-block;width:44px}
+.fmach{border-collapse:collapse;font:700 22px var(--f-disp);margin:0 auto}
+.fmach th,.fmach td{border:2px solid var(--ink);padding:8px 14px;text-align:center;background:var(--card)}
+.fmach th{background:var(--accent-soft);font-size:16px}
+.bigl{font:700 40px var(--f-disp)}
+.vis.barchart{width:min(480px,100%);height:auto}
