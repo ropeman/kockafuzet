@@ -57,3 +57,44 @@
 .pq-lfig .vis{width:100%;height:auto}
 .pq-lfig span{position:absolute;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid #1d2742;display:grid;place-items:center;font:700 12px var(--f-body)}
 .pq-clues{margin:0;padding-left:1.2em;font-size:15px}
+/* ---------- maps ---------- */
+.mapwrap{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.mapfig{width:min(640px,100%);border-radius:14px;background:var(--soft);padding:6px;border:1.5px solid var(--line)}
+.mapfig .vis,.vis.humap,.vis.regmap{width:100%;height:auto;display:block}
+.vis.humap,.vis.regmap{max-width:600px}
+.humap .mc{fill:#e9f5df;stroke:#4b5a78;stroke-width:1;stroke-linejoin:round;transition:fill .15s}
+.humap .mc.bp{fill:#fde3cf}
+.humap .ml{fill:#74c0fc;stroke:#1c7ed6;stroke-width:.8;pointer-events:none}
+.humap .mr{fill:none;stroke:#4dabf7;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.humap .mr.big{stroke:#1c7ed6;stroke-width:3}
+.humap .mriv{font:italic 700 11px var(--f-body);fill:#1864ab;pointer-events:none;paint-order:stroke;stroke:#e9f5df;stroke-width:3px}
+.humap .md .hit{fill:transparent}
+.humap .md .dot{fill:#e03131;stroke:#fff;stroke-width:2}
+.humap .mname{font-size:9px;fill:#33405e;text-anchor:middle;pointer-events:none;font-weight:600}
+.humap .mlab{font-size:13px;fill:#1d2742;font-weight:700;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.humap .mc.hl,.regmap .rc.hl{fill:#ffc93c;stroke:#1d2742;stroke-width:2}
+.humap .md.hl .dot{fill:#ffc93c;stroke:#1d2742}
+.regmap .rc{fill:#e7ecf5;stroke:#4b5a78;stroke-width:1;stroke-linejoin:round}
+.regmap .rc.far{fill:#f4f6fa;stroke:#9aa5bb}
+.regmap .rc.hu{fill:#c3e8b5;stroke:#1d2742;stroke-width:2}
+.regmap .rname{font-size:13px;text-anchor:middle;fill:#33405e;font-weight:700;pointer-events:none}
+.regmap .rname.hu{font-size:16px;fill:#1d2742}
+.mapfig .tap{cursor:pointer;outline:none}
+.mapfig .mc.tap:hover,.mapfig .rc.tap:hover{fill:#d0ebff}
+.mapfig .md.tap:hover .dot{r:8}
+.mapfig .tap:focus-visible{stroke:var(--accent);stroke-width:3}
+.mapfig .mc.sel,.mapfig .rc.sel{fill:#a5d8ff;stroke:#1864ab;stroke-width:2.5}
+.mapfig .md.sel .dot{fill:#1c7ed6;r:9}
+.mapfig .was-wrong{fill:#ffe3e3;animation:shake .4s}
+.mapfig .md.was-wrong .dot{fill:#adb5bd}
+.mapfig .mc.right,.mapfig .rc.right{fill:#8ce99a;stroke:#2b8a3e;stroke-width:2.5}
+.mapfig .md.right .dot{fill:#2f9e44;r:9}
+.mapfig .mc.wrong,.mapfig .rc.wrong{fill:#ffa8a8}
+.mapfig .md.wrong .dot{fill:#c92a2a}
+.mtag{font:700 15px var(--f-disp);text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:4px;pointer-events:none;animation:pop .35s}
+.mtag.good{fill:#1b6b34} .mtag.bad{fill:#a51111}
+.vis.danube{width:260px;height:auto}
+.visual .vis.humap,.visual .vis.regmap{width:min(560px,100%)}
+.pq-map .vis{width:100%;max-width:420px;height:auto}
+.sheet .humap .mc{fill:#fff} .sheet .humap .mc.hl{fill:#ddd}
+.pq-map .mlab{font-size:26px;stroke-width:5px} .pq-map .md .dot{r:8}

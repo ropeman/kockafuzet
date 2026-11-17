@@ -478,7 +478,7 @@ const UI = {
     };
     draw();
     return {
-      el: h('div', { style: 'display:flex;flex-direction:column;gap:16px;align-items:center;width:100%' }, h('div', { class: 'slots' }, slotEls), h('div', { class: 'tilebank' }, bank)),
+      el: h('div', { style: 'display:flex;flex-direction:column;gap:16px;align-items:center;width:100%' }, h('div', { class: 'slots' + (q.answer.some(x => x.length > 3) ? ' words' : '') }, slotEls), h('div', { class: 'tilebank' }, bank)),
       submitBtn: sb,
       wrong() { slots.fill(null); draw(); },
       lock() { slotEls.forEach(s => s.disabled = true); bank.forEach(b => b.disabled = true); },

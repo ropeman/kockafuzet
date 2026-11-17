@@ -9,6 +9,9 @@ A weboldal a repó gyökerében van (GitHub Pages ezt szolgálja ki). A forrás 
 - `dev/src/features.js` – Szülőknek oldal, nyomtatható feladatlap, megosztható feladatsor, telepítés
 - `dev/src/explain.js` – Így működik: lépésenkénti magyarázatok (a kérdésből ismeri fel a típust)
 - `dev/src/review.js` – Napi 5 perc: ismétlés témánkénti dobozokkal (1–5), heti cél
+- `dev/src/interact.js` – interaktív típusok: Válogató (húzd a kosárba), Címkézd fel!, Állítsd be (hőmérő, iránytű), Ki vagyok én?
+- `dev/src/map.js` – térképek: Magyarország megyékkel, a szomszédos országok, Budapest Duna-hídjai; „Koppints a térképre!” feladattípus
+- `dev/src/mapdata.js` – generált térképadat (Natural Earth, közkincs). Újragenerálás: `node dev/tools/make-map.js <node_modules> dev/src/mapdata.js` (kell hozzá: datamaps, world-atlas, @geo-maps/earth-lakes-10m, topojson-client, d3-geo)
 - `dev/src/*.css`, `dev/src/theme.js`, `dev/src/sw.js` – megjelenés, világos/sötét mód, offline működés
 
 Építés (a repó gyökeréből):
@@ -21,4 +24,5 @@ Tesztek (Playwright kell hozzá):
     python3 dev/tests/fuzz.py 300     # minden generátor ellenőrzése
     python3 dev/tests/e2e.py          # böngészős végigjátszás
     python3 dev/tests/explain_check.py # a magyarázatok a helyes eredményhez jutnak-e
+    python3 dev/tests/interact_test.py # húzás, koppintás, térkép egérrel és érintéssel
     python3 dev/tests/sample.py matek-3   # mintakérdések átnézéshez

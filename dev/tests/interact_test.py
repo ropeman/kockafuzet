@@ -11,6 +11,9 @@ def show(pg, expr):
     pg.evaluate("e => { const p = PAGES['kornyezet-4']; if (!S) startTopic(p, p.topics[0]); S.q = (0, eval)(e); S.tries = 0; S.done = false; renderQ(); }", expr); pg.wait_for_timeout(150)
 def center(pg, sel):
     b = pg.locator(sel).first.bounding_box(); return b["x"] + b["width"] / 2, b["y"] + b["height"] / 2
+def mapclick(pg, xy, tap=False):
+    bb = pg.locator(".mapfig svg").bounding_box(); x = bb["x"] + xy[0] / 600 * bb["width"]; y = bb["y"] + xy[1] / 380 * bb["height"]
+    (pg.touchscreen.tap if tap else pg.mouse.click)(x, y); pg.wait_for_timeout(60)
 def drag(pg, src, dst):
     x1, y1 = center(pg, src); x2, y2 = center(pg, dst)
     pg.mouse.move(x1, y1); pg.mouse.down(); pg.mouse.move(x1 + 10, y1 + 10, steps=3); pg.mouse.move(x2, y2, steps=8); pg.mouse.up(); pg.wait_for_timeout(60)
@@ -20,6 +23,7 @@ try:
         pg = br.new_page(viewport={"width": 1100, "height": 1000}); pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto(B + "/kornyezet/4/"); pg.wait_for_timeout(300)
         check(pg.locator("button.tile", has_text="Válogató").count() == 1 and pg.locator("button.tile", has_text="Ki vagyok én?").count() == 1, "new topics on the page")
+        check(pg.locator("button.tile", has_text="Budapest hídjai").count() == 1 and pg.locator("button.tile", has_text="Megyék a térképen").count() == 1, "map topics on the page")
 
         print("sort: drag with mouse + tap")
         show(pg, "SORTS.state(1)")
@@ -80,6 +84,35 @@ try:
         check("2 tippből" in pg.inner_text(".riddlewrap"), "riddle solved from 2 clues")
         pg.screenshot(path="/tmp/kfshots/i-riddle.png")
 
+        print("map: county, wrong then right, dots, neighbours")
+        show(pg, "countyTap('Baranya')")
+        mapclick(pg, pg.evaluate("MAPDATA.counties['Vas'].c"))
+        check(pg.evaluate("document.querySelector('.mc.sel').dataset.a") == "Vas", "tapping a county selects it")
+        pg.click(".actions .btn.primary"); pg.wait_for_timeout(120)
+        check(pg.locator(".mc.was-wrong").count() == 1 and pg.evaluate("S.done") is False, "wrong county marked, can try again")
+        mapclick(pg, pg.evaluate("MAPDATA.counties['Baranya'].c")); pg.click(".actions .btn.primary"); pg.wait_for_timeout(150)
+        check(pg.evaluate("S.res[S.n-1]") in ("ok", "retry", "fixed", "ok2") or pg.locator(".mc.right").count() == 1, "right county accepted on 2nd try")
+        check(pg.locator(".mtag.good", has_text="Baranya").count() == 1, "county name shown after answering")
+        pg.screenshot(path="/tmp/kfshots/i-map-county.png")
+        show(pg, "mapQ('Hol van a Kékes? Koppints a pontra!', 'Kékes', { pick: 'dot', dots: ['Kékes', 'Tihany', 'Tokaj', 'Kőszeg', 'Bugac'] })")
+        mapclick(pg, pg.evaluate("MAPDATA.places['Kékes']")); pg.click(".actions .btn.primary"); pg.wait_for_timeout(120)
+        check(pg.evaluate("S.res[S.n-1]") == "ok", "tapping the right dot accepted")
+        pg.screenshot(path="/tmp/kfshots/i-map-dot.png")
+        show(pg, "mapQ('Hol van <b>Románia</b>?', 'Románia', { map: 'region' })")
+        mapclick(pg, pg.evaluate("MAPDATA.region['Románia'].c")); pg.click(".actions .btn.primary"); pg.wait_for_timeout(120)
+        check(pg.evaluate("S.res[S.n-1]") == "ok", "neighbour country tapped")
+        pg.screenshot(path="/tmp/kfshots/i-map-region.png")
+        show(pg, "hlChoice('Somogy')"); pg.screenshot(path="/tmp/kfshots/i-map-hl.png")
+        print("bridges")
+        show(pg, "brLabel()")
+        ans = pg.evaluate("S.q.spots.map((s, i) => [i, S.q.answer[s.id]])")
+        for i, lid in ans: pg.click(f".lchip[data-id='{lid}']"); pg.click(f".lspot >> nth={i}"); pg.wait_for_timeout(40)
+        pg.screenshot(path="/tmp/kfshots/i-bridges-label.png")
+        pg.click(".actions .btn.primary"); pg.wait_for_timeout(100)
+        check(pg.evaluate("S.res[S.n-1]") == "ok", "bridge labels accepted")
+        show(pg, "brOrder()"); pg.screenshot(path="/tmp/kfshots/i-bridges-order.png")
+        show(pg, "brHl(2)"); pg.screenshot(path="/tmp/kfshots/i-bridges-hl.png")
+
         print("touch screen")
         ctx = br.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True)
         m = ctx.new_page(); m.on("pageerror", lambda e: errs.append("touch: " + str(e)))
@@ -90,6 +123,9 @@ try:
         m.tap(".actions .btn.primary"); m.wait_for_timeout(100)
         check(m.evaluate("S.res[S.n-1]") == "ok", "sorting by tapping on a phone")
         check(not m.evaluate("document.documentElement.scrollWidth > innerWidth"), "no sideways scroll on phone")
+        show(m, "countyTap('Hajdú-Bihar')"); mapclick(m, m.evaluate("MAPDATA.counties['Hajdú-Bihar'].c"), tap=True); m.tap(".actions .btn.primary"); m.wait_for_timeout(120)
+        check(m.evaluate("S.res[S.n-1]") == "ok", "county tapped on a phone")
+        m.screenshot(path="/tmp/kfshots/i-phone-map.png")
         m.screenshot(path="/tmp/kfshots/i-phone.png", full_page=True)
         br.close()
 finally: srv.terminate()

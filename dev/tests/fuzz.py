@@ -53,6 +53,10 @@ JS = r"""
           } else if (q.type === 'riddle') {
             if (!q.options.some(o => o.value === q.answer) || new Set(q.options.map(o => o.value)).size !== q.options.length) add(where, 'riddle options bad', q);
             if (q.clues.slice(0, -1).some(c => c.toLowerCase().includes(String(q.answer).toLowerCase()))) add(where, 'clue gives the answer away', q);
+          } else if (q.type === 'map') {
+            const pool = q.map === 'region' ? MAPDATA.region : q.pick === 'dot' ? MAPDATA.places : Object.assign({ Budapest: 1 }, MAPDATA.counties);
+            if (!(q.answer in pool)) add(where, 'map answer unknown ' + q.answer, q);
+            if (q.pick === 'dot' && (!q.dots.includes(q.answer) || new Set(q.dots).size !== q.dots.length || q.dots.some(d => !(d in MAPDATA.places)))) add(where, 'map dots bad', q);
           } else if (q.type === 'find') {
             if (!q.targets.length || q.targets.some(i => i < 0 || i >= q.cells.length)) add(where, 'bad targets', q);
           }
