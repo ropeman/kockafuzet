@@ -126,3 +126,5 @@
 .lbank .opt.lname{font-size:clamp(18px,3.8vw,22px);min-height:54px;width:auto;padding:.3em .9em}
 .lbank .opt.used{visibility:hidden;position:absolute}
 @media (prefers-reduced-motion:reduce){.lspot.cur{animation:none}.scard-in.fly{transition:none}}
+.humap .mr.hl{stroke:#f76707;stroke-width:6;filter:drop-shadow(0 0 3px #ffd43b)}
+.vis.moonfig{width:170px;height:auto}.vis.symfig{width:200px;height:auto}.vis.riverfig{width:min(260px,80vw);height:auto}

@@ -4,7 +4,7 @@ function huMap(o = {}) {
   const M = MAPDATA, cid = 'huclip' + (++_mapN); let s = `<defs><clipPath id="${cid}"><path d="${M.outline}"/></clipPath></defs>`;
   for (const [n, c] of Object.entries(M.counties)) s += `<path class="mc${o.hl === n ? ' hl' : ''}" data-a="${n}" d="${c.d}"/>`;
   s += `<path class="mc bp${o.hl === 'Budapest' ? ' hl' : ''}" data-a="Budapest" d="${M.budapest}"/>`;
-  for (const [n, d] of Object.entries(M.rivers)) s += `<path class="mr${n === 'Duna' || n === 'Tisza' ? ' big' : ''}" clip-path="url(#${cid})" d="${d}"/>`;
+  for (const [n, d] of Object.entries(M.rivers)) s += `<path class="mr${n === 'Duna' || n === 'Tisza' ? ' big' : ''}${o.hlRiver === n ? ' hl' : ''}" clip-path="url(#${cid})" d="${d}"/>`;
   if (o.rivers !== false) for (const [n, [x, y]] of Object.entries(M.riverLabels)) s += `<text class="mriv" x="${x}" y="${y}">${n}</text>`;
   s += M.lakes.map(l => `<path class="ml" d="${l.d}"/>`).join('');
   if (o.names) for (const [n, c] of Object.entries(M.counties)) s += `<text class="mname" x="${c.c[0]}" y="${c.c[1]}">${n.replace(/-(?=.{6,})/, '-​')}</text>`;

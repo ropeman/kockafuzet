@@ -439,9 +439,310 @@ K4.hidak = L => {
   if (L === 2) return r < .3 ? brOrder() : r < .5 ? brHl(2) : r < .7 ? (() => { const [cl, a, w] = pick(BR_RIDDLES); return riddleQ(cl, a, w); })() : fact();
   return r < .35 ? brLabel() : r < .55 ? brOrder() : r < .7 ? (() => { const [cl, a, w] = pick(BR_RIDDLES); return riddleQ(cl, a, w); })() : fact();
 };
+/* ---------- more questions for the small topics, and three new topics ---------- */
+// fact = [level, question, answer, wrong answers, hint]
+const factQ = ([, q, a, w, hint]) => mcq(q, a, w, { fmt: v => v, hint });
+const withFacts = (base, facts, p) => L => { const pool = facts.filter(f => f[0] === L); return pool.length && Math.random() < p ? factQ(pick(pool)) : base(L); };
+const MORE = {
+  measure: [
+    [1, 'Mivel mérjük meg, milyen hosszú a ceruza?', 'vonalzóval', ['mérleggel', 'hőmérővel', 'órával'], 'Rövid dolgok hosszát vonalzóval mérjük.'],
+    [1, 'Mivel mérjük a lázat?', 'lázmérővel', ['vonalzóval', 'mérleggel', 'mérőpohárral'], 'A láz a testhőmérséklet; ehhez külön hőmérő van.'],
+    [1, 'Mivel mérjük az időt egy futóversenyen?', 'stopperórával', ['mérleggel', 'vonalzóval', 'hőmérővel'], 'Ez egy olyan óra, amelyet elindíthatsz és megállíthatsz.'],
+    [1, 'Mivel mérjük, mennyi tej kell a palacsintához?', 'mérőpohárral', ['vonalzóval', 'hőmérővel', 'stopperórával'], 'A folyadék mennyiségét (űrtartalmát) mérjük vele.'],
+    [1, 'Mivel mérjük meg, hány kiló a liszt?', 'konyhai mérleggel', ['mérőszalaggal', 'hőmérővel', 'stopperórával'], 'A tömeget mérleggel mérjük.'],
+    [2, 'Mennyi 1 kg?', '100 dkg', ['10 dkg', '1000 dkg', '50 dkg'], '1 kg = 100 dkg, 1 dkg = 10 g.'],
+    [2, 'Mennyi 1 liter?', '10 dl', ['100 dl', '5 dl', '1000 dl'], '1 l = 10 dl, 1 dl = 100 ml.'],
+    [2, 'Mennyi 1 méter?', '100 cm', ['10 cm', '1000 cm', '60 cm'], '1 m = 10 dm = 100 cm.'],
+    [2, 'Hány óra egy nap?', '24 óra', ['12 óra', '60 óra', '10 óra'], 'Egy nap 24 óra: ennyi idő alatt fordul meg a Föld.'],
+    [2, 'Melyik a legnehezebb?', '1 kg kenyér', ['80 dkg liszt', '50 dkg alma', '10 dkg csoki'], 'Váltsd át: 1 kg = 100 dkg.'],
+    [2, 'Melyik a leghosszabb?', '1 m', ['90 cm', '9 dm', '50 cm'], 'Váltsd át: 1 m = 100 cm, 9 dm = 90 cm.'],
+    [2, 'Melyik fér el több vízben?', '2 literes üveg', ['15 dl-es kancsó', '5 dl-es pohár', '1 literes üveg'], 'Váltsd át: 1 l = 10 dl, tehát 2 l = 20 dl.']
+  ],
+  weather: [
+    [1, 'Melyik évszakban esik leggyakrabban hó?', 'télen', ['nyáron', 'tavasszal', 'ősszel'], 'A hó akkor esik, amikor fagypont alatt van a hőmérséklet.'],
+    [1, 'Melyik évszak követi a nyarat?', 'az ősz', ['a tél', 'a tavasz', 'újra a nyár'], 'Az évszakok sorrendje: tavasz, nyár, ősz, tél.'],
+    [1, 'Melyik évszakban a leghosszabbak a nappalok?', 'nyáron', ['télen', 'ősszel', 'tavasszal'], 'Nyáron korán kel és későn nyugszik a Nap.'],
+    [1, 'Mi a szél?', 'a levegő mozgása', ['a felhők színe', 'a lehulló víz', 'a Nap melege'], 'Amikor a levegő áramlik, azt szélnek érezzük.'],
+    [1, 'Hogyan véded magad nyáron a tűző naptól?', 'sapkát veszek, és naptejet használok', ['kabátot veszek', 'nem iszom vizet', 'délben futok a napon'], 'A nap sugarai leégést és napszúrást okozhatnak.'],
+    [1, 'Mit vegyél fel, ha esik az eső?', 'esőkabátot', ['fürdőruhát', 'papucsot', 'napszemüveget'], 'Olyan ruha kell, amin nem jut át a víz.'],
+    [2, 'Mi a dér?', 'a talajra és a növényekre fagyott apró jégkristályok', ['hulló hópelyhek', 'nagy esőcseppek', 'a talajhoz közeli felhő'], 'Hideg, derült éjszakákon keletkezik, reggel fehérré teszi a füvet.'],
+    [2, 'Mi a harmat?', 'a hűvös hajnalon a fűre kicsapódó vízcseppek', ['a jégeső olvadéka', 'a fák nedve', 'a köd neve télen'], 'A levegő párája lecsapódik a hideg fűszálakon.'],
+    [2, 'Mi a köd?', 'a talaj közelében lebegő apró vízcseppek', ['a füst a kéményből', 'a hó, ami nem esik le', 'a szél porfelhője'], 'A köd olyan, mint egy felhő, ami leereszkedett a földre.'],
+    [2, 'Mi jellemző a zivatarra?', 'villámlás, mennydörgés és heves eső', ['csendes, apró szitálás', 'havazás tavasszal', 'erős napsütés'], 'Nyáron, meleg időben gyakori.'],
+    [2, 'Mi a jégeső?', 'jéggolyók hullanak az égből, főleg nyári zivatarban', ['a téli havazás másik neve', 'a fagyott tó felszíne', 'a jégcsap olvadása'], 'Nyáron is eshet, a zivatarfelhőben fagynak meg a cseppek.'],
+    [3, 'Milyen az éghajlata hazánknak?', 'mérsékelt, négy évszakkal', ['trópusi, egész évben forró', 'sarkvidéki, egész évben hideg', 'sivatagi, alig esik eső'], 'Nálunk négy jól elkülönülő évszak van.'],
+    [3, 'Mi a különbség az időjárás és az éghajlat között?', 'az időjárás a mostani állapot, az éghajlat sok év átlaga', ['nincs különbség', 'az időjárás csak télen van', 'az éghajlatot hőmérővel mérjük'], 'Az időjárás napról napra változik, az éghajlat egy terület jellemző, hosszú távú időjárása.'],
+    [3, 'Miért látjuk előbb a villámot, mint halljuk a mennydörgést?', 'mert a fény gyorsabb, mint a hang', ['mert a hang gyorsabb', 'mert a villám hangtalan', 'mert a felhők elnyelik a hangot'], 'A fény szinte azonnal ideér, a hang lassabban halad.'],
+    [3, 'Mit tegyél, ha a szabadban ér a zivatar?', 'ne állj magányos fa alá, keress épületet', ['állj a legmagasabb fa alá', 'menj fel a dombtetőre', 'fogd meg a fémkerítést'], 'A villám a magas, kiemelkedő pontokba csap.']
+  ],
+  health: [
+    [1, 'Hányszor moss fogat naponta?', 'legalább kétszer', ['hetente egyszer', 'csak ünnepnapon', 'soha'], 'Reggel és este is moss fogat!'],
+    [1, 'Mit igyál, ha szomjas vagy?', 'vizet', ['kólát', 'energiaitalt', 'nagyon cukros szörpöt'], 'A víz oltja legjobban a szomjat, és nincs benne cukor.'],
+    [1, 'Melyik egészséges tízórai?', 'gyümölcs vagy teljes kiőrlésű szendvics', ['chips', 'csoki', 'cukorka'], 'Ami vitamint és tartós energiát ad, az egészséges.'],
+    [1, 'Mit viselj biciklizéskor?', 'bukósisakot', ['papucsot', 'napszemüveget a fejem tetején', 'semmit sem kell'], 'A bukósisak eséskor megvédi a fejedet.'],
+    [1, 'Mit tegyél, mielőtt átmész az úton?', 'megállok, és körülnézek balra, jobbra, majd újra balra', ['futva átrohanok', 'csak jobbra nézek', 'a telefonomat nézem'], 'Mindig a zebrán menj át, és nézz körül alaposan!'],
+    [2, 'Körülbelül mennyit aludjon egy kisiskolás éjszaka?', 'körülbelül 10 órát', ['4 órát', '6 órát', '15 órát'], 'A pihent agy jobban tanul.'],
+    [2, 'Mit tegyél, ha megégeted az ujjad?', 'hideg folyó víz alá tartom', ['bekenem vajjal', 'szorosan bekötöm', 'nem csinálok semmit'], 'A hideg víz lehűti az égett bőrt. Szólj egy felnőttnek is!'],
+    [2, 'Mit tegyél, ha vérzik az orrod?', 'előrehajolok, és összeszorítom az orrom', ['hátrahajtom a fejem', 'lefekszem a hátamra', 'ugrálok'], 'Előre hajolj, hogy a vér ne folyjon le a torkodba.'],
+    [2, 'Mit mondj, ha mentőt hívsz?', 'a nevemet, a pontos címet és hogy mi történt', ['csak azt, hogy baj van', 'a kedvenc színemet', 'semmit, leteszem'], 'A mentőknek tudniuk kell, hová menjenek és mi a baj.'],
+    [2, 'Miért fontos a reggeli?', 'energiát ad a délelőtti tanuláshoz', ['mert utána nem kell ebédelni', 'mert ettől nő a hajunk', 'nem fontos'], 'Éjszaka sokáig nem eszünk, reggel tölteni kell az energiát.'],
+    [3, 'Mi a kórokozó?', 'apró élőlény (például baktérium vagy vírus), amely betegséget okoz', ['egy gyógyszer', 'egy vitamin', 'egy testrész'], 'Szabad szemmel nem látjuk őket.'],
+    [3, 'Hogyan terjed a nátha?', 'cseppfertőzéssel: köhögéssel, tüsszentéssel', ['a napfénnyel', 'a vízcsapból', 'zenehallgatással'], 'Ezért kell zsebkendőbe tüsszenteni.'],
+    [3, 'Mit tegyél, ha lázas vagy?', 'pihenek, sok folyadékot iszom, és szólok egy felnőttnek', ['focizni megyek', 'nem iszom semmit', 'hideg vízben fürdök sokáig'], 'Lázas betegségben a pihenés és a folyadék segít.'],
+    [3, 'Melyik étel ad sok kalciumot a csontjainknak?', 'tej, sajt, joghurt', ['cukorka', 'kóla', 'chips'], 'A tejtermékek erősítik a csontokat és a fogakat.'],
+    [3, 'Miért kell napkrémet használni?', 'megvédi a bőrt a leégéstől', ['hogy jobb legyen az illatunk', 'hogy ne fázzunk', 'hogy gyorsabban fussunk'], 'A Nap sugarai megégethetik a bőrt.']
+  ],
+  body: [
+    [1, 'Hány érzékszervünk van?', '5', ['3', '4', '7'], 'Szem, fül, orr, nyelv, bőr.'],
+    [1, 'Melyik érzékszervünkkel érezzük, hogy valami meleg vagy hideg?', 'a bőrünkkel', ['a fülünkkel', 'az orrunkkal', 'a szemünkkel'], 'A bőrünkkel tapintunk, és a meleget, hideget is érezzük.'],
+    [1, 'Mivel érezzük a virág illatát?', 'az orrunkkal', ['a fülünkkel', 'a nyelvünkkel', 'a szemünkkel'], 'A szaglás érzékszerve az orr.'],
+    [1, 'Mivel érezzük az ízeket?', 'a nyelvünkkel', ['a fülünkkel', 'a bőrünkkel', 'a szemünkkel'], 'Az ízlelés érzékszerve a nyelv.'],
+    [1, 'Mire jó a szempilla?', 'védi a szemet a portól', ['segít hallani', 'segít szagolni', 'semmire'], 'A szempilla és a pislogás védi a szemet.'],
+    [2, 'Hány foga van egy felnőtt embernek?', '32', ['20', '24', '40'], 'A gyerekeknek 20 tejfoguk van, a felnőtteknek 32 maradó foguk.'],
+    [2, 'Hány tejfoga van egy kisgyereknek?', '20', ['10', '32', '28'], 'A tejfogak helyére nőnek a maradó fogak.'],
+    [2, 'Mi szállítja az oxigént a testünkben?', 'a vér', ['a csontok', 'a haj', 'a köröm'], 'A szív a vért pumpálja, a vér oxigént visz minden testrészhez.'],
+    [2, 'Melyik a testünk legnagyobb szerve?', 'a bőr', ['a máj', 'a tüdő', 'az agy'], 'Az egész testünket beborítja.'],
+    [2, 'Mi a gerincoszlop?', 'a hátunkban húzódó csontoszlop, amely tartja a testet', ['egy izom a karban', 'a szív része', 'a koponya másik neve'], 'Csigolyákból áll.'],
+    [3, 'Mi védi az agyat?', 'a koponya', ['a bordák', 'a gerinc', 'a medence'], 'A fejünk csontjai kemény „sisakot” alkotnak.'],
+    [3, 'Mi védi a szívet és a tüdőt?', 'a bordák', ['a koponya', 'a térdkalács', 'a lapocka'], 'A bordák kosárként veszik körül a mellkas szerveit.'],
+    [3, 'Mi a fogak feladata?', 'felaprítják az ételt', ['pumpálják a vért', 'irányítják a testet', 'levegőt szállítanak'], 'Az emésztés a szájban, a rágással kezdődik.'],
+    [3, 'Hová jut a belélegzett levegő?', 'a tüdőbe', ['a gyomorba', 'a szívbe', 'az agyba'], 'Az orron és a légcsövön át a tüdőbe.']
+  ],
+  landform: [
+    [1, 'Hogy hívjuk a hegy legmagasabb pontját?', 'csúcs', ['lejtő', 'völgy', 'hegyláb'], 'A hegy részei: csúcs (teteje), lejtő (oldala), hegyláb (alja).'],
+    [1, 'Hogy hívjuk a hegy oldalát?', 'lejtő', ['csúcs', 'völgy', 'forrás'], 'A hegy részei: csúcs, lejtő, hegyláb.'],
+    [1, 'Hogy hívjuk azt a helyet, ahol a víz a földből előtör?', 'forrás', ['torkolat', 'tó', 'völgy'], 'A forrásból indul el a patak.'],
+    [1, 'Hogy hívjuk a vízzel minden oldalról körülvett szárazföldet?', 'sziget', ['félsziget', 'völgy', 'domb'], 'Ilyen a Margit-sziget vagy a Csepel-sziget.'],
+    [2, 'Mi a félsziget?', 'három oldalról víz veszi körül', ['minden oldalról víz veszi körül', 'egy fél hegy', 'egy kis tó'], 'Ilyen a Tihanyi-félsziget a Balatonban.'],
+    [2, 'Mi a mocsár?', 'sekély, növényekkel sűrűn benőtt állóvíz', ['gyors folyású patak', 'magas hegy', 'homokos síkság'], 'Sok nád és sás nő benne.'],
+    [2, 'Mi a csatorna?', 'ember által ásott, mesterséges folyóvíz', ['egy hegy neve', 'természetes tó', 'egy forrás'], 'Öntözésre vagy hajózásra készítik.'],
+    [2, 'Mi a barlang?', 'föld alatti üreg, gyakran cseppkövekkel', ['egy magas fa', 'egy sziget', 'egy völgy a folyó mellett'], 'Híres barlangunk a Baradla Aggteleknél.'],
+    [3, 'Hol van a Dunántúl legmagasabb pontja, az Írott-kő?', 'a Kőszegi-hegységben', ['a Mecsekben', 'a Bakonyban', 'a Mátrában'], 'Az osztrák határon, az Alpokalján.'],
+    [3, 'Mi a Bükk legmagasabb csúcsa?', 'az Istállós-kő', ['a Kékes', 'a Zengő', 'a Dobogókő'], 'A Bükk Eger és Miskolc között van.'],
+    [3, 'Milyen magas a Kékes?', 'körülbelül 1014 méter', ['körülbelül 514 méter', 'körülbelül 2014 méter', 'körülbelül 114 méter'], 'Ez az egyetlen hegycsúcsunk, amely 1000 méternél magasabb.'],
+    [3, 'Mi a tanúhegy, például a Badacsony?', 'vulkáni eredetű, lapos tetejű hegy a Balaton-felvidéken', ['egy homokdomb az Alföldön', 'egy barlang', 'egy mesterséges domb'], 'Régen vulkánok működtek a Balaton északi partján.']
+  ],
+  plant: [
+    [1, 'Mire van szüksége a növénynek a növekedéshez?', 'fényre, vízre, levegőre és tápanyagra', ['csak sötétségre', 'csak cukorra', 'semmire'], 'A növény a gyökerével vizet és tápanyagot vesz fel, a levelével fényt hasznosít.'],
+    [1, 'Mi lesz a magból?', 'új növény', ['virágpor', 'levél', 'kő'], 'A mag kicsírázik, és új növény fejlődik belőle.'],
+    [1, 'Mi lesz a virágból?', 'termés', ['gyökér', 'szár', 'föld'], 'A virágból fejlődik a termés, abban van a mag.'],
+    [1, 'Melyik évszakban hullatják le a leveleiket a lombos fák?', 'ősszel', ['tavasszal', 'nyáron', 'egész évben'], 'Ősszel a levelek elszíneződnek és lehullanak.'],
+    [1, 'Hogy hívjuk a fa vastag szárát?', 'törzs', ['gyökér', 'korona', 'levél'], 'A fa részei: gyökér, törzs, korona (ágak és levelek).'],
+    [2, 'Melyik fa örökzöld?', 'a fenyő', ['a tölgy', 'a bükk', 'a nyír'], 'Az örökzöldek télen is megtartják a leveleiket (tűleveleiket).'],
+    [2, 'Mi terem a tölgyfán?', 'makk', ['dió', 'alma', 'gesztenye'], 'A makk a tölgyfa termése, a vaddisznók és a mókusok szeretik.'],
+    [2, 'Kik segítik a virágok beporzását?', 'a rovarok, például a méhek', ['a halak', 'a csigák', 'a vakondok'], 'A méhek virágról virágra viszik a virágport.'],
+    [2, 'Melyik lágyszárú növény?', 'a pipacs', ['a tölgy', 'a fenyő', 'az akác'], 'A lágyszárú növény szára puha és zöld, a fásszárúé kemény.'],
+    [3, 'Mit készít a levél a napfény segítségével?', 'táplálékot (cukrot) a növénynek', ['virágport', 'gyökeret', 'magot'], 'A zöld levél napfény, víz és levegő segítségével táplálékot készít.'],
+    [3, 'Milyen gázt bocsátanak ki a növények nappal a levegőbe?', 'oxigént', ['füstöt', 'vízgőzt és homokot', 'semmilyet'], 'Az oxigént mi és az állatok belélegezzük.'],
+    [3, 'Melyik fásszárú növény?', 'az akác', ['a pipacs', 'a búza', 'a kamilla'], 'A fásszárú növény szára kemény, megfásodott: fák és cserjék.']
+  ],
+  regions: [
+    [1, 'Melyik nagytájon fekszik Debrecen?', 'Alföld', ['Kisalföld', 'Dunántúli-dombság', 'Északi-középhegység'], 'Debrecen keleten van, a nagy síkságon.'],
+    [1, 'Melyik nagytájon fekszik Győr?', 'Kisalföld', ['Alföld', 'Északi-középhegység', 'Dunántúli-dombság'], 'Győr északnyugaton van, a kisebbik síkságon.'],
+    [1, 'Melyik nagytájon fekszik Pécs?', 'Dunántúli-dombság', ['Alföld', 'Kisalföld', 'Északi-középhegység'], 'Pécs a Mecsek lábánál van, délen.'],
+    [1, 'Melyik nagytájon fekszik Eger?', 'Északi-középhegység', ['Alföld', 'Kisalföld', 'Dunántúli-dombság'], 'Eger a Bükk lábánál van, északon.']
+  ],
+  country: [
+    [1, 'Hány szomszédos országa van Magyarországnak?', '7', ['4', '5', '9'], 'Ausztria, Szlovákia, Ukrajna, Románia, Szerbia, Horvátország, Szlovénia.'],
+    [1, 'Mi Magyarország fővárosa?', 'Budapest', ['Debrecen', 'Szeged', 'Győr'], 'A Duna két partján fekszik.'],
+    [1, 'Hány megyéje van Magyarországnak?', '19', ['7', '12', '25'], 'És mellettük Budapest, a főváros.'],
+    [1, 'Milyen színű a magyar zászló fentről lefelé?', 'piros, fehér, zöld', ['zöld, fehér, piros', 'piros, sárga, zöld', 'kék, fehér, piros'], 'A piros van felül, a zöld alul.'],
+    [2, 'Melyik a legnagyobb városunk Budapest után?', 'Debrecen', ['Szeged', 'Pécs', 'Győr'], 'Hajdú-Bihar megye székhelye, az Alföldön.']
+  ]
+};
+MORE.energy = [
+  [1, 'Melyik ad fényt és meleget is?', 'a tűz', ['a Hold', 'a tükör', 'a víz'], 'A tűz világít és melegít is.'],
+  [1, 'Mi kell ahhoz, hogy lássunk?', 'fény', ['zaj', 'szél', 'víz'], 'Teljes sötétben semmit sem látunk.'],
+  [2, 'Mit tegyél, ha tüzet látsz?', 'szólok egy felnőttnek, és hívjuk a 105-öt vagy a 112-t', ['elbújok az ágy alá', 'vizet öntök a konnektorra', 'bent maradok, és nézem'], 'A tűzoltók száma 105, az általános segélyhívó 112.'],
+  [3, 'Mivel oltsuk el az égő olajat a serpenyőben?', 'letakarjuk egy fedővel', ['vizet öntünk rá', 'ráfújunk', 'megkeverjük'], 'A víztől szétfröccsen az égő olaj! A fedő elzárja a levegőt.'],
+  [3, 'Miért alszik ki a gyertya, ha befőttesüveget borítunk rá?', 'elfogy alatta a levegő (oxigén)', ['mert megijed', 'mert túl meleg lesz', 'mert kialszik a fény'], 'Az égéshez levegő kell.']
+];
+MORE.animal = [
+  [2, 'Melyik állat rak tojást?', 'a tyúk', ['a kutya', 'a tehén', 'a macska'], 'A madarak, a hüllők, a kétéltűek és a halak tojással szaporodnak.'],
+  [2, 'Hány lába van a rovaroknak?', '6', ['4', '8', '10'], 'Minden rovarnak hat lába van.'],
+  [2, 'Hány lába van a póknak?', '8', ['6', '4', '10'], 'A pók nem rovar: nyolc lába van.'],
+  [2, 'Melyik állat alszik téli álmot?', 'a sün', ['a róka', 'a veréb', 'a szarvas'], 'Téli álmot alszik a sün, a medve, a denevér és az ürge.'],
+  [2, 'Melyik madár költözik ősszel melegebb vidékre?', 'a fecske', ['a veréb', 'a cinege', 'a varjú'], 'A fecske és a gólya ősszel délre költözik.']
+];
+MORE.habitat = [
+  [3, 'Kik a termelők a táplálékláncban?', 'a zöld növények', ['a ragadozók', 'a gombák', 'a növényevők'], 'A zöld növények a napfény segítségével maguk készítik a táplálékukat.'],
+  [3, 'Melyik ragadozó?', 'a róka', ['a nyúl', 'az őz', 'a mezei egér'], 'A ragadozó más állatokat eszik.'],
+  [3, 'Melyik növényevő?', 'az őz', ['a róka', 'a farkas', 'a bagoly'], 'A növényevő füvet, levelet, termést eszik.'],
+  [3, 'Mi történne, ha eltűnnének a rókák az erdőből?', 'elszaporodnának az egerek és a nyulak', ['több lenne a fa', 'kiszáradna a patak', 'semmi'], 'Az életközösség tagjai összefüggnek: a ragadozók szabályozzák a zsákmányállatok számát.'],
+  [3, 'Mit csinálnak a lebontók (például a gombák és a giliszták)?', 'lebontják az elhalt növényeket és állatokat', ['virágot hoznak', 'megeszik a rókát', 'vizet szállítanak'], 'A lebontók munkájából lesz a talaj tápanyaga.']
+];
+MORE.country.push(
+  [2, 'Melyik ország fővárosa Bécs?', 'Ausztria', ['Szlovákia', 'Románia', 'Szerbia'], 'Bécs nyugati szomszédunk fővárosa.'],
+  [2, 'Mi Szlovákia fővárosa?', 'Pozsony', ['Bécs', 'Zágráb', 'Belgrád'], 'Közel van a magyar határhoz, a Duna partján.'],
+  [2, 'Melyik a legnagyobb területű megyénk?', 'Bács-Kiskun', ['Pest', 'Nógrád', 'Komárom-Esztergom'], 'A Duna és a Tisza között fekszik, délen.'],
+  [2, 'Melyik a legkisebb területű megyénk?', 'Komárom-Esztergom', ['Bács-Kiskun', 'Pest', 'Borsod-Abaúj-Zemplén'], 'Északon, a Duna mentén fekszik.']);
+MORE.weather.push(
+  [3, 'Milyen felhőből lesz zivatar?', 'a magasra tornyosuló gomolyfelhőből', ['a vékony fátyolfelhőből', 'a ködből', 'a kéményfüstből'], 'A nyári zivatarfelhő óriási, sötét toronyként nő az égen.'],
+  [3, 'Mit jelent a fagypont alatti hőmérséklet?', '0 °C-nál hidegebb', ['0 °C-nál melegebb', 'pontosan 10 °C', 'amikor esik az eső'], '0 °C-on fagy meg a víz.']);
+for (const [k, facts] of Object.entries(MORE)) K4[k] = withFacts(K4[k], facts, .5);
+
+/* Folyóink és tavaink */
+const RIVER_HL = ['Duna', 'Tisza', 'Rába', 'Körös', 'Maros', 'Zagyva', 'Sajó', 'Bodrog', 'Sió', 'Zala'];
+const RIVER_HINT = { 'Duna': 'Hazánk legnagyobb folyója: északnyugatról érkezik, a Duna-kanyarnál dél felé fordul, és Budapesten is átfolyik.', 'Tisza': 'Északkeleten lép be, és dél felé kanyarog az Alföldön, Szegednél hagyja el az országot.', 'Rába': 'Nyugatról, Ausztriából érkezik, és Győrnél ömlik a Mosoni-Dunába.', 'Körös': 'Keletről, Romániából érkezik, és Csongrádnál ömlik a Tiszába.', 'Maros': 'Keletről, Romániából érkezik, és Szegednél ömlik a Tiszába.', 'Zagyva': 'Északról, a Mátra mellől folyik dél felé, és Szolnoknál ömlik a Tiszába.', 'Sajó': 'Északról, Szlovákiából érkezik, Miskolc mellett folyik el, és a Tiszába ömlik.', 'Bodrog': 'Északkeletről érkezik, és Tokajnál ömlik a Tiszába.', 'Sió': 'A Balatonból indul Siófoknál, és a Dunába ömlik.', 'Zala': 'Nyugatról érkezik, és a Balaton nyugati csücskébe ömlik.' };
+const riverHl = () => { const r = pick(RIVER_HL); return { type: 'choice', prompt: 'Melyik folyó van kiemelve a térképen?', visual: huMap({ hlRiver: r, rivers: false }), answer: r, options: shuffle([r, ...shuffle(RIVER_HL.filter(x => x !== r)).slice(0, 3)]).map(v => ({ value: v, html: v })), answerText: r, hint: RIVER_HINT[r] }; };
+const TISZA_TRIB = ['Maros', 'Körös', 'Zagyva', 'Sajó', 'Bodrog'], DUNA_TRIB = ['Rába', 'Sió', 'Dráva', 'Ipoly'];
+const tribQ = () => Math.random() < .5
+  ? mcq('Melyik folyó a <b>Tisza</b> mellékfolyója?', pick(TISZA_TRIB), shuffle(DUNA_TRIB).slice(0, 3), { fmt: v => v, hint: 'A Tiszába ömlik: Szamos, Bodrog, Sajó, Zagyva, Körös, Maros. A Dunába ömlik: Rába, Sió, Ipoly, Dráva (és maga a Tisza is).' })
+  : mcq('Melyik folyó a <b>Duna</b> mellékfolyója?', pick(DUNA_TRIB), shuffle(TISZA_TRIB).slice(0, 3), { fmt: v => v, hint: 'A Dunába ömlik: Rába, Sió, Ipoly, Dráva (és maga a Tisza is). A Tiszába ömlik: Bodrog, Sajó, Zagyva, Körös, Maros.' });
+const RIVER_FACTS = [
+  [1, 'Melyik folyó folyik át Budapesten?', 'a Duna', ['a Tisza', 'a Rába', 'a Zagyva'], 'Budapestet Budára és Pestre osztja.'],
+  [1, 'Melyik a leghosszabb folyónk az országon belül?', 'a Tisza', ['a Duna', 'a Rába', 'a Körös'], 'Az Alföldet szeli át észak–déli irányban.'],
+  [1, 'Hová ömlik a Duna?', 'a Fekete-tengerbe', ['a Balatonba', 'az Adriai-tengerbe', 'az Északi-tengerbe'], 'Sok országon át folyik keletre, a tengerig.'],
+  [1, 'Hogy hívjuk azt a helyet, ahol a folyó ered?', 'forrás', ['torkolat', 'meder', 'gát'], 'A folyó a forrásnál „születik”.'],
+  [1, 'Hogy hívjuk azt a helyet, ahol a folyó egy másik folyóba vagy a tengerbe ömlik?', 'torkolat', ['forrás', 'meder', 'part'], 'A torkolatnál ér véget a folyó útja.'],
+  [1, 'Hogy hívjuk a folyót, amely egy nagyobb folyóba ömlik?', 'mellékfolyó', ['főfolyó', 'tenger', 'forrás'], 'A Zagyva például a Tisza mellékfolyója.'],
+  [1, 'Milyen víz a Balaton?', 'állóvíz', ['folyóvíz', 'tenger', 'patak'], 'A tó vize egy helyben marad, nem folyik el egy irányba.'],
+  [2, 'Melyik városnál ömlik a Maros a Tiszába?', 'Szegednél', ['Szolnoknál', 'Tokajnál', 'Győrnél'], 'Hazánk déli részén, a Tisza partján.'],
+  [2, 'Melyik városnál ömlik a Zagyva a Tiszába?', 'Szolnoknál', ['Szegednél', 'Tokajnál', 'Győrnél'], 'Jász-Nagykun-Szolnok megye székhelyén.'],
+  [2, 'Melyik városnál ömlik a Bodrog a Tiszába?', 'Tokajnál', ['Szegednél', 'Szolnoknál', 'Csongrádnál'], 'Ott, ahol a híres borvidék is van.'],
+  [2, 'Melyik folyó vezeti le a Balaton vizét a Dunába?', 'a Sió', ['a Zala', 'a Rába', 'a Kapos'], 'Siófoknál indul ki a tóból.'],
+  [2, 'Melyik folyó a Balaton legnagyobb befolyója?', 'a Zala', ['a Sió', 'a Rába', 'a Dráva'], 'Nyugatról, a Kis-Balatonon át érkezik.'],
+  [2, 'Melyik folyó jelöli ki a határ egy részét Horvátország felé?', 'a Dráva', ['a Rába', 'a Zagyva', 'a Sió'], 'Hazánk déli határán folyik, Barcs mellett.'],
+  [2, 'Melyik folyó jelöli ki a határ egy részét Szlovákia felé (a Duna mellett)?', 'az Ipoly', ['a Dráva', 'a Maros', 'a Rába'], 'Nógrád megye északi szélén folyik.'],
+  [2, 'Melyik folyó partján fekszik Szeged?', 'a Tisza', ['a Duna', 'a Rába', 'a Zagyva'], 'Szeged az Alföld déli részén van.'],
+  [2, 'A Duna melyik partján fekszik Buda?', 'a jobb partján', ['a bal partján', 'a forrásánál', 'a torkolatánál'], 'A partot mindig a folyás irányába nézve nevezzük meg. A Duna délre folyik; dél felé nézve jobb kéz felől van Buda.'],
+  [2, 'Hogyan döntjük el, melyik a folyó jobb partja?', 'a folyás irányába nézve jobb kéz felőli part', ['a forrás felé nézve jobb kéz felőli part', 'mindig a nagyobb város felőli part', 'mindig a keleti part'], 'Képzeld el, hogy csónakban ülsz, és a víz visz előre.'],
+  [3, 'Hol ered a Duna?', 'Németországban, a Fekete-erdőben', ['Ausztriában', 'Szlovákiában', 'Romániában'], 'Nyugaton ered, és keletre, a Fekete-tengerig folyik.'],
+  [3, 'Hol ered a Tisza?', 'Ukrajnában, a Kárpátokban', ['Ausztriában, az Alpokban', 'Szlovákiában', 'Szerbiában'], 'Északkeletről érkezik hazánkba.'],
+  [3, 'Hová ömlik a Tisza?', 'a Dunába, Szerbiában', ['a Balatonba', 'egyenesen a Fekete-tengerbe', 'a Marosba'], 'A Tisza is a Duna mellékfolyója.'],
+  [3, 'Hány országon folyik át a Duna?', '10', ['4', '6', '15'], 'Ez a világ legtöbb országán átfolyó folyója.'],
+  [3, 'Mi a tiszavirág?', 'egy rovar (kérész), amely júniusban tömegesen rajzik a Tisza felett', ['egy vízinövény', 'egy hal', 'egy madár'], 'Csak néhány óráig él kifejlett rovarként.'],
+  [3, 'Mit nevezünk árvíznek?', 'amikor a folyó vize kilép a medréből', ['amikor kiszárad a folyó', 'amikor befagy a folyó', 'amikor tiszta a víz'], 'Hóolvadás vagy sok eső után történhet.'],
+  [3, 'Mi védi a településeket az árvíztől?', 'a gát (töltés)', ['a híd', 'a kikötő', 'a vízimalom'], 'A folyó mentén magas földsáncot építenek.'],
+  [3, 'Melyik tó vize gyógyvíz, és télen is meleg?', 'a Hévízi-tó', ['a Velencei-tó', 'a Fertő tó', 'a Tisza-tó'], 'Keszthely közelében, Zala megyében van.']
+];
+function riverSvg() {
+  let s = `<rect x="0" y="0" width="240" height="300" fill="#d8f5a2"/><path d="M0 0 L240 0 L240 12 Q120 20 0 12Z" fill="#e7f5ff"/>`;
+  s += `<path d="M0 72 L30 22 L58 58 L84 18 L118 70Z" fill="#a9845c" stroke="#7a5c3a" stroke-width="2"/><path d="M76 30 L84 18 L92 30Z" fill="#fff"/><path d="M24 32 L30 22 L36 32Z" fill="#fff"/>`;
+  s += `<rect x="0" y="262" width="240" height="38" fill="#4dabf7"/><path d="M0 262 q20 -6 40 0 t40 0 t40 0 t40 0 t40 0 t40 0" fill="#4dabf7"/>`;
+  s += `<path d="M60 62 C66 90 84 110 96 130" fill="none" stroke="#339af0" stroke-width="4" stroke-linecap="round"/>`;
+  s += `<path d="M96 130 C110 155 118 170 120 190" fill="none" stroke="#339af0" stroke-width="8" stroke-linecap="round"/>`;
+  s += `<path d="M120 190 C124 220 132 240 138 266" fill="none" stroke="#339af0" stroke-width="14" stroke-linecap="round"/>`;
+  s += `<path d="M228 60 C200 90 180 120 168 150 C156 175 140 185 121 192" fill="none" stroke="#339af0" stroke-width="5" stroke-linecap="round"/>`;
+  s += `<circle cx="60" cy="62" r="5" fill="#1c7ed6"/><path d="M128 210 l0 22 M124 226 l4 6 l4 -6" stroke="#1864ab" stroke-width="2" fill="none"/>`;
+  s += `<text x="200" y="290" font-size="13" fill="#fff" font-weight="700">tenger</text>`;
+  return svg(240, 300, s, 'riverfig');
+}
+const riverLabel = () => Math.random() < .55
+  ? labelQ('Címkézd fel a folyó részeit!', riverSvg(), [{ name: 'forrás', x: 25, y: 21 }, { name: 'mellékfolyó', x: 71, y: 44 }, { name: 'főfolyó', x: 52, y: 72 }, { name: 'torkolat', x: 57, y: 88 }], { hint: 'A folyó a forrásnál ered, a torkolatnál ömlik a tengerbe. A mellékfolyó a nagyobb főfolyóba ömlik.' })
+  : labelQ('Melyik a folyó jobb és bal partja? (A kis nyíl mutatja, merre folyik a víz.)', riverSvg(), [{ name: 'forrás', x: 25, y: 21 }, { name: 'jobb part', x: 37, y: 73 }, { name: 'bal part', x: 72, y: 73 }, { name: 'torkolat', x: 57, y: 88 }], { hint: 'A folyás irányába nézz (lefelé)! Ilyenkor a jobb kezed felé eső part a jobb part. Lefelé nézve a jobb kezed a kép bal oldalán van.' });
+const RIVER_RIDDLES = [
+  [['Rövid folyó vagyok a Dunántúlon.', 'Egy nagy üdülővárosból, a Balaton déli partjáról indulok.', 'Zsilip szabályozza a vizemet.', 'Én vezetem le a Balaton vizét a Dunába.'], 'Sió', ['Zala', 'Rába', 'Kapos']],
+  [['Folyó vagyok a Dunántúl nyugati részén.', 'Göcsej dombjai között kanyargok.', 'A Kis-Balatonon át érkezem.', 'Én vagyok a Balaton legnagyobb befolyója.'], 'Zala', ['Sió', 'Rába', 'Mura']],
+  [['Folyó vagyok, az Alpokban erednek a forrásaim.', 'Hazánk déli határán folyok.', 'Barcs városa mellett is elhaladok.', 'Horvátország és Magyarország között határt alkotok, aztán a Dunába ömlök.'], 'Dráva', ['Mura', 'Rába', 'Sió']],
+  [['Szlovákiából érkezem.', 'Sárospatak mellett folyok el.', 'Tokajnál ömlök a Tiszába.', 'Rólam kapta a nevét a Bodrogköz.'], 'Bodrog', ['Sajó', 'Hernád', 'Zagyva']],
+  [['Folyó vagyok, Ausztriából érkezem.', 'Szentgotthárdnál lépek be hazánkba.', 'Vas megyén kanyargok keresztül.', 'Győrnél ömlök a Mosoni-Dunába.'], 'Rába', ['Zala', 'Dráva', 'Lajta']]
+];
+const RIVER_SORT = L => sortQ('Folyó vagy tó? Válogasd szét!', { 'folyó': ['Duna', 'Tisza', 'Rába', 'Dráva', 'Körös', 'Zagyva', 'Maros', 'Sajó'], 'tó': ['Balaton', 'Velencei-tó', 'Fertő tó', 'Tisza-tó', 'Hévízi-tó'] }, 3, { hint: 'A folyó vize folyik egy irányba. A tó vize egy helyben marad. Vigyázz: a Tisza folyó, de a Tisza-tó tó!' });
+const RIVER_BUILDS = [
+  { prompt: 'Rakd sorba a víz útját a forrástól a tengerig! Koppints rájuk sorban.', answer: ['forrás', 'patak', 'folyó', 'torkolat'], hint: 'A forrásból kis patak lesz, a patakokból folyó, a folyó a torkolatnál ér a tengerbe.' },
+  { prompt: 'Rakd sorba a víz körforgását! Kezdd a párolgással.', answer: ['párolgás', 'felhőképződés', 'csapadékhullás', 'lefolyás'], hint: 'A Nap melegére a víz elpárolog, a gőzből felhő lesz, a felhőből eső hull, az eső a patakokon, folyókon át visszafolyik a tengerbe.' }
+];
+K4.folyok = L => {
+  const r = Math.random(), fact = () => factQ(pick(RIVER_FACTS.filter(f => f[0] === L || (L === 3 && f[0] === 2 && Math.random() < .3))));
+  const rid = () => { const [cl, a, w] = pick(RIVER_RIDDLES); return riddleQ(cl, a, w); };
+  const build = () => { const b = pick(RIVER_BUILDS); return { type: 'build', prompt: b.prompt, answer: b.answer, tiles: shuffle(b.answer), hint: b.hint, explain: b.answer.join(' → ') }; };
+  if (L === 1) return r < .55 ? fact() : r < .7 ? RIVER_SORT(L) : r < .85 ? build() : riverLabel();
+  if (L === 2) return r < .4 ? fact() : r < .6 ? riverHl() : r < .75 ? tribQ() : r < .9 ? riverLabel() : build();
+  return r < .35 ? fact() : r < .55 ? riverHl() : r < .7 ? rid() : r < .85 ? tribQ() : build();
+};
+
+/* Föld, Nap, Hold */
+function moonSvg(ph) {
+  const lit = '#ffe066', dark = '#2b3550';
+  let s = `<rect x="0" y="0" width="140" height="140" rx="16" fill="#101829"/><circle cx="24" cy="26" r="1.6" fill="#fff"/><circle cx="118" cy="114" r="1.4" fill="#fff"/><circle cx="112" cy="22" r="1.2" fill="#fff"/>`;
+  s += `<circle cx="70" cy="70" r="48" fill="${ph === 'telihold' ? lit : dark}" stroke="#56627f" stroke-width="1.5"/>`;
+  if (ph === 'növő') s += `<path d="M70 22 A48 48 0 0 1 70 118 Z" fill="${lit}"/>`;
+  if (ph === 'fogyó') s += `<path d="M70 22 A48 48 0 0 0 70 118 Z" fill="${lit}"/>`;
+  return svg(140, 140, s, 'moonfig');
+}
+const MOON = { 'újhold': 'újhold', 'növő': 'növő hold (első negyed)', 'telihold': 'telihold', 'fogyó': 'fogyó hold (utolsó negyed)' };
+const moonQ = () => { const k = pick(Object.keys(MOON)); return { type: 'choice', prompt: 'Melyik holdfázist látod?', visual: moonSvg(k), answer: MOON[k], options: shuffle(Object.values(MOON)).map(v => ({ value: v, html: v })), answerText: MOON[k], hint: 'Ha a Hold világos része olyan, mint a D betű, akkor dagad, vagyis nő. Ha olyan, mint a C betű, akkor csökken, vagyis fogy. Újholdkor nem látjuk, teliholdkor kerek.' }; };
+const SPACE_FACTS = [
+  [1, 'Mi a Nap?', 'egy csillag', ['egy bolygó', 'egy hold', 'egy felhő'], 'A Nap egy hatalmas, izzó gázgömb: csillag. Fényt és meleget ad.'],
+  [1, 'Mi a Föld?', 'egy bolygó', ['egy csillag', 'egy hold', 'egy üstökös'], 'A Föld a Nap körül keringő bolygó.'],
+  [1, 'Melyik égitest kering a Föld körül?', 'a Hold', ['a Nap', 'a Mars', 'a Sarkcsillag'], 'A Hold a Föld kísérője.'],
+  [1, 'Mi okozza, hogy váltakozik a nappal és az éjszaka?', 'a Föld forog a tengelye körül', ['a Hold eltakarja a Napot', 'a Nap éjszakára kialszik', 'a felhők'], 'A Földnek mindig az a fele van nappalban, amelyik a Nap felé néz.'],
+  [1, 'Merre kel fel a Nap?', 'keleten', ['nyugaton', 'északon', 'délen'], 'Keleten kel, nyugaton nyugszik.'],
+  [1, 'Merre nyugszik le a Nap?', 'nyugaton', ['keleten', 'északon', 'délen'], 'Keleten kel, nyugaton nyugszik.'],
+  [1, 'Világít-e a Hold magától?', 'nem, a Nap fényét veri vissza', ['igen, mint egy lámpa', 'csak télen', 'csak teliholdkor'], 'A Hold olyan, mint egy tükör, a napfényt veri vissza.'],
+  [1, 'Hány évszak van nálunk?', '4', ['2', '3', '6'], 'Tavasz, nyár, ősz, tél.'],
+  [2, 'Mennyi idő alatt fordul meg a Föld egyszer a tengelye körül?', '1 nap (24 óra)', ['1 hét', '1 hónap', '1 év'], 'Ezért tart egy nap 24 óráig.'],
+  [2, 'Mennyi idő alatt kerüli meg a Föld a Napot?', '1 év', ['1 nap', '1 hét', '1 hónap'], 'Egy év alatt egyszer kerüli meg, közben váltakoznak az évszakok.'],
+  [2, 'Körülbelül mennyi idő alatt kerüli meg a Hold a Földet?', 'körülbelül 1 hónap', ['1 nap', '1 hét', '1 év'], 'A holdfázisok is ennyi idő alatt ismétlődnek.'],
+  [2, 'Merre látjuk délben a Napot?', 'délen, a legmagasabban', ['északon, a legalacsonyabban', 'keleten, a látóhatáron', 'nyugaton, lenyugodva'], 'Délben a Nap delel: a legmagasabban áll az égen, déli irányban.'],
+  [2, 'Hányadik bolygó a Föld a Naptól számítva?', 'a harmadik', ['az első', 'az ötödik', 'a nyolcadik'], 'Merkúr, Vénusz, Föld, Mars, Jupiter, Szaturnusz, Uránusz, Neptunusz.'],
+  [2, 'Hány bolygó kering a Nap körül?', '8', ['5', '12', '20'], 'Merkúr, Vénusz, Föld, Mars, Jupiter, Szaturnusz, Uránusz, Neptunusz.'],
+  [2, 'Mi okozza az évszakok váltakozását?', 'a Föld ferde tengellyel kering a Nap körül', ['a Hold néha eltakarja a Napot', 'a Nap néha erősebben ég', 'a felhők mennyisége'], 'Nyáron a mi oldalunk a Nap felé dől, ezért melegebb van és hosszabbak a nappalok.'],
+  [3, 'Melyik a Naprendszer legnagyobb bolygója?', 'a Jupiter', ['a Föld', 'a Mars', 'a Merkúr'], 'Óriási gázbolygó, több mint ezer Föld férne el benne.'],
+  [3, 'Melyik bolygó van a legközelebb a Naphoz?', 'a Merkúr', ['a Vénusz', 'a Föld', 'a Mars'], 'Az első bolygó a Naptól.'],
+  [3, 'Melyiket hívják vörös bolygónak?', 'a Marsot', ['a Jupitert', 'a Vénuszt', 'a Szaturnuszt'], 'Vöröses színű a talaja miatt.'],
+  [3, 'Melyik bolygónak vannak feltűnő, széles gyűrűi?', 'a Szaturnusznak', ['a Marsnak', 'a Merkúrnak', 'a Földnek'], 'A gyűrűk jégből és kőzetdarabokból állnak.'],
+  [3, 'Mikor a leghosszabb nálunk a nappal?', 'június 21. körül, nyáron', ['december 21. körül', 'március 1-jén', 'november 1-jén'], 'Ez a nyári napforduló.'],
+  [3, 'Mikor a legrövidebb nálunk a nappal?', 'december 21. körül, télen', ['június 21. körül', 'augusztus 20-án', 'április 1-jén'], 'Ez a téli napforduló.'],
+  [3, 'Mi a napéjegyenlőség?', 'amikor a nappal és az éjszaka egyforma hosszú', ['amikor nincs éjszaka', 'amikor a Hold eltakarja a Napot', 'amikor telihold van'], 'Tavasszal (március 20–21. körül) és ősszel (szeptember 22–23. körül) van.'],
+  [3, 'Melyik csillag segít éjszaka megtalálni az északi irányt?', 'a Sarkcsillag', ['a Nap', 'a Hold', 'a Vénusz'], 'A Göncölszekér segítségével lehet megtalálni.']
+];
+const SPACE_RIDDLES = [
+  [['Égitest vagyok, éjszaka gyakran látsz.', 'Nem világítok magamtól, a Nap fényét verem vissza.', 'Néha kerek vagyok, néha csak egy vékony sarló.', 'A Föld körül keringek, nagyjából egy hónap alatt.'], 'Hold', ['Nap', 'Mars', 'Sarkcsillag']],
+  [['Csillag vagyok.', 'Fényt és meleget adok.', 'A bolygók körülöttem keringenek.', 'Nappal az égen látsz, de belém nézni veszélyes!'], 'Nap', ['Hold', 'Föld', 'Jupiter']],
+  [['Bolygó vagyok.', 'A harmadik vagyok a Naptól számítva.', 'Felszínem nagy részét víz borítja.', 'Rajtam élsz te is!'], 'Föld', ['Mars', 'Vénusz', 'Hold']],
+  [['Bolygó vagyok, a Föld szomszédja.', 'Vöröses színű vagyok.', 'Robotjárművek kutatják a felszínemet.', 'Nevemet a háború római istenéről kaptam.'], 'Mars', ['Vénusz', 'Jupiter', 'Merkúr']]
+];
+const SPACE_SORT = L => sortQ('Csillag vagy bolygó? Válogasd szét!', { 'csillag': ['Nap', 'Sarkcsillag', 'Szíriusz'], 'bolygó': ['Föld', 'Mars', 'Jupiter', 'Vénusz', 'Szaturnusz', 'Merkúr'] }, L === 1 ? 2 : 3, { hint: 'A csillag maga világít (például a Nap). A bolygó egy csillag körül kering, és nem világít magától.' });
+const planetBuild = L => { const ans = ['Merkúr', 'Vénusz', 'Föld', 'Mars', 'Jupiter'].slice(0, L === 3 ? 5 : 4); return { type: 'build', prompt: 'Rakd sorba a bolygókat a Naptól kezdve! Koppints rájuk sorban.', answer: ans, tiles: shuffle(ans), hint: 'A Naptól kifelé: Merkúr, Vénusz, Föld, Mars, Jupiter, Szaturnusz, Uránusz, Neptunusz.', explain: ans.join(' → ') }; };
+K4.fold = L => {
+  const r = Math.random(), fact = () => factQ(pick(SPACE_FACTS.filter(f => f[0] === L || (L === 3 && f[0] === 2 && Math.random() < .3))));
+  if (L === 1) return r < .65 ? fact() : r < .8 ? SPACE_SORT(L) : (() => { const [cl, a, w] = pick(SPACE_RIDDLES); return riddleQ(cl, a, w); })();
+  if (L === 2) return r < .5 ? fact() : r < .7 ? moonQ() : r < .85 ? planetBuild(L) : SPACE_SORT(L);
+  return r < .5 ? fact() : r < .65 ? moonQ() : r < .8 ? planetBuild(L) : (() => { const [cl, a, w] = pick(SPACE_RIDDLES); return riddleQ(cl, a, w); })();
+};
+
+/* Térképolvasás */
+const SYMBOLS = {
+  'város': '<circle cx="70" cy="45" r="11" fill="#1d2742"/>',
+  'hegycsúcs': '<path d="M52 60 L70 26 L88 60Z" fill="#7a4b26"/>',
+  'folyó': '<path d="M14 54 C34 30 52 66 72 44 S108 26 126 44" fill="none" stroke="#1c7ed6" stroke-width="7" stroke-linecap="round"/>',
+  'tó': '<path d="M36 46 C34 26 70 18 96 28 C120 38 110 64 80 66 C56 68 38 62 36 46Z" fill="#4dabf7" stroke="#1c7ed6" stroke-width="2"/>',
+  'vasútvonal': '<line x1="10" y1="45" x2="130" y2="45" stroke="#1d2742" stroke-width="9"/><line x1="10" y1="45" x2="130" y2="45" stroke="#fff" stroke-width="4" stroke-dasharray="12 12"/>',
+  'országhatár': '<line x1="10" y1="45" x2="130" y2="45" stroke="#c92a2a" stroke-width="5" stroke-dasharray="14 6 3 6"/>',
+  'erdő': '<rect x="14" y="16" width="112" height="58" rx="8" fill="#b2f2bb"/>' + [[38, 52], [62, 40], [86, 54], [108, 40]].map(([x, y]) => `<path d="M${x} ${y - 16} L${x - 9} ${y + 2} L${x + 9} ${y + 2}Z" fill="#2b8a3e"/><rect x="${x - 2}" y="${y + 2}" width="4" height="6" fill="#7a4b26"/>`).join(''),
+  'vár': '<path d="M50 66 L50 34 L56 34 L56 28 L62 28 L62 34 L68 34 L68 28 L74 28 L74 34 L80 34 L80 28 L86 28 L86 34 L90 34 L90 66Z" fill="#868e96" stroke="#1d2742" stroke-width="2"/><rect x="64" y="50" width="12" height="16" fill="#1d2742"/>'
+};
+const symQ = () => { const k = pick(Object.keys(SYMBOLS)); return { type: 'choice', prompt: 'Mit jelöl ez a térképjel?', visual: svg(140, 90, `<rect x="2" y="2" width="136" height="86" rx="10" fill="#fff" stroke="#ced4da" stroke-width="2"/>${SYMBOLS[k]}`, 'symfig'), answer: k, options: shuffle([k, ...shuffle(Object.keys(SYMBOLS).filter(x => x !== k)).slice(0, 3)]).map(v => ({ value: v, html: v })), answerText: k, hint: 'A térkép jeleit a jelmagyarázat magyarázza meg. Kék: víz. Barna háromszög: hegycsúcs. Pötty: település.' }; };
+const COLORS = [['#69db7c', 'síkság (alföld)'], ['#ffe066', 'dombság'], ['#c0915e', 'hegység'], ['#4dabf7', 'víz (folyó, tó, tenger)']];
+const colorQ = () => { const [c, a] = pick(COLORS); return { type: 'choice', prompt: 'Mit jelöl a domborzati térképen ez a szín?', visual: svg(140, 70, `<rect x="10" y="8" width="120" height="54" rx="10" fill="${c}" stroke="#1d2742" stroke-width="2"/>`, 'symfig'), answer: a, options: shuffle(COLORS.map(x => x[1])).map(v => ({ value: v, html: v })), answerText: a, hint: 'Zöld: síkság. Sárga: dombság. Barna: hegység; minél sötétebb, annál magasabb. Kék: víz; minél sötétebb, annál mélyebb.' }; };
+const MAP_FACTS = [
+  [1, 'Melyik irány van a térképen általában felül?', 'észak', ['dél', 'kelet', 'nyugat'], 'Fent az észak, lent a dél, jobbra a kelet, balra a nyugat.'],
+  [1, 'Hogy hívjuk a térkép jeleinek magyarázatát?', 'jelmagyarázat', ['méretarány', 'iránytű', 'alaprajz'], 'A térkép szélén egy kis táblázat mondja meg, melyik jel mit jelent.'],
+  [1, 'Hogy hívjuk a felülről nézett rajzot egy szobáról vagy egy házról?', 'alaprajz', ['jelmagyarázat', 'fénykép', 'domborzati térkép'], 'Felülről nézve a bútorok csak a „talpukat” mutatják.'],
+  [1, 'Milyen színnel jelöli a térkép a vizeket?', 'kékkel', ['zölddel', 'barnával', 'sárgával'], 'A folyók, tavak és tengerek kékek.'],
+  [2, 'Mit jelent, ha a barna szín egyre sötétebb?', 'a hegy egyre magasabb', ['a víz egyre mélyebb', 'a város egyre nagyobb', 'egyre több az erdő'], 'A domborzati térképen a sötétebb barna magasabb helyet jelöl.'],
+  [2, 'Mit jelent, ha a kék szín egyre sötétebb?', 'a víz egyre mélyebb', ['a hegy egyre magasabb', 'egyre hidegebb van', 'a folyó egyre gyorsabb'], 'A sötétebb kék mélyebb vizet jelöl.'],
+  [2, 'Mit mutat meg a méretarány?', 'hányszor kisebb a térkép a valóságnál', ['merre van észak', 'milyen magas a hegy', 'mi a város neve'], 'Például: 1 cm a térképen = 1 km a valóságban.'],
+  [2, 'Mire használjuk az iránytűt?', 'a világtájak meghatározására', ['a hőmérséklet mérésére', 'a távolság mérésére', 'az idő mérésére'], 'Az iránytű tűje mindig észak felé mutat.'],
+  [2, 'Mit tegyél, hogy a térkép iránya egyezzen a valósággal?', 'tájolom: a térkép északját észak felé fordítom', ['fejjel lefelé tartom', 'összehajtom', 'nem számít, hogyan tartom'], 'Ezt hívjuk a térkép tájolásának.']
+];
+const scaleQ = () => {
+  const k = pick([1, 2, 5, 10]), n = ri(2, 9);
+  return Math.random() < .6
+    ? { type: 'input', prompt: `A térképen 1 cm a valóságban ${k} km. Két falu a térképen ${n} cm-re van egymástól. Hány km a távolság a valóságban?`, answer: n * k, hint: `Minden centiméter ${k} km. Szorozd meg: ${n} · ${k}.` }
+    : { type: 'input', prompt: `A térképen 1 cm a valóságban ${k} km. Két város a valóságban ${n * k} km-re van egymástól. Hány cm a távolság a térképen?`, answer: n, hint: `Hányszor van meg a ${k} km-ben a ${n * k} km? Oszd el: ${n * k} : ${k}.` };
+};
+K4.terkepolv = L => {
+  const r = Math.random(), fact = () => factQ(pick(MAP_FACTS.filter(f => f[0] === Math.min(L, 2))));
+  if (L === 1) return r < .45 ? symQ() : r < .7 ? colorQ() : fact();
+  if (L === 2) return r < .3 ? symQ() : r < .5 ? colorQ() : r < .8 ? fact() : scaleQ();
+  return r < .5 ? scaleQ() : r < .7 ? symQ() : r < .85 ? colorQ() : fact();
+};
 PAGES['kornyezet-4'] = {
   id: 'kornyezet-4', title: 'Környezetismeret', grade: 4,
-  blurb: 'Halmazállapotok és mérés, időjárás, tűz, fény és mozgás, a növények és állatok, életközösségek, testünk és egészségünk, világtájak, hazánk tájai, megyéi és nevezetességei, térképes feladatok, Budapest hídjai. Egy kör 10 feladat.',
+  blurb: 'Halmazállapotok és mérés, időjárás, tűz, fény és mozgás, a növények és állatok, életközösségek, testünk és egészségünk, világtájak és térképolvasás, a Föld és a Naprendszer, folyóink és tavaink, hazánk tájai, megyéi és nevezetességei, Budapest hídjai. Egy kör 10 feladat.',
   topics: [
     { id: 'sorter', sample: '🧺', name: 'Válogató', desc: 'Válogasd szét a kártyákat a kosarakba!', gen: K4.sorter },
     { id: 'ki', sample: '❓', name: 'Ki vagyok én?', desc: 'Találós kérdések: minél kevesebb tippből!', gen: K4.ki },
@@ -456,7 +757,10 @@ PAGES['kornyezet-4'] = {
     { id: 'body', sample: '👁️ 👂 ❤️', name: 'Testünk', desc: 'Érzékszervek, szervek és feladatuk.', gen: K4.body },
     { id: 'health', sample: '🩺 112', name: 'Egészségünk', desc: 'Egészséges szokások, betegségek, segélyhívás.', gen: K4.health },
     { id: 'compass', sample: 'É · K · D · Ny', name: 'Világtájak', desc: 'Fő- és mellékvilágtájak, tájékozódás.', gen: K4.compass },
+    { id: 'terkepolv', sample: '🗺️ ▲ ●', name: 'Térképolvasás', desc: 'Térképjelek, színek, méretarány.', gen: K4.terkepolv },
+    { id: 'fold', sample: '🌍 ☀️ 🌙', name: 'Föld, Nap, Hold', desc: 'Nappal és éjszaka, évszakok, holdfázisok, bolygók.', gen: K4.fold },
     { id: 'landform', sample: '⛰️ 〰️', name: 'Felszínformák és vizek', desc: 'Síkság, dombság, hegység; patak, folyó, tó.', gen: K4.landform },
+    { id: 'folyok', sample: 'Duna · Tisza', name: 'Folyóink és tavaink', desc: 'Folyók, mellékfolyók, torkolatok, a víz körforgása.', gen: K4.folyok },
     { id: 'regions', sample: 'Alföld · Mátra', name: 'Hazánk nagytájai', desc: 'A hat nagytáj és jellemző tájaik.', gen: K4.regions },
     { id: 'country', sample: '🇭🇺', name: 'Magyarország', desc: 'Szomszédos országok, megyék és megyeszékhelyek.', gen: K4.country },
     { id: 'terkep', sample: '🗺️ 📍', name: 'Térképes kalandok', desc: 'Koppints a térképre: szomszédok, nevezetes helyek.', gen: K4.terkep },
