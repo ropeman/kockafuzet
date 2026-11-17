@@ -255,12 +255,25 @@ function startList(opts) {   // opts: { page, list, title, back, onFinish, onAns
   S = { ...opts, topic: { id: 'list', name: opts.title }, n: 0, total: opts.list.length, correct: 0, level: opts.level || 1, fixed: true, streak: 0, wrongRun: 0, res: [], q: null, tries: 0, last: '' };
   nextQ();
 }
+// fingerprint of a question: two questions with the same fingerprint look the same to the child
+function qKey(q) {
+  const plain = x => String(x ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const ans = q.answer !== null && typeof q.answer === 'object' && !Array.isArray(q.answer) ? '' : JSON.stringify(q.answer);
+  const extra = q.type === 'sort' ? q.bins.map(b => b.label).join(',')
+    : q.type === 'label' ? q.spots.map(s => q.labels.find(l => l.id === q.answer[s.id]).text).join(',')
+    : q.type === 'riddle' ? q.clues[0] : q.type === 'lab' ? (q.mode || q.item || '') : q.type === 'map' ? q.map + (q.dots || []).length : '';
+  return [q.type, plain(q.prompt), ans, extra, q.text || '', q.type === 'sort' || q.type === 'label' ? '' : String(q.visual || '').length].join('|');
+}
 function nextQ() {
   if (S.n >= S.total) return finish();
-  let q, g = 0;
+  let q;
   if (S.list) { S.q = S.list[S.n]; S.tries = 0; S.n++; return renderQ(); }
-  do { q = S.topic.gen(S.level); } while (q.key === undefined && (q.prompt + '|' + q.answer) === S.last && g++ < 6);
-  S.last = q.prompt + '|' + q.answer;
+  // never repeat a question within one round; give up only if the topic has too few different questions
+  // (if this level has run out of new questions, borrow one from the nearest other level)
+  S.seen = S.seen || new Set();
+  const fresh = L => { for (let k = 0; k < 60; k++) { const x = S.topic.gen(L); if (!S.seen.has(qKey(x))) return x; } return null; };
+  q = [S.level, S.level - 1, S.level + 1, S.level - 2, S.level + 2].filter(L => L >= 1 && L <= 3).reduce((got, L) => got || fresh(L), null) || S.topic.gen(S.level);
+  S.seen.add(qKey(q));
   S.q = q; S.tries = 0; S.n++;
   renderQ();
 }

@@ -1,90 +1,87 @@
 /* ===== Interactive question types: sort, label, set, riddle ===== */
-// Tap-to-select + tap-to-place, and drag with mouse or finger. Targets carry data-drop="id".
-function makeDraggable(el, id, onPick, onDrop) {
-  let sx = 0, sy = 0, ghost = null, moved = false;
-  el.style.touchAction = 'none';
-  el.addEventListener('pointerdown', e => {
-    if (el.disabled || e.button > 0) return;
-    sx = e.clientX; sy = e.clientY; moved = false;
-    try { el.setPointerCapture(e.pointerId); } catch (x) {}
-  });
-  el.addEventListener('pointermove', e => {
-    if (!el.hasPointerCapture || !el.hasPointerCapture(e.pointerId)) return;
-    if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) < 8) return;
-    if (!moved) { moved = true; onPick(id, true); ghost = el.cloneNode(true); ghost.classList.add('drag-ghost'); document.body.append(ghost); }
-    ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px';
-    document.querySelectorAll('.drop-hover').forEach(x => x.classList.remove('drop-hover'));
-    const t = dropTargetAt(e.clientX, e.clientY); if (t) t.classList.add('drop-hover');
-  });
-  const end = e => {
-    document.querySelectorAll('.drop-hover').forEach(x => x.classList.remove('drop-hover'));
-    if (ghost) { ghost.remove(); ghost = null; }
-    if (moved) { const t = dropTargetAt(e.clientX, e.clientY); onDrop(id, t ? t.dataset.drop : null); el._suppressClick = true; setTimeout(() => { el._suppressClick = false; }, 50); }
-    moved = false;
-  };
-  el.addEventListener('pointerup', end);
-  el.addEventListener('pointercancel', end);
-  el.addEventListener('click', e => { if (el._suppressClick) { e.preventDefault(); return; } onPick(id, false); });
-}
-function dropTargetAt(x, y) { const el = document.elementFromPoint(x, y); return el && el.closest('[data-drop]'); }
+// Sort and label work one card / one spot at a time: tap the answer, get feedback at once.
+// A miss is remembered: the question is then scored like a second try (no retry round needed).
+const noteMiss = n => { if (n && S) S.tries = Math.max(S.tries, 1); };
 
-/* ---------- Válogató: sort items into baskets ---------- */
+/* ---------- Válogató: which basket does this card go into? ---------- */
 UI.sort = (q, send) => {
-  const place = {}; let sel = null;
-  const chip = it => { const b = h('button', { class: 'sitem', html: it.html, 'data-id': it.id }); makeDraggable(b, it.id, pickIt, dropIt); return b; };
-  const chips = Object.fromEntries(q.items.map(it => [it.id, chip(it)]));
-  const pool = h('div', { class: 'spool', 'data-drop': '_pool', 'aria-label': 'Szétválogatandó kártyák' });
-  const binEls = Object.fromEntries(q.bins.map(b => [b.id, h('div', { class: 'sbin-items' })]));
-  const bins = h('div', { class: 'sbins', style: `--n:${q.bins.length}` }, q.bins.map(b => h('div', { class: 'sbin', 'data-drop': b.id, onclick: e => { if (e.target.closest('.sitem')) return; if (sel) dropIt(sel, b.id); } },
-    h('button', { class: 'sbin-h', onclick: () => sel && dropIt(sel, b.id) }, b.label), binEls[b.id])));
-  const sb = h('button', { class: 'btn primary', disabled: true, onclick: () => send({ ...place }) }, 'Kész');
-  function pickIt(id, dragging) { sel = dragging || sel !== id ? id : null; draw(); }
-  function dropIt(id, target) { if (!target) { sel = null; draw(); return; } if (target === '_pool') delete place[id]; else place[id] = target; sel = null; draw(); }
-  function draw() {
-    q.items.forEach(it => { const c = chips[it.id], home = place[it.id] ? binEls[place[it.id]] : pool; if (c.parentNode !== home) home.append(c); c.classList.toggle('sel', sel === it.id); c.setAttribute('aria-pressed', String(sel === it.id)); });
-    pool.classList.toggle('empty', Object.keys(place).length === q.items.length);
-    bins.classList.toggle('armed', !!sel);
-    sb.disabled = Object.keys(place).length !== q.items.length;
+  const order = q.items.slice(), place = {}; let k = 0, miss = 0, missHere = false, busy = false, locked = false;
+  const counter = h('div', { class: 'sprog' });
+  const card = h('div', { class: 'scard', 'aria-live': 'polite' });
+  const note = h('div', { class: 'snote' });
+  const binList = Object.fromEntries(q.bins.map(b => [b.id, h('div', { class: 'sbin-items' })]));
+  const binBtns = q.bins.map((b, i) => h('button', { class: 'sbtn', 'data-bin': b.id, onclick: () => pickBin(b.id) },
+    h('span', { class: 'sbtn-k' }, String(i + 1)), h('span', { class: 'sbtn-l' }, b.label)));
+  const bins = h('div', { class: 'sbins', style: `--n:${q.bins.length}` }, q.bins.map((b, i) => h('div', { class: 'sbin' }, binBtns[i], binList[b.id])));
+  function show() {
+    const it = order[k];
+    counter.textContent = `${k + 1}. kártya a ${q.items.length}-ból`;
+    card.innerHTML = `<div class="scard-in pop" data-id="${it.id}">${it.html}</div>`;
+    note.textContent = 'Hová tartozik? Koppints a megfelelő kosárra!'; note.className = 'snote';
+    binBtns.forEach(b => b.classList.remove('no'));
+    missHere = false;
+    if (autoRead() && canSpeak()) speak(it.text);
   }
-  draw();
+  function pickBin(bid) {
+    if (busy || locked || k >= order.length) return;
+    const it = order[k], btn = binBtns.find(b => b.dataset.bin === bid);
+    if (bid !== it.bin) {
+      if (!missHere) { miss++; missHere = true; }
+      btn.classList.remove('no'); void btn.offsetWidth; btn.classList.add('no');
+      card.firstChild && card.firstChild.classList.add('shake');
+      setTimeout(() => card.firstChild && card.firstChild.classList.remove('shake'), 420);
+      note.textContent = 'Nem oda tartozik. Próbáld egy másik kosárral!'; note.className = 'snote bad';
+      beep(false); return;
+    }
+    place[it.id] = bid; busy = true;
+    binList[bid].append(h('span', { class: 'schip pop' + (missHere ? ' late' : ''), html: it.html }));
+    note.textContent = pick(['Ügyes!', 'Így van!', 'Szuper!', 'Pontosan!']); note.className = 'snote good';
+    card.firstChild && card.firstChild.classList.add('fly');
+    setTimeout(() => { busy = false; k++; if (k < order.length) show(); else { counter.textContent = 'Kész!'; card.innerHTML = ''; note.textContent = ''; noteMiss(miss); send({ ...place }); } }, 520);
+  }
+  const onKey = e => { if (expOpen || locked) return; const n = +e.key; if (n >= 1 && n <= q.bins.length) { e.preventDefault(); pickBin(q.bins[n - 1].id); } };
+  document.addEventListener('keydown', onKey); cleanups.push(() => document.removeEventListener('keydown', onKey));
+  show();
   return {
-    el: h('div', { class: 'sortwrap' }, h('p', { class: 'mute ihelp' }, 'Húzd a kártyákat a helyükre, vagy koppints egy kártyára, aztán a kosárra.'), pool, bins), submitBtn: sb,
-    wrong(r) { q.items.forEach(it => { if (r[it.id] !== it.bin) { delete place[it.id]; chips[it.id].classList.add('was-wrong'); } else chips[it.id].classList.add('right', 'fixed'); }); draw(); },
-    lock(r) { q.items.forEach(it => { const c = chips[it.id]; c.disabled = true; c.classList.remove('sel', 'was-wrong'); binEls[it.bin].append(c); c.classList.add(r[it.id] === it.bin ? 'right' : 'wrong'); }); bins.classList.remove('armed'); },
-    done() { sb.remove(); }
+    el: h('div', { class: 'sortwrap' }, counter, card, note, bins),
+    wrong() {},
+    lock() { locked = true; binBtns.forEach(b => b.disabled = true); document.removeEventListener('keydown', onKey); }
   };
 };
 UI.sort.judge = (q, r) => q.items.every(it => r[it.id] === it.bin);
 
-/* ---------- Címkézd fel: put labels on a picture ---------- */
+/* ---------- Címkézd fel: what is at the highlighted number? ---------- */
 UI.label = (q, send) => {
-  const put = {}; let sel = null;           // spotId -> labelId
-  const lab = Object.fromEntries(q.labels.map(l => [l.id, l]));
-  const chips = Object.fromEntries(q.labels.map(l => { const b = h('button', { class: 'sitem lchip', 'data-id': l.id }, l.text); makeDraggable(b, l.id, pickL, dropL); return [l.id, b]; }));
-  const bank = h('div', { class: 'spool lbank', 'data-drop': '_pool' });
-  const spots = Object.fromEntries(q.spots.map((s, i) => [s.id, h('button', { class: 'lspot', 'data-drop': s.id, style: `left:${s.x}%;top:${s.y}%`, 'aria-label': `${i + 1}. hely`, onclick: () => spotClick(s.id) }, String(i + 1))]));
-  const fig = h('div', { class: 'lfig', html: q.img }); Object.values(spots).forEach(s => fig.append(s));
-  const sb = h('button', { class: 'btn primary', disabled: true, onclick: () => send({ ...put }) }, 'Kész');
-  function pickL(id, dragging) { sel = dragging || sel !== id ? id : null; draw(); }
-  function dropL(id, target) {
-    Object.keys(put).forEach(k => { if (put[k] === id) delete put[k]; });
-    if (target && target !== '_pool') put[target] = id;
-    sel = null; draw();
+  const put = {}, lab = Object.fromEntries(q.labels.map(l => [l.id, l])); let k = 0, miss = 0, missHere = false, busy = false, locked = false;
+  const spots = q.spots.map((s, i) => h('div', { class: 'lspot', style: `left:${s.x}%;top:${s.y}%` }, String(i + 1)));
+  const fig = h('div', { class: 'lfig', html: q.img }); spots.forEach(s => fig.append(s));
+  const ask = h('div', { class: 'snote' });
+  const btns = q.labels.map(l => h('button', { class: 'opt lname', onclick: () => pickName(l.id) }, l.text));
+  const bank = h('div', { class: 'lbank' }, btns);
+  function show() {
+    spots.forEach((s, i) => s.classList.toggle('cur', i === k));
+    ask.innerHTML = `Mi van a <b>${k + 1}.</b> számnál? Válaszd ki a nevét!`; ask.className = 'snote';
+    btns.forEach(b => b.classList.remove('wrong'));
+    missHere = false;
   }
-  function spotClick(sid) { if (sel) dropL(sel, sid); else if (put[sid]) { delete put[sid]; draw(); } }
-  function draw() {
-    q.spots.forEach((s, i) => { const sp = spots[s.id], l = put[s.id]; sp.textContent = l ? lab[l].text : String(i + 1); sp.classList.toggle('filled', !!l); });
-    q.labels.forEach(l => { const used = Object.values(put).includes(l.id), c = chips[l.id]; c.classList.toggle('used', used); c.classList.toggle('sel', sel === l.id); c.setAttribute('aria-pressed', String(sel === l.id)); });
-    fig.classList.toggle('armed', !!sel);
-    sb.disabled = Object.keys(put).length !== q.spots.length;
+  function pickName(lid) {
+    if (busy || locked || k >= q.spots.length) return;
+    const sid = q.spots[k].id, b = btns[q.labels.findIndex(l => l.id === lid)];
+    if (q.answer[sid] !== lid) {
+      if (!missHere) { miss++; missHere = true; }
+      b.classList.add('wrong'); ask.innerHTML = `Ez nem a ${k + 1}. hely neve. Próbáld újra!`; ask.className = 'snote bad'; beep(false); return;
+    }
+    put[sid] = lid; busy = true;
+    spots[k].textContent = lab[lid].text; spots[k].classList.remove('cur'); spots[k].classList.add('filled', missHere ? 'late' : 'right');
+    b.classList.add('used'); b.disabled = true;
+    ask.textContent = pick(['Ügyes!', 'Így van!', 'Szuper!']); ask.className = 'snote good';
+    setTimeout(() => { busy = false; k++; if (k < q.spots.length) show(); else { noteMiss(miss); send({ ...put }); } }, 450);
   }
-  bank.append(...Object.values(chips));
-  draw();
+  show();
   return {
-    el: h('div', { class: 'labelwrap' }, h('p', { class: 'mute ihelp' }, 'Húzd a neveket a számokra, vagy koppints egy névre, aztán a helyére.'), fig, bank), submitBtn: sb,
-    wrong(r) { q.spots.forEach(s => { if (r[s.id] !== q.answer[s.id]) delete put[s.id]; else spots[s.id].classList.add('right'); }); draw(); },
-    lock(r) { q.spots.forEach(s => { const sp = spots[s.id]; sp.disabled = true; sp.textContent = lab[q.answer[s.id]].text; sp.classList.add('filled', r[s.id] === q.answer[s.id] ? 'right' : 'wrong'); }); Object.values(chips).forEach(c => c.disabled = true); },
-    done() { sb.remove(); }
+    el: h('div', { class: 'labelwrap' }, fig, ask, bank),
+    wrong() {},
+    lock() { locked = true; btns.forEach(b => b.disabled = true); spots.forEach((s, i) => { s.classList.remove('cur'); s.textContent = lab[q.answer[q.spots[i].id]].text; s.classList.add('filled'); }); }
   };
 };
 UI.label.judge = (q, r) => q.spots.every(s => r[s.id] === q.answer[s.id]);

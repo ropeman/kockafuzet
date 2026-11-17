@@ -14,9 +14,6 @@ def center(pg, sel):
 def mapclick(pg, xy, tap=False):
     bb = pg.locator(".mapfig svg").bounding_box(); x = bb["x"] + xy[0] / 600 * bb["width"]; y = bb["y"] + xy[1] / 380 * bb["height"]
     (pg.touchscreen.tap if tap else pg.mouse.click)(x, y); pg.wait_for_timeout(60)
-def drag(pg, src, dst):
-    x1, y1 = center(pg, src); x2, y2 = center(pg, dst)
-    pg.mouse.move(x1, y1); pg.mouse.down(); pg.mouse.move(x1 + 10, y1 + 10, steps=3); pg.mouse.move(x2, y2, steps=8); pg.mouse.up(); pg.wait_for_timeout(60)
 try:
     with sync_playwright() as p:
         br = p.chromium.launch()
@@ -26,35 +23,35 @@ try:
         check(pg.locator("button.tile", has_text="Budapest hídjai").count() == 1 and pg.locator("button.tile", has_text="Megyék a térképen").count() == 1, "map topics on the page")
         check(pg.locator("button.tile", has_text="Kísérletező").count() == 1, "lab topic on the page")
 
-        print("sort: drag with mouse + tap")
+        print("sort: one card at a time")
         show(pg, "SORTS.state(1)")
-        items = pg.evaluate("S.q.items.map(i => [i.id, S.q.bins.findIndex(b => b.id === i.bin)])")
         pg.screenshot(path="/tmp/kfshots/i-sort-start.png")
-        for k, (iid, bi) in enumerate(items):
-            if k % 2 == 0: drag(pg, f".sitem[data-id='{iid}']", f".sbin >> nth={bi}")
-            else: pg.click(f".sitem[data-id='{iid}']"); pg.click(f".sbin-h >> nth={bi}"); pg.wait_for_timeout(40)
-        check(pg.locator(".spool .sitem").count() == 0, "all cards placed (drag and tap)")
-        pg.screenshot(path="/tmp/kfshots/i-sort-placed.png")
-        pg.click(".actions .btn.primary"); pg.wait_for_timeout(100)
-        check(pg.evaluate("S.res[S.n-1]") == "ok", "correct sorting accepted")
+        n = pg.evaluate("S.q.items.length")
+        for k in range(n):
+            b = pg.evaluate("S.q.items.find(i => i.id === document.querySelector('.scard-in').dataset.id).bin")
+            if k == 1: pg.screenshot(path="/tmp/kfshots/i-sort-mid.png")
+            pg.click(f".sbtn[data-bin='{b}']"); pg.wait_for_timeout(600)
+        check(pg.evaluate("S.res[S.n-1]") == "ok", "all cards right first time = correct")
         pg.screenshot(path="/tmp/kfshots/i-sort-done.png")
 
-        print("sort: wrong first try keeps correct cards, returns wrong ones")
+        print("sort: a wrong basket gives instant feedback, scored as 2nd try")
         show(pg, "SORTS.light(1)")
-        ids = pg.evaluate("S.q.items.map(i => i.id)")
-        for iid in ids: pg.click(f".sitem[data-id='{iid}']"); pg.click(".sbin-h >> nth=0"); pg.wait_for_timeout(20)
-        pg.click(".actions .btn.primary"); pg.wait_for_timeout(100)
-        back = pg.locator(".spool .sitem").count(); n1 = pg.evaluate("S.q.items.filter(i => i.bin === 'b1').length")
-        check(back == n1, f"wrong cards went back to the pile ({back}/{n1})")
+        n = pg.evaluate("S.q.items.length")
+        for k in range(n):
+            b = pg.evaluate("S.q.items.find(i => i.id === document.querySelector('.scard-in').dataset.id).bin")
+            if k == 0:
+                pg.click(".sbtn[data-bin='%s']" % ("b1" if b == "b0" else "b0")); pg.wait_for_timeout(100)
+                check("Nem oda" in pg.inner_text(".snote") and pg.locator(".sbtn.no").count() == 1, "wrong basket: message and shake")
+                pg.screenshot(path="/tmp/kfshots/i-sort-wrong.png")
+            pg.click(f".sbtn[data-bin='{b}']"); pg.wait_for_timeout(600)
+        check(pg.evaluate("S.res[S.n-1]") == "no", "finished, counted as not first try")
 
-        print("label: drag + tap")
+        print("label: tap the name for the highlighted number")
         show(pg, "LABELS.plant()")
-        ans = pg.evaluate("S.q.spots.map((s, i) => [i, S.q.answer[s.id]])")
-        for i, lid in ans:
-            if i % 2 == 0: drag(pg, f".lchip[data-id='{lid}']", f".lspot >> nth={i}")
-            else: pg.click(f".lchip[data-id='{lid}']"); pg.click(f".lspot >> nth={i}"); pg.wait_for_timeout(40)
+        pg.screenshot(path="/tmp/kfshots/i-label-start.png")
+        names = pg.evaluate("S.q.spots.map(s => S.q.labels.find(l => l.id === S.q.answer[s.id]).text)")
+        for nm in names: pg.locator(".lbank .opt", has_text=nm).first.click(); pg.wait_for_timeout(520)
         pg.screenshot(path="/tmp/kfshots/i-label-placed.png")
-        pg.click(".actions .btn.primary"); pg.wait_for_timeout(100)
         check(pg.evaluate("S.res[S.n-1]") == "ok", "labels accepted")
         show(pg, "LABELS.body()"); pg.screenshot(path="/tmp/kfshots/i-label-body.png")
 
@@ -106,10 +103,9 @@ try:
         show(pg, "hlChoice('Somogy')"); pg.screenshot(path="/tmp/kfshots/i-map-hl.png")
         print("bridges")
         show(pg, "brLabel()")
-        ans = pg.evaluate("S.q.spots.map((s, i) => [i, S.q.answer[s.id]])")
-        for i, lid in ans: pg.click(f".lchip[data-id='{lid}']"); pg.click(f".lspot >> nth={i}"); pg.wait_for_timeout(40)
+        names = pg.evaluate("S.q.spots.map(s => S.q.labels.find(l => l.id === S.q.answer[s.id]).text)")
         pg.screenshot(path="/tmp/kfshots/i-bridges-label.png")
-        pg.click(".actions .btn.primary"); pg.wait_for_timeout(100)
+        for nm in names: pg.locator(".lbank .opt", has_text=nm).first.click(); pg.wait_for_timeout(520)
         check(pg.evaluate("S.res[S.n-1]") == "ok", "bridge labels accepted")
         show(pg, "brOrder()"); pg.screenshot(path="/tmp/kfshots/i-bridges-order.png")
         show(pg, "brHl(2)"); pg.screenshot(path="/tmp/kfshots/i-bridges-hl.png")
@@ -148,9 +144,10 @@ try:
         m = ctx.new_page(); m.on("pageerror", lambda e: errs.append("touch: " + str(e)))
         m.goto(B + "/kornyezet/4/"); m.wait_for_timeout(300)
         show(m, "SORTS.burn(1)")
-        items = m.evaluate("S.q.items.map(i => [i.id, S.q.bins.findIndex(b => b.id === i.bin)])")
-        for iid, bi in items: m.tap(f".sitem[data-id='{iid}']"); m.tap(f".sbin-h >> nth={bi}"); m.wait_for_timeout(30)
-        m.tap(".actions .btn.primary"); m.wait_for_timeout(100)
+        for k in range(m.evaluate("S.q.items.length")):
+            b = m.evaluate("S.q.items.find(i => i.id === document.querySelector('.scard-in').dataset.id).bin")
+            if k == 0: m.screenshot(path="/tmp/kfshots/i-phone-sort.png", full_page=True)
+            m.tap(f".sbtn[data-bin='{b}']"); m.wait_for_timeout(600)
         check(m.evaluate("S.res[S.n-1]") == "ok", "sorting by tapping on a phone")
         check(not m.evaluate("document.documentElement.scrollWidth > innerWidth"), "no sideways scroll on phone")
         show(m, "countyTap('Hajdú-Bihar')"); mapclick(m, m.evaluate("MAPDATA.counties['Hajdú-Bihar'].c"), tap=True); m.tap(".actions .btn.primary"); m.wait_for_timeout(120)

@@ -119,10 +119,12 @@ function szorzoSetup(page) {
 }
 function szorzoPlay(page, cfg, key) {
   runCleanups();
-  let score = 0, wrong = [], val = '', q = null, left = cfg.secs, over = false, last = '', pause = false;
+  let score = 0, wrong = [], val = '', q = null, left = cfg.secs, over = false, last = '', pause = false, deck = [];
   const timeEl = h('span', { class: 'sz-time' }), bar = h('i'), scoreEl = h('span', { class: 'sz-score' }), qEl = h('div', { class: 'sz-q' }), disp = h('div', { class: 'numdisp' }), card = h('div', { class: 'qcard sz-card' });
   const next = () => {
-    let a, b, g = 0; do { a = pick(cfg.tables); b = ri(1, 10); if (Math.random() < .5) [a, b] = [b, a]; } while (`${a}·${b}` === last && g++ < 10);
+    // shuffled deck: every fact of the chosen tables comes once before any of them repeats
+    if (!deck.length) { deck = shuffle(cfg.tables.flatMap(t => Array.from({ length: 10 }, (_, i) => Math.random() < .5 ? [t, i + 1] : [i + 1, t]))); if (deck.length > 1 && `${deck[deck.length - 1][0]}·${deck[deck.length - 1][1]}` === last) deck.unshift(deck.pop()); }
+    let [a, b] = deck.pop();
     last = `${a}·${b}`;
     const div = cfg.op === 'div' || (cfg.op === 'mix' && Math.random() < .5);
     q = div ? { t: `${a * b} : ${b}`, ans: a, fact: `${a * b} : ${b} = ${a}` } : { t: `${a} · ${b}`, ans: a * b, fact: `${a} · ${b} = ${a * b}` };

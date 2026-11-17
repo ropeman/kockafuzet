@@ -1,5 +1,5 @@
-/* Kockafüzet service worker: works offline after the first visit. Version 280a46a5 */
-const CACHE = 'kockafuzet-280a46a5';
+/* Kockafüzet service worker: works offline after the first visit. Version 35ac1333 */
+const CACHE = 'kockafuzet-35ac1333';
 const PRECACHE = [
  "/kockafuzet/",
  "/kockafuzet/adatvedelem/",
@@ -19,9 +19,9 @@ const PRECACHE = [
  "/kockafuzet/jatek/penz/",
  "/kockafuzet/jatek/szorzo/",
  "/kockafuzet/jatek/hibak/",
- "/kockafuzet/assets/app.css?v=280a46a5",
- "/kockafuzet/assets/app.js?v=280a46a5",
- "/kockafuzet/assets/theme.js?v=280a46a5",
+ "/kockafuzet/assets/app.css?v=35ac1333",
+ "/kockafuzet/assets/app.js?v=35ac1333",
+ "/kockafuzet/assets/theme.js?v=35ac1333",
  "/kockafuzet/favicon.svg",
  "/kockafuzet/manifest.webmanifest",
  "/kockafuzet/assets/fonts/fredoka-latin-500-normal.woff2",

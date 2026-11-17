@@ -39,11 +39,11 @@ function dailyList() {
   const due = entries.filter(x => x.e.d <= today).sort(order), later = entries.filter(x => x.e.d > today).sort(order);
   const pool = due.length >= 3 ? due.slice(0, 6) : due.concat(later).slice(0, 4);
   const items = shuffle(getMistakes()).slice(0, 3).map(m => ({ ...m.q, _page: m.p, _topic: m.t, _mk: m.k }));
-  const seen = new Set(items.map(q => q.prompt + '|' + q.answer));
+  const seen = new Set(items.map(qKey));
   let i = 0, guard = 0;
   while (items.length < 10 && guard++ < 80) {
     const x = pool[i++ % pool.length], lvl = Math.max(1, store.get(pk(x.pid, x.tid, 'lvl'), 1) - (x.e.b === 1 ? 1 : 0));
-    try { const q = x.t.gen(lvl), key = q.prompt + '|' + q.answer; if (q && q.type !== 'read' && !q.autoSpeak && !seen.has(key)) { seen.add(key); items.push({ ...q, _page: x.pid, _topic: x.tid }); } } catch (e) {}
+    try { const q = x.t.gen(lvl), key = q && qKey(q); if (q && q.type !== 'read' && !q.autoSpeak && !seen.has(key)) { seen.add(key); items.push({ ...q, _page: x.pid, _topic: x.tid }); } } catch (e) {}
   }
   return shuffle(items);
 }

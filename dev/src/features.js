@@ -47,7 +47,7 @@ function genList(sp) {
       const out = [], seen = new Set(), per = Math.ceil(sp.n / sp.topics.length);
       for (const t of sp.topics) for (let i = 0; i < per && out.length < sp.n; i++) {
         let q, key, g = 0;
-        do { q = t.gen(sp.level); key = String(q.prompt) + '|' + JSON.stringify(q.answer) + '|' + String(q.visual || '').length; } while (seen.has(key) && g++ < 12);
+        for (const L of [sp.level, sp.level - 1, sp.level + 1, sp.level - 2, sp.level + 2].filter(L => L >= 1 && L <= 3)) { g = 0; do { q = t.gen(L); key = qKey(q); } while (seen.has(key) && g++ < 40); if (!seen.has(key)) break; }
         seen.add(key); out.push({ ...q, _topic: t.id });
       }
       return out;

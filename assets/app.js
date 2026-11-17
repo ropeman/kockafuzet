@@ -260,12 +260,25 @@ function startList(opts) {   // opts: { page, list, title, back, onFinish, onAns
   S = { ...opts, topic: { id: 'list', name: opts.title }, n: 0, total: opts.list.length, correct: 0, level: opts.level || 1, fixed: true, streak: 0, wrongRun: 0, res: [], q: null, tries: 0, last: '' };
   nextQ();
 }
+// fingerprint of a question: two questions with the same fingerprint look the same to the child
+function qKey(q) {
+  const plain = x => String(x ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const ans = q.answer !== null && typeof q.answer === 'object' && !Array.isArray(q.answer) ? '' : JSON.stringify(q.answer);
+  const extra = q.type === 'sort' ? q.bins.map(b => b.label).join(',')
+    : q.type === 'label' ? q.spots.map(s => q.labels.find(l => l.id === q.answer[s.id]).text).join(',')
+    : q.type === 'riddle' ? q.clues[0] : q.type === 'lab' ? (q.mode || q.item || '') : q.type === 'map' ? q.map + (q.dots || []).length : '';
+  return [q.type, plain(q.prompt), ans, extra, q.text || '', q.type === 'sort' || q.type === 'label' ? '' : String(q.visual || '').length].join('|');
+}
 function nextQ() {
   if (S.n >= S.total) return finish();
-  let q, g = 0;
+  let q;
   if (S.list) { S.q = S.list[S.n]; S.tries = 0; S.n++; return renderQ(); }
-  do { q = S.topic.gen(S.level); } while (q.key === undefined && (q.prompt + '|' + q.answer) === S.last && g++ < 6);
-  S.last = q.prompt + '|' + q.answer;
+  // never repeat a question within one round; give up only if the topic has too few different questions
+  // (if this level has run out of new questions, borrow one from the nearest other level)
+  S.seen = S.seen || new Set();
+  const fresh = L => { for (let k = 0; k < 60; k++) { const x = S.topic.gen(L); if (!S.seen.has(qKey(x))) return x; } return null; };
+  q = [S.level, S.level - 1, S.level + 1, S.level - 2, S.level + 2].filter(L => L >= 1 && L <= 3).reduce((got, L) => got || fresh(L), null) || S.topic.gen(S.level);
+  S.seen.add(qKey(q));
   S.q = q; S.tries = 0; S.n++;
   renderQ();
 }
@@ -681,92 +694,89 @@ const accN = n => n + '-' + ({ 1: 'et', 2: 't', 3: 'at', 4: 'et', 5: 'öt', 6: '
 const hozN = n => n + '-' + ({ 1: 'hez', 2: 'höz', 3: 'hoz', 4: 'hez', 5: 'höz', 6: 'hoz', 7: 'hez', 8: 'hoz', 9: 'hez', 10: 'hez' }[n] || 'hoz');
 
 /* ===== Interactive question types: sort, label, set, riddle ===== */
-// Tap-to-select + tap-to-place, and drag with mouse or finger. Targets carry data-drop="id".
-function makeDraggable(el, id, onPick, onDrop) {
-  let sx = 0, sy = 0, ghost = null, moved = false;
-  el.style.touchAction = 'none';
-  el.addEventListener('pointerdown', e => {
-    if (el.disabled || e.button > 0) return;
-    sx = e.clientX; sy = e.clientY; moved = false;
-    try { el.setPointerCapture(e.pointerId); } catch (x) {}
-  });
-  el.addEventListener('pointermove', e => {
-    if (!el.hasPointerCapture || !el.hasPointerCapture(e.pointerId)) return;
-    if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) < 8) return;
-    if (!moved) { moved = true; onPick(id, true); ghost = el.cloneNode(true); ghost.classList.add('drag-ghost'); document.body.append(ghost); }
-    ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px';
-    document.querySelectorAll('.drop-hover').forEach(x => x.classList.remove('drop-hover'));
-    const t = dropTargetAt(e.clientX, e.clientY); if (t) t.classList.add('drop-hover');
-  });
-  const end = e => {
-    document.querySelectorAll('.drop-hover').forEach(x => x.classList.remove('drop-hover'));
-    if (ghost) { ghost.remove(); ghost = null; }
-    if (moved) { const t = dropTargetAt(e.clientX, e.clientY); onDrop(id, t ? t.dataset.drop : null); el._suppressClick = true; setTimeout(() => { el._suppressClick = false; }, 50); }
-    moved = false;
-  };
-  el.addEventListener('pointerup', end);
-  el.addEventListener('pointercancel', end);
-  el.addEventListener('click', e => { if (el._suppressClick) { e.preventDefault(); return; } onPick(id, false); });
-}
-function dropTargetAt(x, y) { const el = document.elementFromPoint(x, y); return el && el.closest('[data-drop]'); }
+// Sort and label work one card / one spot at a time: tap the answer, get feedback at once.
+// A miss is remembered: the question is then scored like a second try (no retry round needed).
+const noteMiss = n => { if (n && S) S.tries = Math.max(S.tries, 1); };
 
-/* ---------- Válogató: sort items into baskets ---------- */
+/* ---------- Válogató: which basket does this card go into? ---------- */
 UI.sort = (q, send) => {
-  const place = {}; let sel = null;
-  const chip = it => { const b = h('button', { class: 'sitem', html: it.html, 'data-id': it.id }); makeDraggable(b, it.id, pickIt, dropIt); return b; };
-  const chips = Object.fromEntries(q.items.map(it => [it.id, chip(it)]));
-  const pool = h('div', { class: 'spool', 'data-drop': '_pool', 'aria-label': 'Szétválogatandó kártyák' });
-  const binEls = Object.fromEntries(q.bins.map(b => [b.id, h('div', { class: 'sbin-items' })]));
-  const bins = h('div', { class: 'sbins', style: `--n:${q.bins.length}` }, q.bins.map(b => h('div', { class: 'sbin', 'data-drop': b.id, onclick: e => { if (e.target.closest('.sitem')) return; if (sel) dropIt(sel, b.id); } },
-    h('button', { class: 'sbin-h', onclick: () => sel && dropIt(sel, b.id) }, b.label), binEls[b.id])));
-  const sb = h('button', { class: 'btn primary', disabled: true, onclick: () => send({ ...place }) }, 'Kész');
-  function pickIt(id, dragging) { sel = dragging || sel !== id ? id : null; draw(); }
-  function dropIt(id, target) { if (!target) { sel = null; draw(); return; } if (target === '_pool') delete place[id]; else place[id] = target; sel = null; draw(); }
-  function draw() {
-    q.items.forEach(it => { const c = chips[it.id], home = place[it.id] ? binEls[place[it.id]] : pool; if (c.parentNode !== home) home.append(c); c.classList.toggle('sel', sel === it.id); c.setAttribute('aria-pressed', String(sel === it.id)); });
-    pool.classList.toggle('empty', Object.keys(place).length === q.items.length);
-    bins.classList.toggle('armed', !!sel);
-    sb.disabled = Object.keys(place).length !== q.items.length;
+  const order = q.items.slice(), place = {}; let k = 0, miss = 0, missHere = false, busy = false, locked = false;
+  const counter = h('div', { class: 'sprog' });
+  const card = h('div', { class: 'scard', 'aria-live': 'polite' });
+  const note = h('div', { class: 'snote' });
+  const binList = Object.fromEntries(q.bins.map(b => [b.id, h('div', { class: 'sbin-items' })]));
+  const binBtns = q.bins.map((b, i) => h('button', { class: 'sbtn', 'data-bin': b.id, onclick: () => pickBin(b.id) },
+    h('span', { class: 'sbtn-k' }, String(i + 1)), h('span', { class: 'sbtn-l' }, b.label)));
+  const bins = h('div', { class: 'sbins', style: `--n:${q.bins.length}` }, q.bins.map((b, i) => h('div', { class: 'sbin' }, binBtns[i], binList[b.id])));
+  function show() {
+    const it = order[k];
+    counter.textContent = `${k + 1}. kártya a ${q.items.length}-ból`;
+    card.innerHTML = `<div class="scard-in pop" data-id="${it.id}">${it.html}</div>`;
+    note.textContent = 'Hová tartozik? Koppints a megfelelő kosárra!'; note.className = 'snote';
+    binBtns.forEach(b => b.classList.remove('no'));
+    missHere = false;
+    if (autoRead() && canSpeak()) speak(it.text);
   }
-  draw();
+  function pickBin(bid) {
+    if (busy || locked || k >= order.length) return;
+    const it = order[k], btn = binBtns.find(b => b.dataset.bin === bid);
+    if (bid !== it.bin) {
+      if (!missHere) { miss++; missHere = true; }
+      btn.classList.remove('no'); void btn.offsetWidth; btn.classList.add('no');
+      card.firstChild && card.firstChild.classList.add('shake');
+      setTimeout(() => card.firstChild && card.firstChild.classList.remove('shake'), 420);
+      note.textContent = 'Nem oda tartozik. Próbáld egy másik kosárral!'; note.className = 'snote bad';
+      beep(false); return;
+    }
+    place[it.id] = bid; busy = true;
+    binList[bid].append(h('span', { class: 'schip pop' + (missHere ? ' late' : ''), html: it.html }));
+    note.textContent = pick(['Ügyes!', 'Így van!', 'Szuper!', 'Pontosan!']); note.className = 'snote good';
+    card.firstChild && card.firstChild.classList.add('fly');
+    setTimeout(() => { busy = false; k++; if (k < order.length) show(); else { counter.textContent = 'Kész!'; card.innerHTML = ''; note.textContent = ''; noteMiss(miss); send({ ...place }); } }, 520);
+  }
+  const onKey = e => { if (expOpen || locked) return; const n = +e.key; if (n >= 1 && n <= q.bins.length) { e.preventDefault(); pickBin(q.bins[n - 1].id); } };
+  document.addEventListener('keydown', onKey); cleanups.push(() => document.removeEventListener('keydown', onKey));
+  show();
   return {
-    el: h('div', { class: 'sortwrap' }, h('p', { class: 'mute ihelp' }, 'Húzd a kártyákat a helyükre, vagy koppints egy kártyára, aztán a kosárra.'), pool, bins), submitBtn: sb,
-    wrong(r) { q.items.forEach(it => { if (r[it.id] !== it.bin) { delete place[it.id]; chips[it.id].classList.add('was-wrong'); } else chips[it.id].classList.add('right', 'fixed'); }); draw(); },
-    lock(r) { q.items.forEach(it => { const c = chips[it.id]; c.disabled = true; c.classList.remove('sel', 'was-wrong'); binEls[it.bin].append(c); c.classList.add(r[it.id] === it.bin ? 'right' : 'wrong'); }); bins.classList.remove('armed'); },
-    done() { sb.remove(); }
+    el: h('div', { class: 'sortwrap' }, counter, card, note, bins),
+    wrong() {},
+    lock() { locked = true; binBtns.forEach(b => b.disabled = true); document.removeEventListener('keydown', onKey); }
   };
 };
 UI.sort.judge = (q, r) => q.items.every(it => r[it.id] === it.bin);
 
-/* ---------- Címkézd fel: put labels on a picture ---------- */
+/* ---------- Címkézd fel: what is at the highlighted number? ---------- */
 UI.label = (q, send) => {
-  const put = {}; let sel = null;           // spotId -> labelId
-  const lab = Object.fromEntries(q.labels.map(l => [l.id, l]));
-  const chips = Object.fromEntries(q.labels.map(l => { const b = h('button', { class: 'sitem lchip', 'data-id': l.id }, l.text); makeDraggable(b, l.id, pickL, dropL); return [l.id, b]; }));
-  const bank = h('div', { class: 'spool lbank', 'data-drop': '_pool' });
-  const spots = Object.fromEntries(q.spots.map((s, i) => [s.id, h('button', { class: 'lspot', 'data-drop': s.id, style: `left:${s.x}%;top:${s.y}%`, 'aria-label': `${i + 1}. hely`, onclick: () => spotClick(s.id) }, String(i + 1))]));
-  const fig = h('div', { class: 'lfig', html: q.img }); Object.values(spots).forEach(s => fig.append(s));
-  const sb = h('button', { class: 'btn primary', disabled: true, onclick: () => send({ ...put }) }, 'Kész');
-  function pickL(id, dragging) { sel = dragging || sel !== id ? id : null; draw(); }
-  function dropL(id, target) {
-    Object.keys(put).forEach(k => { if (put[k] === id) delete put[k]; });
-    if (target && target !== '_pool') put[target] = id;
-    sel = null; draw();
+  const put = {}, lab = Object.fromEntries(q.labels.map(l => [l.id, l])); let k = 0, miss = 0, missHere = false, busy = false, locked = false;
+  const spots = q.spots.map((s, i) => h('div', { class: 'lspot', style: `left:${s.x}%;top:${s.y}%` }, String(i + 1)));
+  const fig = h('div', { class: 'lfig', html: q.img }); spots.forEach(s => fig.append(s));
+  const ask = h('div', { class: 'snote' });
+  const btns = q.labels.map(l => h('button', { class: 'opt lname', onclick: () => pickName(l.id) }, l.text));
+  const bank = h('div', { class: 'lbank' }, btns);
+  function show() {
+    spots.forEach((s, i) => s.classList.toggle('cur', i === k));
+    ask.innerHTML = `Mi van a <b>${k + 1}.</b> számnál? Válaszd ki a nevét!`; ask.className = 'snote';
+    btns.forEach(b => b.classList.remove('wrong'));
+    missHere = false;
   }
-  function spotClick(sid) { if (sel) dropL(sel, sid); else if (put[sid]) { delete put[sid]; draw(); } }
-  function draw() {
-    q.spots.forEach((s, i) => { const sp = spots[s.id], l = put[s.id]; sp.textContent = l ? lab[l].text : String(i + 1); sp.classList.toggle('filled', !!l); });
-    q.labels.forEach(l => { const used = Object.values(put).includes(l.id), c = chips[l.id]; c.classList.toggle('used', used); c.classList.toggle('sel', sel === l.id); c.setAttribute('aria-pressed', String(sel === l.id)); });
-    fig.classList.toggle('armed', !!sel);
-    sb.disabled = Object.keys(put).length !== q.spots.length;
+  function pickName(lid) {
+    if (busy || locked || k >= q.spots.length) return;
+    const sid = q.spots[k].id, b = btns[q.labels.findIndex(l => l.id === lid)];
+    if (q.answer[sid] !== lid) {
+      if (!missHere) { miss++; missHere = true; }
+      b.classList.add('wrong'); ask.innerHTML = `Ez nem a ${k + 1}. hely neve. Próbáld újra!`; ask.className = 'snote bad'; beep(false); return;
+    }
+    put[sid] = lid; busy = true;
+    spots[k].textContent = lab[lid].text; spots[k].classList.remove('cur'); spots[k].classList.add('filled', missHere ? 'late' : 'right');
+    b.classList.add('used'); b.disabled = true;
+    ask.textContent = pick(['Ügyes!', 'Így van!', 'Szuper!']); ask.className = 'snote good';
+    setTimeout(() => { busy = false; k++; if (k < q.spots.length) show(); else { noteMiss(miss); send({ ...put }); } }, 450);
   }
-  bank.append(...Object.values(chips));
-  draw();
+  show();
   return {
-    el: h('div', { class: 'labelwrap' }, h('p', { class: 'mute ihelp' }, 'Húzd a neveket a számokra, vagy koppints egy névre, aztán a helyére.'), fig, bank), submitBtn: sb,
-    wrong(r) { q.spots.forEach(s => { if (r[s.id] !== q.answer[s.id]) delete put[s.id]; else spots[s.id].classList.add('right'); }); draw(); },
-    lock(r) { q.spots.forEach(s => { const sp = spots[s.id]; sp.disabled = true; sp.textContent = lab[q.answer[s.id]].text; sp.classList.add('filled', r[s.id] === q.answer[s.id] ? 'right' : 'wrong'); }); Object.values(chips).forEach(c => c.disabled = true); },
-    done() { sb.remove(); }
+    el: h('div', { class: 'labelwrap' }, fig, ask, bank),
+    wrong() {},
+    lock() { locked = true; btns.forEach(b => b.disabled = true); spots.forEach((s, i) => { s.classList.remove('cur'); s.textContent = lab[q.answer[q.spots[i].id]].text; s.classList.add('filled'); }); }
   };
 };
 UI.label.judge = (q, r) => q.spots.every(s => r[s.id] === q.answer[s.id]);
@@ -2757,10 +2767,12 @@ function szorzoSetup(page) {
 }
 function szorzoPlay(page, cfg, key) {
   runCleanups();
-  let score = 0, wrong = [], val = '', q = null, left = cfg.secs, over = false, last = '', pause = false;
+  let score = 0, wrong = [], val = '', q = null, left = cfg.secs, over = false, last = '', pause = false, deck = [];
   const timeEl = h('span', { class: 'sz-time' }), bar = h('i'), scoreEl = h('span', { class: 'sz-score' }), qEl = h('div', { class: 'sz-q' }), disp = h('div', { class: 'numdisp' }), card = h('div', { class: 'qcard sz-card' });
   const next = () => {
-    let a, b, g = 0; do { a = pick(cfg.tables); b = ri(1, 10); if (Math.random() < .5) [a, b] = [b, a]; } while (`${a}·${b}` === last && g++ < 10);
+    // shuffled deck: every fact of the chosen tables comes once before any of them repeats
+    if (!deck.length) { deck = shuffle(cfg.tables.flatMap(t => Array.from({ length: 10 }, (_, i) => Math.random() < .5 ? [t, i + 1] : [i + 1, t]))); if (deck.length > 1 && `${deck[deck.length - 1][0]}·${deck[deck.length - 1][1]}` === last) deck.unshift(deck.pop()); }
+    let [a, b] = deck.pop();
     last = `${a}·${b}`;
     const div = cfg.op === 'div' || (cfg.op === 'mix' && Math.random() < .5);
     q = div ? { t: `${a * b} : ${b}`, ans: a, fact: `${a * b} : ${b} = ${a}` } : { t: `${a} · ${b}`, ans: a * b, fact: `${a} · ${b} = ${a * b}` };
@@ -2907,7 +2919,7 @@ function genList(sp) {
       const out = [], seen = new Set(), per = Math.ceil(sp.n / sp.topics.length);
       for (const t of sp.topics) for (let i = 0; i < per && out.length < sp.n; i++) {
         let q, key, g = 0;
-        do { q = t.gen(sp.level); key = String(q.prompt) + '|' + JSON.stringify(q.answer) + '|' + String(q.visual || '').length; } while (seen.has(key) && g++ < 12);
+        for (const L of [sp.level, sp.level - 1, sp.level + 1, sp.level - 2, sp.level + 2].filter(L => L >= 1 && L <= 3)) { g = 0; do { q = t.gen(L); key = qKey(q); } while (seen.has(key) && g++ < 40); if (!seen.has(key)) break; }
         seen.add(key); out.push({ ...q, _topic: t.id });
       }
       return out;
@@ -3459,11 +3471,11 @@ function dailyList() {
   const due = entries.filter(x => x.e.d <= today).sort(order), later = entries.filter(x => x.e.d > today).sort(order);
   const pool = due.length >= 3 ? due.slice(0, 6) : due.concat(later).slice(0, 4);
   const items = shuffle(getMistakes()).slice(0, 3).map(m => ({ ...m.q, _page: m.p, _topic: m.t, _mk: m.k }));
-  const seen = new Set(items.map(q => q.prompt + '|' + q.answer));
+  const seen = new Set(items.map(qKey));
   let i = 0, guard = 0;
   while (items.length < 10 && guard++ < 80) {
     const x = pool[i++ % pool.length], lvl = Math.max(1, store.get(pk(x.pid, x.tid, 'lvl'), 1) - (x.e.b === 1 ? 1 : 0));
-    try { const q = x.t.gen(lvl), key = q.prompt + '|' + q.answer; if (q && q.type !== 'read' && !q.autoSpeak && !seen.has(key)) { seen.add(key); items.push({ ...q, _page: x.pid, _topic: x.tid }); } } catch (e) {}
+    try { const q = x.t.gen(lvl), key = q && qKey(q); if (q && q.type !== 'read' && !q.autoSpeak && !seen.has(key)) { seen.add(key); items.push({ ...q, _page: x.pid, _topic: x.tid }); } } catch (e) {}
   }
   return shuffle(items);
 }
