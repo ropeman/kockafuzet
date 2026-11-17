@@ -279,6 +279,8 @@ K4.health = mix(K4.health, L => L === 1 ? () => SORTS.health(L) : null, .4);
 K4.weather = mix(K4.weather, L => L === 3 ? () => SORTS.weather(L) : null, .4);
 K4.compass = mix(K4.compass, L => L === 1 ? (Math.random() < .5 ? LABELS.compass4 : () => compassSet(1)) : L === 2 ? (Math.random() < .5 ? LABELS.compassX : () => compassSet(2)) : null, .45);
 K4.landform = mix(K4.landform, L => L === 2 ? () => SORTS.water(L) : null, .4);
+K4.lab = L => LAB_GENS[pick(Object.keys(LAB_GENS))](L);
+K4.state = mix(K4.state, L => () => heatLab(L), .2);
 K4.sorter = L => { const k = pick(Object.keys(SORTS)); return SORTS[k](L); };
 K4.ki = kiQ;
 /* ---------- maps: counties, neighbours, landscapes, Budapest's bridges ---------- */
@@ -443,6 +445,7 @@ PAGES['kornyezet-4'] = {
   topics: [
     { id: 'sorter', sample: '🧺', name: 'Válogató', desc: 'Válogasd szét a kártyákat a kosarakba!', gen: K4.sorter },
     { id: 'ki', sample: '❓', name: 'Ki vagyok én?', desc: 'Találós kérdések: minél kevesebb tippből!', gen: K4.ki },
+    { id: 'lab', sample: '🧪', name: 'Kísérletező', desc: 'Mit gondolsz? Próbáld ki! Mit láttál?', gen: K4.lab },
     { id: 'state', sample: 'jég · víz · gőz', name: 'Halmazállapotok', desc: 'Szilárd, folyékony, légnemű; olvadás, fagyás; a hőmérő.', gen: K4.state },
     { id: 'measure', sample: '°C · kg · dl', name: 'Mérés', desc: 'Mérőeszközök és mértékegységek.', gen: K4.measure },
     { id: 'weather', sample: '☀️ 🌧️ 💨', name: 'Időjárás', desc: 'Időjárásjelek, csapadék, mérőeszközök.', gen: K4.weather },

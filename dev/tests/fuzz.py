@@ -53,6 +53,13 @@ JS = r"""
           } else if (q.type === 'riddle') {
             if (!q.options.some(o => o.value === q.answer) || new Set(q.options.map(o => o.value)).size !== q.options.length) add(where, 'riddle options bad', q);
             if (q.clues.slice(0, -1).some(c => c.toLowerCase().includes(String(q.answer).toLowerCase()))) add(where, 'clue gives the answer away', q);
+          } else if (q.type === 'lab') {
+            const vals = q.options.map(o => o.value);
+            if (!vals.includes(q.answer) || new Set(vals).size !== vals.length || vals.length < 2) add(where, 'lab options bad', q);
+            if (!LAB[q.lab]) add(where, 'unknown lab ' + q.lab, q);
+            if (q.lab === 'heat' && !HEAT[q.mode]) add(where, 'unknown heat mode', q);
+            if (q.lab === 'float' && !FLOAT.some(f => f[0] === q.item)) add(where, 'unknown float item', q);
+            if (q.lab === 'dissolve' && !DISSOLVE[q.item]) add(where, 'unknown dissolve item', q);
           } else if (q.type === 'map') {
             const pool = q.map === 'region' ? MAPDATA.region : q.pick === 'dot' ? MAPDATA.places : Object.assign({ Budapest: 1 }, MAPDATA.counties);
             if (!(q.answer in pool)) add(where, 'map answer unknown ' + q.answer, q);

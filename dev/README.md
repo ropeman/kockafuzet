@@ -10,6 +10,7 @@ A weboldal a repó gyökerében van (GitHub Pages ezt szolgálja ki). A forrás 
 - `dev/src/explain.js` – Így működik: lépésenkénti magyarázatok (a kérdésből ismeri fel a típust)
 - `dev/src/review.js` – Napi 5 perc: ismétlés témánkénti dobozokkal (1–5), heti cél
 - `dev/src/interact.js` – interaktív típusok: Válogató (húzd a kosárba), Címkézd fel!, Állítsd be (hőmérő, iránytű), Ki vagyok én?
+- `dev/src/lab.js` – Kísérletező: „Mit gondolsz? → Próbáld ki! → Mit láttál?” kísérletek (melegítés-hűtés, úszik vagy elsüllyed, oldódás)
 - `dev/src/map.js` – térképek: Magyarország megyékkel, a szomszédos országok, Budapest Duna-hídjai; „Koppints a térképre!” feladattípus
 - `dev/src/mapdata.js` – generált térképadat (Natural Earth, közkincs). Újragenerálás: `node dev/tools/make-map.js <node_modules> dev/src/mapdata.js` (kell hozzá: datamaps, world-atlas, @geo-maps/earth-lakes-10m, topojson-client, d3-geo)
 - `dev/src/*.css`, `dev/src/theme.js`, `dev/src/sw.js` – megjelenés, világos/sötét mód, offline működés

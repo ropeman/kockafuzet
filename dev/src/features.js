@@ -64,6 +64,7 @@ const printPrompt = s => String(s || '')
   .replace('Rakd betűrendbe a szavakat! Koppints rájuk sorban.', 'Írd le a szavakat betűrendben!')
   .replace(/ Koppints (rá a térképen|a pontra|a megyére)!/g, '').replace(/Koppints arra az országra/g, 'Színezd ki azt az országot').replace(/ Koppints rájuk sorban\./g, ' Írd le őket sorban!');
 function staticQ(q, i) {
+  if (q.type === 'lab') q = { ...q, type: 'choice' };
   const body = h('div', { class: 'pq-b' }, h('div', { class: 'pq-p', html: printPrompt(q.prompt) }));
   if (q.visual) body.append(h('div', { class: 'pq-v', html: q.visual }));
   if (q.type === 'choice') body.append(h('div', { class: 'pq-o' }, q.options.map((o, k) => h('span', { class: 'pq-opt' }, h('b', null, 'ABCDEF'[k] + ')'), h('span', { html: o.html })))));
@@ -81,6 +82,7 @@ function staticQ(q, i) {
   return h('div', { class: 'pq' }, h('div', { class: 'pq-n' }, `${i + 1}.`), body);
 }
 function keyText(q) {
+  if (q.type === 'lab') q = { ...q, type: 'choice' };
   if (q.type === 'choice') { const k = q.options.findIndex(o => o.value === q.answer); const txt = stripTags(q.options[k] && q.options[k].html); return `${'ABCDEF'[k]})${txt ? ' ' + txt : q.answerText ? ' ' + stripTags(q.answerText) : ''}`; }
   if (q.type === 'find') return `${q.targets.length} db: ${q.targets.map(i => i + 1).join(', ')}. hely`;
   if (q.type === 'build') return q.answer.join(q.answer.some(x => x.length > 3) ? ', ' : '');
