@@ -3405,7 +3405,7 @@ const NT_FACTS = [
   [3, 'Hány méterrel magasabb az Írott-kő (882 m) a Zengőnél (680 m)?', '202 méterrel', ['102 méterrel', '302 méterrel', '182 méterrel'], '882 − 680 = 202.'],
   [3, 'Hány méterrel magasabb a Pilis (756 m) a Zengőnél (680 m)?', '76 méterrel', ['56 méterrel', '86 méterrel', '176 méterrel'], '756 − 680 = 76.']
 ];
-const NT_SORT = () => { const r3 = shuffle(NT3); return sortQ('Melyik nagytájhoz tartozik? Válogasd szét!', Object.fromEntries(r3.map(r => [r.n, [...r.parts, ...r.towns, ...(r.top ? [r.top[0]] : [])]])), 2, { hint: NT3.map(r => `${r.n}: ${[...r.parts, ...r.towns].join(', ')}`).join('. ') + '.' }); };
+const NT_SORT = () => { const r3 = shuffle(NT3); return sortQ('Melyik nagytájhoz tartozik? Válogasd szét!', Object.fromEntries(r3.map(r => [r.n, [...new Set([...r.parts, ...r.towns])]])), 2, { hint: NT3.map(r => `${r.n}: ${[...r.parts, ...r.towns].join(', ')}`).join('. ') + '.' }); };
 const NT_RIDDLES = [
   [['Nagytáj vagyok az ország nyugati részén.', 'Hegyek és dombok, erdők és rétek borítanak.', 'Csapadékos és szeles vagyok.', 'Rajtam van Sopron és Kőszeg, legmagasabb pontom az Írott-kő.'], 'Alpokalja', ['Dunántúli-dombvidék', 'Dunántúli-középhegység', 'Kisalföld']],
   [['Nagytáj vagyok az ország délnyugati részén.', 'Somogyi-, Zalai-, Baranyai- és Tolnai-dombság tartozik hozzám.', 'Két kisebb hegységem is van: a Mecsek és a Villányi-hegység.', 'Legnagyobb városom Pécs.'], 'Dunántúli-dombvidék', ['Alpokalja', 'Dunántúli-középhegység', 'Alföld']],
