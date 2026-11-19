@@ -1110,20 +1110,20 @@ const M1 = {
   neigh(L) {
     if (L === 1) {
       const t = pick(['after', 'before', 'between']);
-      if (t === 'after') { const n = ri(1, 18); return { type: 'input', prompt: `Melyik szám jön ${n} után?`, answer: n + 1 }; }
-      if (t === 'before') { const n = ri(2, 19); return { type: 'input', prompt: `Melyik szám van ${n} előtt?`, answer: n - 1 }; }
-      const n = ri(1, 17); return { type: 'input', prompt: `Melyik szám van ${n} és ${n + 2} között?`, answer: n + 1 };
+      if (t === 'after') { const n = ri(1, 18); return { type: 'input', prompt: `Melyik szám jön ${n} után?`, answer: n + 1, hint: `Számolj tovább eggyel: ${n}, …` }; }
+      if (t === 'before') { const n = ri(2, 19); return { type: 'input', prompt: `Melyik szám van ${n} előtt?`, answer: n - 1, hint: 'Számolj visszafelé eggyel!' }; }
+      const n = ri(1, 17); return { type: 'input', prompt: `Melyik szám van ${n} és ${n + 2} között?`, answer: n + 1, hint: `Az a szám, amelyik ${n} után jön.` };
     }
-    if (L === 2) { const a = ri(0, 12), d = ri(3, 8); return { type: 'input', prompt: `Hány egész szám van ${a} és ${a + d} között?`, answer: d - 1, hint: `Számold végig: ${a + 1}, ${a + 2}, … a ${a + d} előttiig.` }; }
-    const n = ri(11, 98); if (n % 10 === 0) return M1.neigh(3);
-    const lo = Math.floor(n / 10) * 10, ans = `${lo} és ${lo + 10}`;
-    return mcq(`Melyik két tízes között van a ${n}?`, ans, [`${lo - 10} és ${lo}`, `${lo + 10} és ${lo + 20}`, `${n - 10} és ${n}`].filter(x => !x.startsWith('-')), { fmt: v => v, hint: 'A tízes számszomszédok kerek tízesek: a kisebb tízes és a következő tízes.' });
+    if (L === 2) { const a = ri(0, 12), d = ri(3, 8); return { type: 'input', prompt: `Hány egész szám van ${a} és ${a + d} között?`, answer: d - 1, hint: `Számold végig: ${a + 1}, ${a + 2}, … ${azN(a + d)} ${a + d} előttiig.` }; }
+    const n = ri(1, 19), k = pick([1, 2]), ans = `${n - k < 0 ? 0 : n - k} és ${n + k}`;
+    if (n - k < 0 || n + k > 20) return M1.neigh(3);
+    return mcq(`Melyik két szám van ${k === 1 ? 'közvetlenül' : '2-vel'} ${azN(n)} ${n} előtt és után?`, ans, [`${n - k + 1} és ${n + k + 1}`, `${n - k - 1 < 0 ? n + 1 : n - k - 1} és ${n + k - 1}`, `${n} és ${n + k}`].filter((x, i, a) => x !== ans && a.indexOf(x) === i), { fmt: v => v, hint: k === 1 ? 'Számszomszédok: az eggyel kisebb és az eggyel nagyobb szám.' : 'Lépj 2-t visszafelé és 2-t előre a számegyenesen!' });
   },
   seq(L) {
     let step, start, len = 5;
     if (L === 1) { step = pick([1, 1, -1]); start = step > 0 ? ri(1, 12) : ri(8, 20); }
-    else if (L === 2) { step = pick([2, 5, 10]); start = step === 10 ? ri(0, 5) * 10 : ri(0, 5); }
-    else { step = pick([-2, -5, -10, 3, 4]); start = step < 0 ? 4 * -step + ri(0, 5) : ri(0, 6); }
+    else if (L === 2) { step = pick([2, 2, 5]); start = step === 5 ? 0 : ri(0, 12); }
+    else { step = pick([-2, -3, 3, 4]); start = step < 0 ? ri(4 * -step, 20) : ri(0, 20 - 4 * step); }
     const seq = Array.from({ length: len }, (_, i) => start + i * step);
     const hide = L === 3 ? ri(1, 3) : ri(2, 4);
     const txt = seq.map((v, i) => i === hide ? '<span class="blank">?</span>' : v).join(', ');
@@ -1200,7 +1200,7 @@ const M2 = {
     } else do { a = ri(31, 99); b = ri(12, a - 5); } while ((b % 10) <= (a % 10) && g++ < 80);
     const t = b - b % 10;
     return { type: 'input', prompt: `${a} − ${b} = <span class="blank">?</span>`, answer: a - b,
-      hint: L === 3 && b % 10 ? `Bontsd a kivonandót: ${a} − ${t} = ${a - t}, aztán ${a - t} − ${b % 10}.` : 'Ha az egyesekből nem tudsz elvenni, bonts fel egy tízest: az 10 egyes.' };
+      hint: L === 3 && b % 10 ? `Bontsd a kivonandót: ${a} − ${t} = ${a - t}, aztán ${a - t} − ${b % 10}.` : 'Ha az egyesekből nem tudsz elvenni, bonts fel egy tízest 10 egyesre.' };
   },
   mul(L) {
     const tbl = pick(L === 1 ? [2, 5, 10] : L === 2 ? [3, 4, 2, 5, 10] : [6, 7, 8, 9, 3, 4]), n = ri(1, 10);
@@ -1673,8 +1673,10 @@ UI.numline = (q, send) => {
 UI.numline.judge = (q, r) => r === q.answer;
 const NL = { 1: [[0, 10, 1, 5], [0, 20, 1, 5], [0, 20, 1, 2]], 2: [[0, 100, 10, 10], [0, 100, 5, 10], [20, 60, 2, 10]], 3: [[0, 1000, 100, 100], [0, 1000, 50, 100], [300, 500, 10, 50]], 4: [[0, 10000, 1000, 1000], [0, 5000, 250, 1000], [-10, 10, 1, 5]] };
 const nlRange = (g, L) => { const [min, max, step, every] = NL[g][Math.min(L, 3) - 1]; return { min, max, step, every }; };
-const nlTap = g => L => { const R = nlRange(g, L); let a; do { a = R.min + ri(0, (R.max - R.min) / R.step) * R.step; } while ((a - R.min) % R.every === 0 && Math.random() < .7); return { type: 'numline', ...R, answer: a, prompt: `Hol van a <b>${String(a).replace('-', '−')}</b>? Koppints a helyére a számegyenesen!`, answerText: String(a), hint: `A hosszú vonalak ${R.every}-esével, a rövidek ${R.step}-esével követik egymást.` }; };
-const nlRead = g => L => { const R = nlRange(g, L); let a, tries = 0; do { a = R.min + ri(0, (R.max - R.min) / R.step) * R.step; } while ((a - R.min) % R.every === 0 && tries++ < 50); return { type: 'input', prompt: 'Melyik számot mutatja a piros nyíl?', visual: numlineSvg({ ...R, type: 'x' }, a), answer: a, neg: a < 0, hint: `Keresd meg a nyíl előtti hosszú vonalat, és számold tovább ${R.step}-esével.` }; };
+const byN = n => n + '-' + ({ 1: 'esével', 2: 'esével', 5: 'ösével', 10: 'esével', 50: 'esével', 100: 'asával', 250: 'esével', 1000: 'esével' }[n] || 'ével');
+const nlHint = R => R.step === R.every ? `A vonalak ${byN(R.step)} követik egymást.` : `A hosszú vonalak ${byN(R.every)}, a rövidek ${byN(R.step)} követik egymást.`;
+const nlTap = g => L => { const R = nlRange(g, L); let a; do { a = R.min + ri(0, (R.max - R.min) / R.step) * R.step; } while ((a - R.min) % R.every === 0 && Math.random() < .7); return { type: 'numline', ...R, answer: a, prompt: `Hol van ${azN(a)} <b>${String(a).replace('-', '−')}</b>? Koppints a helyére a számegyenesen!`, answerText: String(a), hint: nlHint(R) }; };
+const nlRead = g => L => { const R = nlRange(g, L); let a, tries = 0; do { a = R.min + ri(0, (R.max - R.min) / R.step) * R.step; } while ((a - R.min) % R.every === 0 && tries++ < 50); return { type: 'input', prompt: 'Melyik számot mutatja a piros nyíl?', visual: numlineSvg({ ...R, type: 'x' }, a), answer: a, neg: a < 0, hint: `Keresd meg a nyíl előtti hosszú vonalat, és számold tovább ${byN(R.step)}.` }; };
 const nlGen = g => L => (Math.random() < .55 ? nlTap(g) : nlRead(g))(L);
 
 /* ---------- number pyramid (számpiramis): every brick is the sum of the two below ---------- */
@@ -1759,7 +1761,7 @@ const patternQ = L => {
 };
 
 /* ---------- doubling and halving ---------- */
-const dblQ = L => { const max = L === 1 ? 5 : L === 2 ? 10 : 50; if (Math.random() < .5) { const n = ri(1, max); return { type: 'input', prompt: `Mennyi a <b>${n}</b> duplája (kétszerese)?`, answer: 2 * n, hint: `A dupla azt jelenti: ${n} + ${n}.` }; } const n = ri(1, max); return { type: 'input', prompt: `Mennyi a <b>${2 * n}</b> fele?`, answer: n, hint: `Melyik számot kell önmagához adni, hogy ${2 * n} legyen?` }; };
+const dblQ = L => { const max = L === 1 ? 5 : 10; if (Math.random() < .5) { const n = ri(1, max); return { type: 'input', prompt: `Mennyi ${azN(n)} <b>${n}</b> duplája (kétszerese)?`, answer: 2 * n, hint: `A dupla azt jelenti: ${n} + ${n}.` }; } const n = ri(1, max); return { type: 'input', prompt: `Mennyi ${azN(2 * n)} <b>${2 * n}</b> fele?`, answer: n, hint: `Melyik számot kell önmagához adni, hogy ${2 * n} legyen?` }; };
 
 /* ---------- word problems, grade 1 ---------- */
 const NAMES1 = [['Anna', 'Annának'], ['Bence', 'Bencének'], ['Zsófi', 'Zsófinak'], ['Máté', 'Máténak'], ['Lili', 'Lilinek'], ['Dani', 'Daninak'], ['Hanna', 'Hannának'], ['Ádám', 'Ádámnak'], ['Emma', 'Emmának'], ['Levente', 'Leventének']];
@@ -1791,7 +1793,7 @@ const combiQ = L => {
   const t = L === 1 ? 'outfit' : pick(L === 2 ? ['outfit', 'cards2', 'order3'] : ['outfit', 'cards3', 'order3', 'hands', 'cards2']);
   if (t === 'outfit') { const a = ri(2, L === 1 ? 3 : 5), b = ri(2, L === 1 ? 3 : 4); return { type: 'input', prompt: `Lilinek ${a} pólója és ${b} szoknyája van. Hányféleképpen öltözhet fel, ha egy pólót és egy szoknyát vesz fel?`, answer: a * b, visual: `<div class="big-emoji">👕 × 👗</div>`, hint: `Minden pólóhoz ${b}-féle szoknya választható. Ez ${a} · ${b}.` }; }
   if (t === 'cards2') { const ds = shuffle([1, 2, 3, 4, 5, 6, 7]).slice(0, 3).sort(); return { type: 'input', prompt: `Hány különböző kétjegyű számot rakhatsz ki ezekből a kártyákból: ${ds.join(', ')}? (Egy kártyát egy számban csak egyszer használhatsz.)`, answer: 6, hint: 'Az első helyre 3 kártya kerülhet, a második helyre a maradék 2: 3 · 2.' }; }
-  if (t === 'cards3') { const ds = shuffle([1, 2, 3, 4, 5, 6, 7]).slice(0, 3).sort(); return { type: 'input', prompt: `Hány különböző háromjegyű számot rakhatsz ki a ${ds.join(', ')} kártyákból, ha mindhármat felhasználod?`, answer: 6, hint: 'Az első helyre 3, a másodikra 2, a harmadikra 1 kártya marad: 3 · 2 · 1.' }; }
+  if (t === 'cards3') { const ds = shuffle([1, 2, 3, 4, 5, 6, 7]).slice(0, 3).sort(); return { type: 'input', prompt: `Hány különböző háromjegyű számot rakhatsz ki ${azN(ds[0])} ${ds.join(', ')} kártyákból, ha mindhármat felhasználod?`, answer: 6, hint: 'Az első helyre 3, a másodikra 2, a harmadikra 1 kártya marad: 3 · 2 · 1.' }; }
   if (t === 'order3') return { type: 'input', prompt: 'Hányféle sorrendben állhat be 3 gyerek a sorba?', answer: 6, hint: 'Az első helyre 3 gyerek állhat, a másodikra 2, a harmadikra 1: 3 · 2 · 1.' };
   const n = ri(3, 5); return { type: 'input', prompt: `${n} barát találkozik, és mindenki mindenkivel egyszer kezet fog. Hány kézfogás lesz?`, answer: n * (n - 1) / 2, hint: 'Rajzold le pontokkal, és kösd össze mindegyiket mindegyikkel! Számold a vonalakat.' };
 };
@@ -1814,10 +1816,10 @@ const dataQ = g => L => {
     return { type: 'input', prompt: `${title}: hány pöttyöt kapott a ${labels[i]}?`, visual: `<div class="pictwrap">${rows}</div>`, answer: Math.min(vals[i], 9), hint: 'Számold meg a pöttyöket a jel mellett!' };
   }
   const vis = barSvg(labels, vals, max, unit), r = Math.random(), i = ri(0, 3); let j = ri(0, 3); while (j === i) j = ri(0, 3);
-  if (r < .4) return { type: 'input', prompt: `${title} (${what}). Mennyit mutat az oszlop ennél: ${labels[i]}?`, visual: vis, answer: vals[i], hint: `Kövesd az oszlop tetejét balra, a számokhoz! A vonalak ${unit}-esével követik egymást.` };
+  if (r < .4) return { type: 'input', prompt: `${title}: mennyit mutat a ${labels[i]} oszlopa?`, visual: vis, answer: vals[i], hint: `Kövesd az oszlop tetejét balra, a számokhoz! A vonalak ${byN(unit)} követik egymást.` };
   if (r < .65 && new Set(vals).size === 4) { const mx = labels[vals.indexOf(Math.max(...vals))]; return { type: 'choice', prompt: `${title}: melyikből van a legtöbb?`, visual: vis, answer: mx, options: labels.map(v => ({ value: v, html: v })), answerText: mx, hint: 'Keresd a legmagasabb oszlopot!' }; }
   if (r < .85 && vals[i] !== vals[j]) { const [a, b] = vals[i] > vals[j] ? [i, j] : [j, i]; return { type: 'input', prompt: `${title}: mennyivel több ${labels[a]}, mint ${labels[b]}?`, visual: vis, answer: vals[a] - vals[b], hint: 'Olvasd le mindkét oszlopot, és vond ki a kisebbet a nagyobból!' }; }
-  return { type: 'input', prompt: `${title}: mennyi összesen a négy oszlop?`, visual: vis, answer: vals.reduce((a, b) => a + b, 0), hint: 'Olvasd le az oszlopokat egyenként, és add össze őket!' };
+  return { type: 'input', prompt: `${title}: mennyi a négy oszlop együtt?`, visual: vis, answer: vals.reduce((a, b) => a + b, 0), hint: 'Olvasd le az oszlopokat egyenként, és add össze őket!' };
 };
 
 /* ---------- solids (testek) ---------- */
@@ -1881,7 +1883,7 @@ addTopics('matek-1', [
 addTopics('matek-2', [
   { id: 'numline', sample: '0 — 100', name: 'Számegyenes', desc: 'Tízesével, ötösével beosztott számegyenes.', gen: nlGen(2) },
   { id: 'match', sample: '6·4 → 24', name: 'Párosító', desc: 'Válogasd a műveleteket az eredményükhöz!', gen: L => L === 3 ? matchQ(M_MUL, 'Melyik szorzat mennyi? Válogasd szét!')(L) : matchQ(M_ADD2, 'Melyik eredményhez tartozik? Válogasd szét!')(L) },
-  { id: 'pyramid', sample: '△ 23+15', name: 'Számpiramis', desc: 'Minden tégla a két alatta lévő összege.', gen: L => pyramidQ(L === 1 ? 2 : 5, L === 3 ? 30 : 20, L === 3 ? 4 : 3)(L) },
+  { id: 'pyramid', sample: '△ 23+15', name: 'Számpiramis', desc: 'Minden tégla a két alatta lévő összege.', gen: L => pyramidQ(L === 1 ? 2 : 3, L === 3 ? 12 : 20, L === 3 ? 4 : 3)(L) },
   { id: 'digits', sample: '7 · 2 → 72', name: 'Számkártyák', desc: 'Rakd ki a legnagyobb, a legkisebb számot!', gen: digitsQ(2) },
   { id: 'order', sample: '17 < 45 < 90', name: 'Sorba rendezés', desc: 'Számok 100-ig növekvő és csökkenő sorrendben.', gen: orderQ(1, 100, 4) },
   { id: 'clockset', sample: '🕒', name: 'Állítsd be az órát!', desc: 'Egész, negyed, fél, háromnegyed.', gen: L => clockSet(L === 1 ? 1 : 2) },
@@ -1894,7 +1896,7 @@ addTopics('matek-2', [
 addTopics('matek-3', [
   { id: 'numline', sample: '0 — 1000', name: 'Számegyenes', desc: 'Százasával, ötvenesével, tízesével beosztva.', gen: nlGen(3) },
   { id: 'match', sample: '56:7 → 8', name: 'Párosító', desc: 'Szorzás és osztás eredménye szerint válogass!', gen: L => L === 1 ? matchQ(M_MUL, 'Melyik szorzat mennyi? Válogasd szét!')(L) : L === 2 ? matchQ(M_DIV3, 'Melyik hányados mennyi? Válogasd szét!')(L) : matchQ(M_BIG, 'Melyik eredményhez tartozik? Válogasd szét!')(L) },
-  { id: 'pyramid', sample: '△ 120+85', name: 'Számpiramis', desc: 'Háromjegyű számokkal is.', gen: L => pyramidQ(L === 1 ? 10 : 20, L === 1 ? 60 : 150, L === 3 ? 4 : 3)(L) },
+  { id: 'pyramid', sample: '△ 120+85', name: 'Számpiramis', desc: 'Háromjegyű számokkal is.', gen: L => pyramidQ(L === 1 ? 10 : 20, L === 1 ? 60 : L === 2 ? 240 : 120, L === 3 ? 4 : 3)(L) },
   { id: 'magic', sample: '▦ 15', name: 'Bűvös négyzet', desc: 'Minden sorban, oszlopban és átlóban ugyanannyi.', gen: magicQ(L => L === 1 ? 0 : ri(1, 20)) },
   { id: 'digits', sample: '5·0·8 → 850', name: 'Számkártyák', desc: 'Rakd ki a legnagyobb, a legkisebb háromjegyű számot!', gen: digitsQ(3) },
   { id: 'order', sample: '305 < 350 < 503', name: 'Sorba rendezés', desc: 'Háromjegyű számok sorba rakása.', gen: orderQ(100, 999, 4) },
@@ -3199,7 +3201,7 @@ const scaleQ = () => {
   const k = pick([1, 2, 5, 10]), n = ri(2, 9);
   return Math.random() < .6
     ? { type: 'input', prompt: `A térképen 1 cm a valóságban ${k} km. Két falu a térképen ${n} cm-re van egymástól. Hány km a távolság a valóságban?`, answer: n * k, hint: `Minden centiméter ${k} km. Szorozd meg: ${n} · ${k}.` }
-    : { type: 'input', prompt: `A térképen 1 cm a valóságban ${k} km. Két város a valóságban ${n * k} km-re van egymástól. Hány cm a távolság a térképen?`, answer: n, hint: `Hányszor van meg a ${k} km-ben a ${n * k} km? Oszd el: ${n * k} : ${k}.` };
+    : { type: 'input', prompt: `A térképen 1 cm a valóságban ${k} km. Két város a valóságban ${n * k} km-re van egymástól. Hány cm a távolság a térképen?`, answer: n, hint: `Hányszor van meg ${azN(n * k)} ${n * k} km-ben ${azN(k)} ${k} km? Oszd el: ${n * k} : ${k}.` };
 };
 K4.terkepolv = L => {
   const r = Math.random(), fact = () => factQ(pick(MAP_FACTS.filter(f => f[0] === Math.min(L, 2))));

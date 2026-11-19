@@ -41,20 +41,20 @@ const M1 = {
   neigh(L) {
     if (L === 1) {
       const t = pick(['after', 'before', 'between']);
-      if (t === 'after') { const n = ri(1, 18); return { type: 'input', prompt: `Melyik szám jön ${n} után?`, answer: n + 1 }; }
-      if (t === 'before') { const n = ri(2, 19); return { type: 'input', prompt: `Melyik szám van ${n} előtt?`, answer: n - 1 }; }
-      const n = ri(1, 17); return { type: 'input', prompt: `Melyik szám van ${n} és ${n + 2} között?`, answer: n + 1 };
+      if (t === 'after') { const n = ri(1, 18); return { type: 'input', prompt: `Melyik szám jön ${n} után?`, answer: n + 1, hint: `Számolj tovább eggyel: ${n}, …` }; }
+      if (t === 'before') { const n = ri(2, 19); return { type: 'input', prompt: `Melyik szám van ${n} előtt?`, answer: n - 1, hint: 'Számolj visszafelé eggyel!' }; }
+      const n = ri(1, 17); return { type: 'input', prompt: `Melyik szám van ${n} és ${n + 2} között?`, answer: n + 1, hint: `Az a szám, amelyik ${n} után jön.` };
     }
-    if (L === 2) { const a = ri(0, 12), d = ri(3, 8); return { type: 'input', prompt: `Hány egész szám van ${a} és ${a + d} között?`, answer: d - 1, hint: `Számold végig: ${a + 1}, ${a + 2}, … a ${a + d} előttiig.` }; }
-    const n = ri(11, 98); if (n % 10 === 0) return M1.neigh(3);
-    const lo = Math.floor(n / 10) * 10, ans = `${lo} és ${lo + 10}`;
-    return mcq(`Melyik két tízes között van a ${n}?`, ans, [`${lo - 10} és ${lo}`, `${lo + 10} és ${lo + 20}`, `${n - 10} és ${n}`].filter(x => !x.startsWith('-')), { fmt: v => v, hint: 'A tízes számszomszédok kerek tízesek: a kisebb tízes és a következő tízes.' });
+    if (L === 2) { const a = ri(0, 12), d = ri(3, 8); return { type: 'input', prompt: `Hány egész szám van ${a} és ${a + d} között?`, answer: d - 1, hint: `Számold végig: ${a + 1}, ${a + 2}, … ${azN(a + d)} ${a + d} előttiig.` }; }
+    const n = ri(1, 19), k = pick([1, 2]), ans = `${n - k < 0 ? 0 : n - k} és ${n + k}`;
+    if (n - k < 0 || n + k > 20) return M1.neigh(3);
+    return mcq(`Melyik két szám van ${k === 1 ? 'közvetlenül' : '2-vel'} ${azN(n)} ${n} előtt és után?`, ans, [`${n - k + 1} és ${n + k + 1}`, `${n - k - 1 < 0 ? n + 1 : n - k - 1} és ${n + k - 1}`, `${n} és ${n + k}`].filter((x, i, a) => x !== ans && a.indexOf(x) === i), { fmt: v => v, hint: k === 1 ? 'Számszomszédok: az eggyel kisebb és az eggyel nagyobb szám.' : 'Lépj 2-t visszafelé és 2-t előre a számegyenesen!' });
   },
   seq(L) {
     let step, start, len = 5;
     if (L === 1) { step = pick([1, 1, -1]); start = step > 0 ? ri(1, 12) : ri(8, 20); }
-    else if (L === 2) { step = pick([2, 5, 10]); start = step === 10 ? ri(0, 5) * 10 : ri(0, 5); }
-    else { step = pick([-2, -5, -10, 3, 4]); start = step < 0 ? 4 * -step + ri(0, 5) : ri(0, 6); }
+    else if (L === 2) { step = pick([2, 2, 5]); start = step === 5 ? 0 : ri(0, 12); }
+    else { step = pick([-2, -3, 3, 4]); start = step < 0 ? ri(4 * -step, 20) : ri(0, 20 - 4 * step); }
     const seq = Array.from({ length: len }, (_, i) => start + i * step);
     const hide = L === 3 ? ri(1, 3) : ri(2, 4);
     const txt = seq.map((v, i) => i === hide ? '<span class="blank">?</span>' : v).join(', ');

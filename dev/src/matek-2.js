@@ -37,7 +37,7 @@ const M2 = {
     } else do { a = ri(31, 99); b = ri(12, a - 5); } while ((b % 10) <= (a % 10) && g++ < 80);
     const t = b - b % 10;
     return { type: 'input', prompt: `${a} − ${b} = <span class="blank">?</span>`, answer: a - b,
-      hint: L === 3 && b % 10 ? `Bontsd a kivonandót: ${a} − ${t} = ${a - t}, aztán ${a - t} − ${b % 10}.` : 'Ha az egyesekből nem tudsz elvenni, bonts fel egy tízest: az 10 egyes.' };
+      hint: L === 3 && b % 10 ? `Bontsd a kivonandót: ${a} − ${t} = ${a - t}, aztán ${a - t} − ${b % 10}.` : 'Ha az egyesekből nem tudsz elvenni, bonts fel egy tízest 10 egyesre.' };
   },
   mul(L) {
     const tbl = pick(L === 1 ? [2, 5, 10] : L === 2 ? [3, 4, 2, 5, 10] : [6, 7, 8, 9, 3, 4]), n = ri(1, 10);

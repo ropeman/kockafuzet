@@ -732,7 +732,7 @@ const scaleQ = () => {
   const k = pick([1, 2, 5, 10]), n = ri(2, 9);
   return Math.random() < .6
     ? { type: 'input', prompt: `A térképen 1 cm a valóságban ${k} km. Két falu a térképen ${n} cm-re van egymástól. Hány km a távolság a valóságban?`, answer: n * k, hint: `Minden centiméter ${k} km. Szorozd meg: ${n} · ${k}.` }
-    : { type: 'input', prompt: `A térképen 1 cm a valóságban ${k} km. Két város a valóságban ${n * k} km-re van egymástól. Hány cm a távolság a térképen?`, answer: n, hint: `Hányszor van meg a ${k} km-ben a ${n * k} km? Oszd el: ${n * k} : ${k}.` };
+    : { type: 'input', prompt: `A térképen 1 cm a valóságban ${k} km. Két város a valóságban ${n * k} km-re van egymástól. Hány cm a távolság a térképen?`, answer: n, hint: `Hányszor van meg ${azN(n * k)} ${n * k} km-ben ${azN(k)} ${k} km? Oszd el: ${n * k} : ${k}.` };
 };
 K4.terkepolv = L => {
   const r = Math.random(), fact = () => factQ(pick(MAP_FACTS.filter(f => f[0] === Math.min(L, 2))));

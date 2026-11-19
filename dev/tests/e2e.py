@@ -20,6 +20,9 @@ def answer_current(pg, right=True):
       else if (q.type === 'input') r = right ? String(q.answer) : String(Number(q.answer) + 1);
       else if (q.type === 'find') r = right ? new Set(q.targets) : new Set([0]);
       else if (q.type === 'build') r = right ? q.answer.slice() : q.answer.slice().reverse().concat(['x']);
+      else if (q.type === 'sort') r = right ? Object.fromEntries(q.items.map(i => [i.id, i.bin])) : {};
+      else if (q.type === 'label') r = right ? { ...q.answer } : {};
+      else if (['riddle', 'lab', 'map', 'numline', 'set'].includes(q.type)) r = right ? q.answer : (q.type === 'riddle' || q.type === 'lab' ? q.options.find(o => o.value !== q.answer).value : '__x__');
       else r = right;
       submit(r); return q.type; }""", right)
 

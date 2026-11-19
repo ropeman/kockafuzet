@@ -27,5 +27,10 @@ Tesztek (Playwright kell hozzá):
     python3 dev/tests/fuzz.py 300     # minden generátor ellenőrzése
     python3 dev/tests/e2e.py          # böngészős végigjátszás
     python3 dev/tests/explain_check.py # a magyarázatok a helyes eredményhez jutnak-e
+    python3 dev/tests/flow.py 3        # minden téma minden szintje végigjátszva (jó/rossz válaszok, eredménylap)
+    python3 dev/tests/print_all.py     # minden téma nyomtatható feladatlapja
+    python3 dev/tests/no_repeats.py    # egy körben nem ismétlődik kérdés
+    python3 dev/tests/render_phone.py  # minden téma kirajzolva telefon méreten
+    python3 dev/tests/pool_sizes.py    # témák, ahol kevés a különböző kérdés
     python3 dev/tests/interact_test.py # húzás, koppintás, térkép egérrel és érintéssel
     python3 dev/tests/sample.py matek-3   # mintakérdések átnézéshez
