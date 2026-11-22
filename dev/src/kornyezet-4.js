@@ -905,7 +905,7 @@ K4.ido = topicFrom(TIME_FACTS, { 1: [monthsBuild, monthAfter, seasonOf], 2: [mon
 const NT = [
   { n: 'Alpokalja', alt: 'Nyugat-magyarországi-peremvidék', where: 'az ország nyugati része', look: 'hegyek és dombok, erdők és rétek', climate: 'csapadékos, szeles', towns: ['Sopron', 'Kőszeg', 'Szombathely'], parts: ['Soproni-hegység', 'Kőszegi-hegység'], top: ['Írott-kő', 882, 'a Kőszegi-hegységben'] },
   { n: 'Dunántúli-dombvidék', alt: 'Dunántúli-dombság', where: 'az ország délnyugati része', look: 'dombságok és két kisebb hegység', climate: 'csapadékos', towns: ['Pécs', 'Kaposvár', 'Szekszárd'], parts: ['Somogyi-dombság', 'Zalai-dombság', 'Baranyai-dombság', 'Tolnai-dombság', 'Mecsek', 'Villányi-hegység'], top: ['Zengő', 680, 'a Mecsekben'], big: 'Pécs' },
-  { n: 'Dunántúli-középhegység', alt: null, where: 'az ország északnyugati része, a Balaton északi oldalán', look: 'középhegységek, erdők', climate: 'csapadékos', towns: ['Veszprém', 'Tata', 'Tapolca'], parts: ['Keszthelyi-hegység', 'Balaton-felvidék', 'Bakony', 'Vértes', 'Gerecse', 'Budai-hegység', 'Pilis', 'Visegrádi-hegység'], top: ['Pilis', 756, 'a Pilis hegységben'] },
+  { n: 'Dunántúli-középhegység', alt: null, where: 'az ország északnyugati része, a Balaton északi oldalán', look: 'középhegységek, erdők', climate: 'csapadékos', towns: ['Veszprém', 'Tata', 'Tapolca'], parts: ['Keszthelyi-hegység', 'Balaton-felvidék', 'Bakony', 'Vértes', 'Gerecse', 'Budai-hegység', 'Pilis', 'Visegrádi-hegység'], top: ['Pilis-tető', 756, 'a Pilis hegységben'] },
   { n: 'Északi-középhegység', alt: null, where: 'az ország északi része', look: 'hazánk legmagasabb hegységei, erdők', climate: 'hűvösebb, csapadékos', towns: ['Eger', 'Miskolc', 'Gyöngyös', 'Salgótarján'], parts: ['Börzsöny', 'Cserhát', 'Mátra', 'Bükk', 'Zempléni-hegység', 'Aggteleki-karszt'], top: ['Kékes', 1014, 'a Mátrában'] },
   { n: 'Kisalföld', alt: null, where: 'az ország északnyugati sarka', look: 'sík vidék, folyók és szántóföldek', climate: 'mérsékelten csapadékos', towns: ['Győr', 'Mosonmagyaróvár'], parts: ['Szigetköz', 'Hanság'], top: null },
   { n: 'Alföld', alt: null, where: 'az ország középső és keleti része', look: 'hazánk legnagyobb, sík nagytája', climate: 'kevés csapadék, sok napsütés, forró nyár', towns: ['Debrecen', 'Szeged', 'Kecskemét', 'Szolnok'], parts: ['Hortobágy', 'Nyírség', 'Hajdúság', 'Kiskunság', 'Jászság'], top: null }
@@ -918,7 +918,7 @@ const NT_GENS = {
   town: (r, pool) => { const t = pick(r.towns); return mcq(`Melyik nagytájon fekszik <b>${t}</b>?`, r.n, ntOthers(r, pool), { fmt: v => v, hint: ntHint(r) }); },
   part: (r, pool) => { const p = pick(r.parts); return mcq(`Melyik nagytájhoz tartozik: <b>${p}</b>?`, r.n, ntOthers(r, pool), { fmt: v => v, hint: ntHint(r) }); },
   top: (r, pool) => r.top ? mcq(`Mi ${artOf(r.n)} <b>${r.n}</b> legmagasabb pontja?`, r.top[0], NT.filter(x => x.top && x !== r).map(x => x.top[0]), { fmt: v => v, hint: `${r.top[0]} ${r.top[2]}, ${r.top[1]} m magas.` }) : null,
-  height: (r, pool) => r.top ? mcq(`Milyen magas ${artOf(r.top[0])} <b>${r.top[0]}</b>, ${artOf(r.n)} ${r.n} legmagasabb pontja?`, `${r.top[1]} m`, NT.filter(x => x.top && x !== r).map(x => `${x.top[1]} m`), { fmt: v => v, hint: 'Írott-kő 882 m (Alpokalja), Pilis 756 m (Dunántúli-középhegység), Zengő 680 m (Dunántúli-dombvidék), Kékes 1014 m (Északi-középhegység).' }) : null,
+  height: (r, pool) => r.top ? mcq(`Milyen magas ${artOf(r.top[0])} <b>${r.top[0]}</b>, ${artOf(r.n)} ${r.n} legmagasabb pontja?`, `${r.top[1]} m`, NT.filter(x => x.top && x !== r).map(x => `${x.top[1]} m`), { fmt: v => v, hint: 'Írott-kő 882 m (Alpokalja), Pilis-tető 756 m (Dunántúli-középhegység), Zengő 680 m (Dunántúli-dombvidék), Kékes 1014 m (Északi-középhegység).' }) : null,
   peakOf: (r, pool) => r.top ? mcq(`Melyik nagytáj legmagasabb pontja ${artOf(r.top[0])} <b>${r.top[0]}</b> (${r.top[1]} m)?`, r.n, ntOthers(r, NT.filter(x => x.top)), { fmt: v => v, hint: ntHint(r) }) : null,
   look: (r, pool) => mcq(`Melyik nagytájra igaz: <b>${r.where}; ${r.look}</b>?`, r.n, ntOthers(r, pool), { fmt: v => v, hint: ntHint(r) })
 };
@@ -933,8 +933,8 @@ const NT_FACTS = [
   [2, 'Melyik hegységben van a Zengő?', 'a Mecsekben', ['a Bakonyban', 'a Kőszegi-hegységben', 'a Pilisben'], 'A Zengő a Mecsek legmagasabb csúcsa.'],
   [2, 'Melyik hegységben van az Írott-kő?', 'a Kőszegi-hegységben', ['a Soproni-hegységben', 'a Mecsekben', 'a Pilisben'], 'Az osztrák határon, Kőszeg közelében.'],
   [2, 'Melyik a Dunántúli-középhegység legnagyobb hegysége?', 'a Bakony', ['a Vértes', 'a Gerecse', 'a Pilis'], 'A Bakony a Balatontól északra húzódik.'],
-  [3, 'Melyik a legmagasabb: Írott-kő, Pilis vagy Zengő?', 'az Írott-kő (882 m)', ['a Pilis (756 m)', 'a Zengő (680 m)', 'mind egyforma'], 'Írott-kő 882 m, Pilis 756 m, Zengő 680 m.'],
-  [3, 'Melyik a legalacsonyabb: Írott-kő, Pilis vagy Zengő?', 'a Zengő (680 m)', ['az Írott-kő (882 m)', 'a Pilis (756 m)', 'mind egyforma'], 'Írott-kő 882 m, Pilis 756 m, Zengő 680 m.'],
+  [3, 'Melyik a legmagasabb: Írott-kő, Pilis-tető vagy Zengő?', 'az Írott-kő (882 m)', ['a Pilis-tető (756 m)', 'a Zengő (680 m)', 'mind egyforma'], 'Írott-kő 882 m, Pilis-tető 756 m, Zengő 680 m.'],
+  [3, 'Melyik a legalacsonyabb: Írott-kő, Pilis-tető vagy Zengő?', 'a Zengő (680 m)', ['az Írott-kő (882 m)', 'a Pilis-tető (756 m)', 'mind egyforma'], 'Írott-kő 882 m, Pilis-tető 756 m, Zengő 680 m.'],
   [3, 'Hány méterrel magasabb az Írott-kő (882 m) a Zengőnél (680 m)?', '202 méterrel', ['102 méterrel', '302 méterrel', '182 méterrel'], '882 − 680 = 202.'],
   [3, 'Hány méterrel magasabb a Pilis (756 m) a Zengőnél (680 m)?', '76 méterrel', ['56 méterrel', '86 méterrel', '176 méterrel'], '756 − 680 = 76.']
 ];
@@ -953,6 +953,169 @@ K4.nagytaj = L => {
   const keys = L === 1 ? ['where', 'town', 'look', 'peakOf'] : L === 2 ? ['part', 'town', 'top', 'peakOf', 'where'] : ['height', 'part', 'top', 'peakOf', 'look'];
   for (;;) { const q = NT_GENS[pick(keys)](reg, pool); if (q) return q; }
 };
+/* ---------- separate quizzes: Hazánk folyói, Tavaink, Hegységeink, Dombságaink és síkságaink ---------- */
+const isLakeFact = f => /tó\b|tava|Balaton|Hévíz/.test(f[1]) && !/Sió|Zala|Melyik tó vize gyógyvíz/.test(f[1]) || /Hévízi/.test(f[2]);
+const isRiverFact = f => !isLakeFact(f) && /Duna|Tisza|Maros|Zagyva|Bodrog|Sió|Zala|Dráva|Ipoly|tiszavirág|Szeged|Budapest|leghosszabb folyó|Horvátország/.test(f[1] + ' ' + f[2]);
+const GENERAL_WATER = RIVER_FACTS.filter(f => !isLakeFact(f) && !isRiverFact(f));
+const RIVER_SPEC = RIVER_FACTS.filter(isRiverFact);
+
+/* Hazánk folyói */
+const RV = {
+  'Duna': { into: 'a Fekete-tengerbe', towns: ['Budapest', 'Esztergom', 'Vác', 'Paks', 'Baja', 'Mohács', 'Dunaújváros'] },
+  'Tisza': { into: 'a Dunába', towns: ['Szolnok', 'Szeged', 'Tiszaújváros', 'Vásárosnamény'] },
+  'Rába': { into: 'a Mosoni-Dunába', towns: ['Szentgotthárd', 'Körmend', 'Sárvár'] },
+  'Dráva': { into: 'a Dunába', towns: ['Barcs'] },
+  'Mura': { into: 'a Drávába', towns: [] },
+  'Ipoly': { into: 'a Dunába', towns: ['Balassagyarmat'] },
+  'Sió': { into: 'a Dunába', towns: ['Siófok'] },
+  'Zala': { into: 'a Balatonba', towns: ['Zalaegerszeg'] },
+  'Kapos': { into: 'a Sióba', towns: ['Kaposvár'] },
+  'Zagyva': { into: 'a Tiszába', towns: ['Hatvan', 'Jászberény'] },
+  'Sajó': { into: 'a Tiszába', towns: ['Kazincbarcika'] },
+  'Hernád': { into: 'a Sajóba', towns: [] },
+  'Bodrog': { into: 'a Tiszába', towns: ['Sárospatak'] },
+  'Szamos': { into: 'a Tiszába', towns: ['Csenger'] },
+  'Körös': { into: 'a Tiszába', towns: ['Gyula', 'Békés', 'Szarvas'] },
+  'Maros': { into: 'a Tiszába', towns: ['Makó'] }
+};
+const RV_NAMES = Object.keys(RV);
+const RV_INTO = [...new Set(Object.values(RV).map(r => r.into))];
+const INTO_NAME = { 'a Dunába': 'Duna', 'a Tiszába': 'Tisza', 'a Sajóba': 'Sajó', 'a Sióba': 'Sió', 'a Drávába': 'Dráva', 'a Mosoni-Dunába': 'Mosoni-Duna', 'a Balatonba': 'Balaton', 'a Fekete-tengerbe': 'Fekete-tenger' };
+const DOWN = n => { const out = [n]; let cur = n; for (let k = 0; k < 8; k++) { const nx = RV[cur] ? INTO_NAME[RV[cur].into] : ({ 'Mosoni-Duna': 'Duna', 'Balaton': 'Sió', 'Duna': 'Fekete-tenger' })[cur]; if (!nx || out.includes(nx)) break; out.push(nx); cur = nx; } return out; };
+const rvIntoQ = L => { const pool = L === 1 ? ['Duna', 'Tisza', 'Zagyva', 'Maros', 'Sió', 'Zala', 'Dráva', 'Körös'] : RV_NAMES, n = pick(pool), a = RV[n].into, down = DOWN(n); return mcq(`Hová ömlik ${artOf(n)} <b>${n}</b>?`, a, shuffle(RV_INTO.filter(x => x !== a && !down.includes(INTO_NAME[x]))).slice(0, 3), { fmt: v => v, hint: 'A Tiszába ömlik: Szamos, Bodrog, Sajó, Zagyva, Körös, Maros. A Dunába: Ipoly, Sió, Dráva és a Tisza. A Zala a Balatonba, a Rába a Mosoni-Dunába, a Hernád a Sajóba, a Kapos a Sióba, a Mura a Drávába ömlik.' }); };
+const rvTowns = n => RV[n].towns.filter(t => !t.toLowerCase().startsWith(n.toLowerCase().slice(0, 4)));
+const rvTownQ = L => { const pool = RV_NAMES.filter(n => rvTowns(n).length && (L > 1 || ['Duna', 'Tisza', 'Rába', 'Körös', 'Zala', 'Sió', 'Maros'].includes(n))), n = pick(pool), t = pick(rvTowns(n)); return mcq(`Melyik folyó partján fekszik <b>${t}</b>?`, n, shuffle(RV_NAMES.filter(x => x !== n && !RV[x].towns.includes(t))).slice(0, 3), { fmt: v => v, hint: RIVER_HINT[n] || `${t} ${artOf(n)} ${n} partján fekszik.` }); };
+const RV_SORT = () => sortQ('A Duna vagy a Tisza mellékfolyója? Válogasd szét!', { 'Duna': ['Ipoly', 'Sió', 'Dráva', 'Tisza'], 'Tisza': ['Szamos', 'Bodrog', 'Sajó', 'Zagyva', 'Körös', 'Maros'] }, 3, { hint: 'A Dunába ömlik: Ipoly, Sió, Dráva és maga a Tisza is. A Tiszába ömlik: Szamos, Bodrog, Sajó, Zagyva, Körös, Maros.' });
+const RV_EXTRA = [
+  [1, 'Melyik folyónkból duzzasztották fel a Tisza-tavat?', 'a Tiszából', ['a Dunából', 'a Rábából', 'a Körösből'], 'A tó a folyóról kapta a nevét.'],
+  [1, 'Melyik nagy folyónk szeli át az Alföldet észak–déli irányban?', 'a Tisza', ['a Rába', 'a Sió', 'a Zala'], 'Hazánk „legmagyarabb” folyója.'],
+  [2, 'Melyik két folyó jelöl határt Horvátország felé?', 'a Dráva és a Mura', ['a Rába és a Zala', 'a Sajó és a Hernád', 'a Körös és a Maros'], 'Mindkettő hazánk délnyugati határán folyik.'],
+  [2, 'Melyik folyó jelöli a határt Szlovákia felé a Duna mellett?', 'az Ipoly', ['a Dráva', 'a Maros', 'a Kapos'], 'Balassagyarmat mellett folyik, Szobnál ömlik a Dunába.'],
+  [2, 'Melyik városnál ömlik a Körös a Tiszába?', 'Csongrádnál', ['Szegednél', 'Tokajnál', 'Szolnoknál'], 'A Körös keletről, Romániából érkezik.'],
+  [3, 'Hány kilométer hosszan folyik a Tisza hazánkban?', 'kb. 600 km', ['kb. 60 km', 'kb. 6000 km', 'kb. 150 km'], 'A Tisza hosszabban folyik hazánkban, mint a Duna (kb. 417 km).'],
+  [3, 'Melyik folyó partján fekszik Győr?', 'a Mosoni-Duna és a Rába partján', ['a Tisza partján', 'a Körös partján', 'a Zala partján'], 'Győr a „folyók városa”: itt találkozik a Mosoni-Duna, a Rába és a Rábca.'],
+  [3, 'Melyik folyóba ömlik a Hernád?', 'a Sajóba', ['a Dunába', 'a Rábába', 'a Balatonba'], 'A Hernád Szlovákiából érkezik, és a Sajóba ömlik, a Sajó pedig a Tiszába.']
+];
+const RV_FACTS = [...RIVER_SPEC, ...RV_EXTRA];
+K4.folyoink = L => {
+  const r = Math.random(), fact = () => factQ(pick(RV_FACTS.filter(f => f[0] === L || (L === 3 && f[0] === 2 && Math.random() < .3))));
+  if (L === 1) return r < .3 ? fact() : r < .5 ? rvTownQ(L) : r < .7 ? rvIntoQ(L) : r < .85 ? riverHl() : RV_SORT();
+  if (L === 2) return r < .25 ? fact() : r < .45 ? rvTownQ(L) : r < .6 ? rvIntoQ(L) : r < .75 ? riverHl() : r < .87 ? tribQ() : RV_SORT();
+  return r < .25 ? fact() : r < .45 ? rvIntoQ(L) : r < .6 ? rvTownQ(L) : r < .75 ? riverHl() : r < .88 ? (() => { const [cl, a, w] = pick(RIVER_RIDDLES); return riddleQ(cl, a, w); })() : RV_SORT();
+};
+/* the old topic keeps the general part: river parts, banks, water cycle */
+K4.folyok = L => { const r = Math.random(), build = () => { const b = pick(RIVER_BUILDS); return { type: 'build', prompt: b.prompt, answer: b.answer, tiles: shuffle(b.answer), hint: b.hint, explain: b.answer.join(' → ') }; };
+  const pool = GENERAL_WATER.filter(f => f[0] <= L); return r < .4 ? factQ(pick(pool)) : r < .65 ? riverLabel() : r < .85 ? build() : RIVER_SORT(L); };
+
+/* Tavaink */
+const LAKE_FACTS = [
+  ...RIVER_FACTS.filter(isLakeFact),
+  [1, 'Melyik hazánk legnagyobb tava?', 'a Balaton', ['a Velencei-tó', 'a Fertő tó', 'a Tisza-tó'], 'Közép-Európa legnagyobb tava; „magyar tengernek” is hívják.'],
+  [1, 'Hogyan becézik a Balatont?', 'magyar tenger', ['kék Duna', 'szőke Tisza', 'puszta'], 'Olyan nagy, hogy sokszor nem látni át a túlsó partjára.'],
+  [1, 'Melyik folyó a Balaton legnagyobb befolyója?', 'a Zala', ['a Sió', 'a Rába', 'a Duna'], 'Nyugatról, a Kis-Balatonon át érkezik.'],
+  [1, 'Melyik folyó vezeti el a Balaton vizét?', 'a Sió', ['a Zala', 'a Tisza', 'a Rába'], 'Siófoknál indul ki a tóból, és a Dunába ömlik.'],
+  [2, 'Hány megye határolja a Balatont?', '3', ['1', '2', '5'], 'Somogy, Veszprém és Zala megye.'],
+  [2, 'Melyik megye fekszik a Balaton déli partján?', 'Somogy', ['Veszprém', 'Fejér', 'Vas'], 'Az északi parton Veszprém, a nyugatin Zala, a délin Somogy megye.'],
+  [2, 'Milyen a Balaton vize?', 'sekély és édes vizű', ['nagyon mély és sós', 'forró gyógyvíz', 'jéghideg egész nyáron'], 'Átlagosan csak kb. 3 méter mély, ezért nyáron gyorsan felmelegszik.'],
+  [2, 'Melyik tó fekszik Budapest és Székesfehérvár között?', 'a Velencei-tó', ['a Fertő tó', 'a Tisza-tó', 'a Hévízi-tó'], 'Fejér megyében van.'],
+  [2, 'Melyik tavunk mesterséges, vagyis ember hozta létre?', 'a Tisza-tó', ['a Balaton', 'a Velencei-tó', 'a Fertő tó'], 'A Kiskörénél épült gát duzzasztotta fel a Tiszát.'],
+  [2, 'Mi a Kis-Balaton?', 'mocsaras, nádas terület a Balaton nyugati végénél, sok madárral', ['egy kis sziget a Balaton közepén', 'egy hajó neve', 'egy balatoni város'], 'Szűri a Zala vizét, mielőtt a Balatonba ér.'],
+  [3, 'Melyik balatoni félsziget nyúlik be legmesszebb a tóba?', 'a Tihanyi-félsziget', ['a Szigligeti-félsziget', 'a Keszthelyi-félsziget', 'a Siófoki-félsziget'], 'Tihanynál a legkeskenyebb a Balaton.'],
+  [3, 'Melyik tó szerepel a világörökség listáján Ausztriával közösen?', 'a Fertő tó', ['a Balaton', 'a Velencei-tó', 'a Tisza-tó'], 'A Fertő tó és környéke 2001 óta világörökség.'],
+  [3, 'Melyik tó vize télen is meleg, mert forrásból táplálkozik?', 'a Hévízi-tó', ['a Velencei-tó', 'a Fertő tó', 'a Balaton'], 'Gyógytó Zala megyében, Keszthely közelében.']
+];
+const LAKE_SORT = () => sortQ('A Balaton északi vagy déli partján van? Válogasd szét!', { 'északi part': ['Tihany', 'Balatonfüred', 'Badacsony', 'Balatonalmádi'], 'déli part': ['Siófok', 'Balatonlelle', 'Balatonboglár', 'Fonyód'] }, 3, { hint: 'Az északi parton dombok, hegyek és szőlők vannak (Veszprém megye). A déli part sík, homokos, sekély (Somogy megye).' });
+const LAKE_RIDDLES = TAJ_RIDDLES.filter(r => /tó/.test(r[2]));
+K4.tavaink = L => { const r = Math.random(); if (r < .15) return LAKE_SORT(); if (r < .3 && L > 1) { const [, cl, a, w] = pick(LAKE_RIDDLES); return riddleQ(cl, a, w); } const pool = LAKE_FACTS.filter(f => f[0] === L); return factQ(pick(pool.length ? pool : LAKE_FACTS)); };
+
+/* Hegységeink */
+const MTN = {
+  'Bakony': { nt: 'Dunántúli-középhegység', top: ['Kőris-hegy', 709], near: 'Veszprém', fact: 'a Dunántúli-középhegység legnagyobb hegysége, sűrű erdőkkel' },
+  'Vértes': { nt: 'Dunántúli-középhegység', near: 'Tatabánya', fact: 'a Bakony és a Gerecse között húzódik' },
+  'Gerecse': { nt: 'Dunántúli-középhegység', near: 'Tata', fact: 'Tata és Tatabánya fölött emelkedik' },
+  'Budai-hegység': { nt: 'Dunántúli-középhegység', top: ['János-hegy', 527], near: 'Budapest', fact: 'a fővárosban van, a János-hegyen áll az Erzsébet-kilátó' },
+  'Pilis': { nt: 'Dunántúli-középhegység', top: ['Pilis-tető', 756], near: 'Esztergom', fact: 'a Dunántúli-középhegység legmagasabb pontja is itt van' },
+  'Visegrádi-hegység': { nt: 'Dunántúli-középhegység', top: ['Dobogókő', 699], near: 'Visegrád', fact: 'a Duna-kanyar fölött, itt áll a visegrádi vár' },
+  'Velencei-hegység': { nt: 'Dunántúli-középhegység', near: 'Velence', fact: 'gránitból áll, ezek hazánk legidősebb kőzetei közé tartoznak' },
+  'Keszthelyi-hegység': { nt: 'Dunántúli-középhegység', near: 'Keszthely', fact: 'a Balaton nyugati csücske fölött emelkedik' },
+  'Börzsöny': { nt: 'Északi-középhegység', top: ['Csóványos', 938], near: 'Szob', fact: 'vulkáni eredetű, a Duna-kanyartól északra' },
+  'Cserhát': { nt: 'Északi-középhegység', near: 'Balassagyarmat', fact: 'itt fekszik Hollókő, a palóc falu' },
+  'Mátra': { nt: 'Északi-középhegység', top: ['Kékes', 1014], near: 'Gyöngyös', fact: 'hazánk legmagasabb hegysége, itt van a Kékes és Galyatető' },
+  'Bükk': { nt: 'Északi-középhegység', top: ['Istállós-kő', 959], near: 'Eger', fact: 'mészkőhegység barlangokkal, itt van a Szalajka-völgy és Lillafüred' },
+  'Zempléni-hegység': { nt: 'Északi-középhegység', near: 'Sárospatak', fact: 'vulkáni hegység, a lábánál terem a tokaji bor szőlője' },
+  'Soproni-hegység': { nt: 'Alpokalja', near: 'Sopron', fact: 'az Alpok nyúlványa a nyugati határon' },
+  'Kőszegi-hegység': { nt: 'Alpokalja', top: ['Írott-kő', 882], near: 'Kőszeg', fact: 'itt van a Dunántúl legmagasabb pontja, az Írott-kő' },
+  'Mecsek': { nt: 'Dunántúli-dombvidék', top: ['Zengő', 680], near: 'Pécs', fact: 'a Dunántúl déli részén, Pécs fölött emelkedik' },
+  'Villányi-hegység': { nt: 'Dunántúli-dombvidék', near: 'Villány', fact: 'hazánk legdélebbi hegysége, híres borvidékkel' }
+};
+const sameStem = (a, b) => a.slice(0, 4).toLowerCase() === b.slice(0, 4).toLowerCase();
+const PEAK_PLACE = { 'Pilis-tető': 'Pilis' };
+const MTN_NAMES = Object.keys(MTN), MTN_EASY = ['Bakony', 'Budai-hegység', 'Pilis', 'Mátra', 'Bükk', 'Börzsöny', 'Mecsek', 'Kőszegi-hegység', 'Zempléni-hegység'];
+const MTN_NT = ['Dunántúli-középhegység', 'Északi-középhegység', 'Alpokalja', 'Dunántúli-dombvidék'];
+const mtnHint = n => `${n}: ${MTN[n].fact}. Nagytája: ${MTN[n].nt}.${MTN[n].top ? ` Legmagasabb pontja: ${MTN[n].top[0]} (${MTN[n].top[1]} m).` : ''}`;
+const mtnPool = L => L === 1 ? MTN_EASY : MTN_NAMES;
+const MTN_GENS = {
+  nt: L => { const n = pick(mtnPool(L)); return mcq(`Melyik nagytájhoz tartozik ${artOf(n)} <b>${n}</b>?`, MTN[n].nt, MTN_NT.filter(x => x !== MTN[n].nt), { fmt: v => v, hint: mtnHint(n) }); },
+  near: L => { const n = pick(mtnPool(L).filter(x => !sameStem(x, MTN[x].near))); return mcq(`Melyik hegység emelkedik <b>${MTN[n].near}</b> közelében?`, n, shuffle(MTN_NAMES.filter(x => MTN[x].nt !== MTN[n].nt)).slice(0, 3), { fmt: v => v, hint: mtnHint(n) }); },
+  fact: L => { const n = pick(mtnPool(L)); return mcq(`Melyik hegységre igaz: <b>${MTN[n].fact}</b>?`, n, shuffle(MTN_NAMES.filter(x => x !== n)).slice(0, 3), { fmt: v => v, hint: mtnHint(n) }); },
+  top: L => { const n = pick(MTN_NAMES.filter(x => MTN[x].top && !sameStem(x, MTN[x].top[0]) && (L > 1 || MTN_EASY.includes(x)))); return mcq(`Melyik hegységben van ${artOf(MTN[n].top[0])} <b>${MTN[n].top[0]}</b>${L === 3 ? '' : ` (${MTN[n].top[1]} m)`}?`, n, shuffle(MTN_NAMES.filter(x => x !== n && MTN[x].top)).slice(0, 3), { fmt: v => v, hint: mtnHint(n) }); },
+  height: L => { const n = pick(MTN_NAMES.filter(x => MTN[x].top)), [p, m] = MTN[n].top; return mcq(`Milyen magas ${artOf(p)} <b>${p}</b>, ${artOf(n)} ${n} legmagasabb pontja?`, `${m} m`, shuffle(MTN_NAMES.filter(x => MTN[x].top && x !== n)).slice(0, 3).map(x => `${MTN[x].top[1]} m`), { fmt: v => v, hint: 'Kékes 1014 m, Istállós-kő 959 m, Csóványos 938 m, Írott-kő 882 m, Pilis-tető 756 m, Kőris-hegy 709 m, Dobogókő 699 m, Zengő 680 m, János-hegy 527 m.' }); },
+  peakMap: L => { const peaks = ['Kékes', 'Istállós-kő', 'Csóványos', 'Írott-kő', 'Pilis', 'Zengő', 'Kőris-hegy', 'János-hegy'], p = pick(L === 1 ? ['Kékes', 'Írott-kő', 'Zengő', 'Istállós-kő'] : peaks), n = MTN_NAMES.find(x => MTN[x].top && (PEAK_PLACE[MTN[x].top[0]] || MTN[x].top[0]) === p), pn = MTN[n].top[0];
+    const far = peaks.filter(x => x !== p && Math.hypot(MAPDATA.places[x][0] - MAPDATA.places[p][0], MAPDATA.places[x][1] - MAPDATA.places[p][1]) > 40);
+    return mapQ(`Hol van ${artOf(pn)} <b>${pn}</b>, ${artOf(n)} ${n} legmagasabb pontja? Koppints a pontra!`, p, { pick: 'dot', dots: shuffle([p, ...shuffle(far).slice(0, 4)]), hint: mtnHint(n) }); }
+};
+const MTN_SORT = () => sortQ('Melyik nagytájhoz tartozik? Válogasd szét!', { 'Dunántúli-középhegység': ['Bakony', 'Vértes', 'Gerecse', 'Budai-hegység', 'Pilis', 'Keszthelyi-hegység'], 'Északi-középhegység': ['Börzsöny', 'Cserhát', 'Mátra', 'Bükk', 'Zempléni-hegység'] }, 3, { hint: 'A Dunántúli-középhegység a Balatontól északra a Dunáig húzódik. Az Északi-középhegység a Dunától keletre, az ország északi részén.' });
+const peakBuild = () => { const pk = shuffle(MTN_NAMES.filter(x => MTN[x].top)).slice(0, 4).map(x => MTN[x].top).sort((a, b) => b[1] - a[1]); return { type: 'build', prompt: 'Rakd sorba a csúcsokat a legmagasabbtól a legalacsonyabbig! Koppints rájuk sorban.', answer: pk.map(p => p[0]), tiles: shuffle(pk.map(p => p[0])), hint: 'Kékes 1014 m, Istállós-kő 959 m, Csóványos 938 m, Írott-kő 882 m, Pilis-tető 756 m, Kőris-hegy 709 m, Dobogókő 699 m, Zengő 680 m, János-hegy 527 m.', explain: pk.map(p => `${p[0]} (${p[1]} m)`).join(' → ') }; };
+const MTN_RIDDLES = [
+  [['Hegység vagyok a Dunántúlon.', 'Sűrű erdeim vannak, a Balatontól északra húzódom.', 'Veszprém és Zirc is a közelemben van.', 'A Dunántúli-középhegység legnagyobb hegysége vagyok.'], 'Bakony', ['Vértes', 'Mecsek', 'Bükk']],
+  [['Hegység vagyok az ország északi részén.', 'Mészkőből állok, sok barlangom van.', 'Bennem van a Szalajka-völgy és a Fátyol-vízesés.', 'Legmagasabb pontom az Istállós-kő.'], 'Bükk', ['Mátra', 'Börzsöny', 'Bakony']],
+  [['Hegység vagyok az Északi-középhegységben.', 'Gyöngyös fölött emelkedem.', 'Galyatető is rajtam van.', 'Rajtam van hazánk legmagasabb pontja.'], 'Mátra', ['Bükk', 'Börzsöny', 'Cserhát']],
+  [['Hegység vagyok a fővárosban.', 'Budapest nyugati részén, Budán emelkedem.', 'Libegővel és gyermekvasúttal is meg lehet közelíteni.', 'A János-hegyemen áll az Erzsébet-kilátó.'], 'Budai-hegység', ['Pilis', 'Gerecse', 'Vértes']],
+  [['Hegység vagyok a Dunántúl déli részén.', 'Baranya megyében emelkedem.', 'Legmagasabb pontom a Zengő.', 'A lábamnál fekszik Pécs.'], 'Mecsek', ['Bakony', 'Villányi-hegység', 'Zselic']],
+  [['Vulkáni eredetű hegység vagyok.', 'A Duna-kanyartól északra emelkedem.', 'Nagy erdeim vannak, sok vadon élő állattal.', 'Legmagasabb pontom a Csóványos.'], 'Börzsöny', ['Mátra', 'Pilis', 'Bükk']]
+];
+K4.hegyseg = L => { const r = Math.random(); if (r < .12) return MTN_SORT(); if (r < .22) return L === 1 ? MTN_GENS.peakMap(L) : peakBuild(); if (r < .32) { const [cl, a, w] = pick(MTN_RIDDLES); return riddleQ(cl, a, w); } if (r < .45) return MTN_GENS.peakMap(L);
+  const keys = L === 1 ? ['nt', 'near', 'fact', 'top'] : L === 2 ? ['nt', 'near', 'fact', 'top'] : ['height', 'top', 'fact', 'near', 'nt']; return MTN_GENS[pick(keys)](L); };
+
+/* Dombságaink és síkságaink */
+const LOW = {
+  'Somogyi-dombság': { kind: 'dombság', nt: 'Dunántúli-dombvidék', near: 'Kaposvár', fact: 'a Balatontól délre terül el, része a Zselic is' },
+  'Zalai-dombság': { kind: 'dombság', nt: 'Dunántúli-dombvidék', near: 'Zalaegerszeg', fact: 'nyugaton, Zala megyében; része a Göcsej' },
+  'Baranyai-dombság': { kind: 'dombság', nt: 'Dunántúli-dombvidék', near: 'Pécs', fact: 'Baranya megyében, a Mecsek és a Villányi-hegység környékén' },
+  'Tolnai-dombság': { kind: 'dombság', nt: 'Dunántúli-dombvidék', near: 'Szekszárd', fact: 'a Duna jobb partján, híres a szekszárdi borvidék' },
+  'Gödöllői-dombság': { kind: 'dombság', nt: 'Alföld', near: 'Gödöllő', fact: 'Budapesttől keletre, a Pest megyei dombvidék' },
+  'Duna–Tisza köze': { kind: 'síkság', nt: 'Alföld', near: 'Kecskemét', fact: 'a Duna és a Tisza között, homokos talajjal' },
+  'Hortobágy': { kind: 'síkság', nt: 'Alföld', near: 'Balmazújváros', fact: 'füves puszta, első nemzeti parkunk' },
+  'Nyírség': { kind: 'síkság', nt: 'Alföld', near: 'Nyíregyháza', fact: 'homokos vidék, sok almát termesztenek' },
+  'Hajdúság': { kind: 'síkság', nt: 'Alföld', near: 'Hajdúszoboszló', fact: 'jó termőföldű (löszös) síkság Debrecen környékén' },
+  'Jászság': { kind: 'síkság', nt: 'Alföld', near: 'Jászberény', fact: 'a Zagyva mentén, a jászok földje' },
+  'Mezőföld': { kind: 'síkság', nt: 'Alföld', near: 'Székesfehérvár', fact: 'a Dunától nyugatra, Fejér megyében, jó termőföld' },
+  'Szigetköz': { kind: 'síkság', nt: 'Kisalföld', near: 'Mosonmagyaróvár', fact: 'a Duna és a Mosoni-Duna közötti szigetvilág' },
+  'Hanság': { kind: 'síkság', nt: 'Kisalföld', near: 'Kapuvár', fact: 'egykor mocsaras, lápos vidék a Fertő tó mellett' },
+  'Rábaköz': { kind: 'síkság', nt: 'Kisalföld', near: 'Csorna', fact: 'a Rába és a Rábca közötti síkság, híres népviselettel' }
+};
+const LOW_KIND = [['Hortobágy', 'síkság'], ['Nyírség', 'síkság'], ['Szigetköz', 'síkság'], ['Hanság', 'síkság'], ['Rábaköz', 'síkság'], ['Jászság', 'síkság'], ['Kiskunság', 'síkság'], ['Zselic', 'dombság'], ['Göcsej', 'dombság'], ['Őrség', 'dombság'], ['Bakony', 'hegység'], ['Mátra', 'hegység'], ['Bükk', 'hegység'], ['Mecsek', 'hegység'], ['Börzsöny', 'hegység'], ['Vértes', 'hegység']];
+const LOW_NAMES = Object.keys(LOW), LOW_NT = ['Dunántúli-dombvidék', 'Alföld', 'Kisalföld', 'Alpokalja'];
+const lowHint = n => `${n}: ${LOW[n].fact}. Nagytája: ${LOW[n].nt}.`;
+const LOW_GENS = {
+  nt: L => { const n = pick(LOW_NAMES); return mcq(`Melyik nagytájhoz tartozik ${artOf(n)} <b>${n}</b>?`, LOW[n].nt, LOW_NT.filter(x => x !== LOW[n].nt), { fmt: v => v, hint: lowHint(n) }); },
+  near: L => { const n = pick(LOW_NAMES.filter(x => !sameStem(x, LOW[x].near))); return mcq(`Melyik táj terül el <b>${LOW[n].near}</b> környékén?`, n, shuffle(LOW_NAMES.filter(x => x !== n)).slice(0, 3), { fmt: v => v, hint: lowHint(n) }); },
+  fact: L => { const n = pick(LOW_NAMES); return mcq(`Melyik tájra igaz: <b>${LOW[n].fact}</b>?`, n, shuffle(LOW_NAMES.filter(x => x !== n)).slice(0, 3), { fmt: v => v, hint: lowHint(n) }); },
+  kind: L => { const [n, k] = pick(LOW_KIND); return { type: 'choice', prompt: `Hegység, dombság vagy síkság ${artOf(n)} <b>${n}</b>?`, answer: k, options: ['hegység', 'dombság', 'síkság'].map(v => ({ value: v, html: v })), answerText: k, hint: 'A hegység magas, meredek (barna a térképen). A dombság lankás (sárga). A síkság sík (zöld).' }; }
+};
+const LOW_FACTS = [
+  [1, 'Melyik magasabb általában: a domb vagy a hegy?', 'a hegy', ['a domb', 'egyforma magasak', 'a síkság'], 'A dombok alacsonyabbak és lankásabbak, mint a hegyek.'],
+  [1, 'Milyen színnel jelöli a domborzati térkép a dombságot?', 'sárgával', ['zölddel', 'sötétbarnával', 'kékkel'], 'Zöld: síkság. Sárga: dombság. Barna: hegység.'],
+  [1, 'Melyik hazánk legnagyobb síksága?', 'az Alföld', ['a Kisalföld', 'a Mezőföld', 'a Hanság'], 'Az ország középső és keleti részét foglalja el.'],
+  [1, 'Melyik nagytáj négy dombságát tanuljuk: Somogyi-, Zalai-, Baranyai- és Tolnai-dombság?', 'Dunántúli-dombvidék', ['Alföld', 'Kisalföld', 'Északi-középhegység'], 'A Dunántúli-dombvidék az ország délnyugati részén van.'],
+  [2, 'Melyik dombság van Budapesttől keletre?', 'a Gödöllői-dombság', ['a Somogyi-dombság', 'a Zalai-dombság', 'a Tolnai-dombság'], 'Pest megyében, Gödöllő környékén.'],
+  [2, 'Melyik NEM dombság?', 'a Hortobágy', ['a Somogyi-dombság', 'a Tolnai-dombság', 'a Zalai-dombság'], 'A Hortobágy sík, füves puszta az Alföldön.'],
+  [2, 'Melyik a Kisalföld legnagyobb városa?', 'Győr', ['Debrecen', 'Pécs', 'Szeged'], 'A Kisalföld az ország északnyugati sarkában van.'],
+  [3, 'Melyik két nagy folyó között terül el a Duna–Tisza köze?', 'a Duna és a Tisza között', ['a Rába és a Zala között', 'a Körös és a Maros között', 'a Dráva és a Mura között'], 'A neve is elárulja!'],
+  [3, 'Miért jó a mezőgazdaságnak az Alföld?', 'sík, és sok helyen termékeny a talaja', ['mert hegyes', 'mert mindig esik', 'mert sziklás'], 'Búzát, kukoricát, napraforgót termesztenek rajta.']
+];
+const LOW_SORT = () => sortQ('Hegység, dombság vagy síkság? Válogasd szét!', { 'hegység': ['Bakony', 'Mátra', 'Bükk', 'Mecsek', 'Börzsöny'], 'dombság': ['Somogyi-dombság', 'Zalai-dombság', 'Tolnai-dombság', 'Gödöllői-dombság'], 'síkság': ['Hortobágy', 'Nyírség', 'Szigetköz', 'Rábaköz', 'Jászság'] }, 2, { hint: 'A hegység magas, meredek. A dombság alacsonyabb, lankás. A síkság sík, nincsenek rajta dombok.' });
+K4.dombsag = L => { const r = Math.random(); if (r < .15) return LOW_SORT(); if (r < .3) return factQ(pick(LOW_FACTS.filter(f => f[0] === L))); const keys = L === 1 ? ['kind', 'nt', 'near'] : L === 2 ? ['nt', 'near', 'fact', 'kind'] : ['fact', 'near', 'nt']; return LOW_GENS[pick(keys)](L); };
 PAGES['kornyezet-4'] = {
   id: 'kornyezet-4', title: 'Környezetismeret', grade: 4,
   blurb: 'Halmazállapotok és mérés, időjárás, tűz, fény és mozgás, a növények és állatok, életközösségek, testünk és egészségünk, világtájak és térképolvasás, a Föld és a Naprendszer, folyóink és tavaink, hazánk tájai, megyéi és nevezetességei, Budapest hídjai. Egy kör 10 feladat.',
@@ -979,7 +1142,11 @@ PAGES['kornyezet-4'] = {
     { id: 'fold', sample: '🌍 ☀️ 🌙', name: 'Föld, Nap, Hold', desc: 'Nappal és éjszaka, évszakok, holdfázisok, bolygók.', gen: K4.fold },
     { id: 'landform', sample: '⛰️ 〰️', name: 'Felszínformák és vizek', desc: 'Síkság, dombság, hegység; patak, folyó, tó.', gen: K4.landform },
     { id: 'nagytaj', sample: 'Írott-kő 882 m', name: 'Nagytájaink közelről', desc: 'Alpokalja, Dunántúli-dombvidék, Dunántúli-középhegység és a többi: városok, hegységek, legmagasabb pontok.', gen: K4.nagytaj },
-    { id: 'folyok', sample: 'Duna · Tisza', name: 'Folyóink és tavaink', desc: 'Folyók, mellékfolyók, torkolatok, a víz körforgása.', gen: K4.folyok },
+    { id: 'hegyseg', sample: 'Mátra · Bükk · Bakony', name: 'Hegységeink', desc: 'Hegységek, nagytájuk, legmagasabb csúcsaik a térképen.', gen: K4.hegyseg },
+    { id: 'dombsag', sample: 'Somogyi-dombság · Nyírség', name: 'Dombságaink és síkságaink', desc: 'Dombságok és alföldi, kisalföldi tájak.', gen: K4.dombsag },
+    { id: 'folyoink', sample: 'Duna · Tisza · Rába', name: 'Hazánk folyói', desc: 'Folyóink, mellékfolyóik, torkolataik, partjukon fekvő városok.', gen: K4.folyoink },
+    { id: 'tavaink', sample: 'Balaton · Velencei-tó', name: 'Tavaink', desc: 'Balaton, Velencei-tó, Fertő tó, Tisza-tó, Hévízi-tó.', gen: K4.tavaink },
+    { id: 'folyok', sample: 'forrás → torkolat', name: 'A folyó és a víz körforgása', desc: 'A folyó részei, jobb és bal part, a víz körforgása.', gen: K4.folyok },
     { id: 'regions', sample: 'Alföld · Mátra', name: 'Hazánk nagytájai', desc: 'A hat nagytáj és jellemző tájaik.', gen: K4.regions },
     { id: 'country', sample: '🇭🇺', name: 'Magyarország', desc: 'Szomszédos országok, megyék és megyeszékhelyek.', gen: K4.country },
     { id: 'terkep', sample: '🗺️ 📍', name: 'Térképes kalandok', desc: 'Koppints a térképre: szomszédok, nevezetes helyek.', gen: K4.terkep },
