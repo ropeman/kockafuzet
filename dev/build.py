@@ -20,11 +20,16 @@ import redesign
 ap = argparse.ArgumentParser()
 ap.add_argument("--base", default="/")
 ap.add_argument("--host", default="https://kockafuzet.hu")  # public address, used in sitemap.xml, robots.txt and CNAME
+ap.add_argument("--goatcounter", default="kockafuzet")      # GoatCounter account (cookieless visit counter); "" turns it off
 ap.add_argument("--out", default=str(DEV.parent))
 args = ap.parse_args()
 BASE = args.base.rstrip("/") + "/"
 HOST = args.host.rstrip("/")
 OUT = Path(args.out)
+# cookieless visit counter: page paths only (query strings dropped), plus round start/finish events from core.js track()
+GC = (f'<script>window.goatcounter={{path:function(){{return location.pathname}}}};</script>\n'
+      f'<script data-goatcounter="https://{args.goatcounter}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>'
+      if args.goatcounter else "")
 SITE = "Kockafüzet"
 
 ORDER = ["core.js", "visuals.js", "interact.js", "mapdata.js", "map.js", "lab.js",
@@ -97,6 +102,7 @@ def page_html(title, desc, data_page="", body_extra="", script=True, path=""):
 <span class="foot-links"><a href="{BASE}szuloknek/">Szülőknek és tanítóknak</a><a href="{BASE}adatvedelem/">Adatvédelem</a></span>
 </div></footer>
 {f'<script src="{BASE}assets/app.js?v={VER}"></script>' if script else ''}
+{GC}
 <noscript><p style="padding:20px">Az oldal használatához engedélyezd a JavaScriptet.</p></noscript>
 </body>
 </html>

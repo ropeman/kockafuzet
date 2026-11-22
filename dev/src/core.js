@@ -250,8 +250,16 @@ function showTopics(page) {
 }
 
 /* ===== practice session ===== */
+// visit counter (GoatCounter, cookieless): counts which topics are started and finished; never sends names, answers or scores
+function track(path, title) {
+  try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: path, title: title || path, event: true }); } catch (e) { /* counter blocked or offline */ }
+}
+function trackRound(kind, s) {
+  track(kind + '/' + ((s.page && s.page.id) || 'egyeb') + '/' + ((s.topic && s.topic.id) || 'egyeb'), s.topic && s.topic.name);
+}
 function startTopic(page, topic) {
   S = { page, topic, n: 0, total: topic.total || 10, correct: 0, level: store.get(pk(page.id, topic.id, 'lvl'), 1), streak: 0, wrongRun: 0, res: [], q: null, tries: 0, last: '' };
+  trackRound('kor-indul', S);
   nextQ();
 }
 function startList(opts) {   // opts: { page, list, title, back, onFinish, onAnswer }
@@ -397,6 +405,7 @@ function afterAnswer(q, firstTry) {
 }
 function finish() {
   runCleanups();
+  trackRound('kor-vege', S);
   if (S.onFinish) return S.onFinish(S);
   const { page, topic, correct, total } = S;
   const ratio = correct / total, st = ratio >= .9 ? 3 : ratio >= .7 ? 2 : ratio >= .5 ? 1 : 0;
