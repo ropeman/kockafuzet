@@ -1101,7 +1101,7 @@ const LOW_GENS = {
   nt: L => { const n = pick(LOW_NAMES); return mcq(`Melyik nagytájhoz tartozik ${artOf(n)} <b>${n}</b>?`, LOW[n].nt, LOW_NT.filter(x => x !== LOW[n].nt), { fmt: v => v, hint: lowHint(n) }); },
   near: L => { const n = pick(LOW_NAMES.filter(x => !sameStem(x, LOW[x].near))); return mcq(`Melyik táj terül el <b>${LOW[n].near}</b> környékén?`, n, shuffle(LOW_NAMES.filter(x => x !== n)).slice(0, 3), { fmt: v => v, hint: lowHint(n) }); },
   fact: L => { const n = pick(LOW_NAMES); return mcq(`Melyik tájra igaz: <b>${LOW[n].fact}</b>?`, n, shuffle(LOW_NAMES.filter(x => x !== n)).slice(0, 3), { fmt: v => v, hint: lowHint(n) }); },
-  kind: L => { const [n, k] = pick(LOW_KIND); return { type: 'choice', prompt: `Hegység, dombság vagy síkság ${artOf(n)} <b>${n}</b>?`, answer: k, options: ['hegység', 'dombság', 'síkság'].map(v => ({ value: v, html: v })), answerText: k, hint: 'A hegység magas, meredek (barna a térképen). A dombság lankás (sárga). A síkság sík (zöld).' }; }
+  kind: L => { const [n, k] = pick(LOW_KIND); return { type: 'choice', prompt: `Mi ${artOf(n)} <b>${n}</b>: hegység, dombság vagy síkság?`, answer: k, options: ['hegység', 'dombság', 'síkság'].map(v => ({ value: v, html: v })), answerText: k, hint: 'A hegység magas, meredek (barna a térképen). A dombság lankás (sárga). A síkság sík (zöld).' }; }
 };
 const LOW_FACTS = [
   [1, 'Melyik magasabb általában: a domb vagy a hegy?', 'a hegy', ['a domb', 'egyforma magasak', 'a síkság'], 'A dombok alacsonyabbak és lankásabbak, mint a hegyek.'],

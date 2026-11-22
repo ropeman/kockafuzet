@@ -3570,7 +3570,7 @@ const LOW_GENS = {
   nt: L => { const n = pick(LOW_NAMES); return mcq(`Melyik nagytájhoz tartozik ${artOf(n)} <b>${n}</b>?`, LOW[n].nt, LOW_NT.filter(x => x !== LOW[n].nt), { fmt: v => v, hint: lowHint(n) }); },
   near: L => { const n = pick(LOW_NAMES.filter(x => !sameStem(x, LOW[x].near))); return mcq(`Melyik táj terül el <b>${LOW[n].near}</b> környékén?`, n, shuffle(LOW_NAMES.filter(x => x !== n)).slice(0, 3), { fmt: v => v, hint: lowHint(n) }); },
   fact: L => { const n = pick(LOW_NAMES); return mcq(`Melyik tájra igaz: <b>${LOW[n].fact}</b>?`, n, shuffle(LOW_NAMES.filter(x => x !== n)).slice(0, 3), { fmt: v => v, hint: lowHint(n) }); },
-  kind: L => { const [n, k] = pick(LOW_KIND); return { type: 'choice', prompt: `Hegység, dombság vagy síkság ${artOf(n)} <b>${n}</b>?`, answer: k, options: ['hegység', 'dombság', 'síkság'].map(v => ({ value: v, html: v })), answerText: k, hint: 'A hegység magas, meredek (barna a térképen). A dombság lankás (sárga). A síkság sík (zöld).' }; }
+  kind: L => { const [n, k] = pick(LOW_KIND); return { type: 'choice', prompt: `Mi ${artOf(n)} <b>${n}</b>: hegység, dombság vagy síkság?`, answer: k, options: ['hegység', 'dombság', 'síkság'].map(v => ({ value: v, html: v })), answerText: k, hint: 'A hegység magas, meredek (barna a térképen). A dombság lankás (sárga). A síkság sík (zöld).' }; }
 };
 const LOW_FACTS = [
   [1, 'Melyik magasabb általában: a domb vagy a hegy?', 'a hegy', ['a domb', 'egyforma magasak', 'a síkság'], 'A dombok alacsonyabbak és lankásabbak, mint a hegyek.'],
@@ -3827,7 +3827,7 @@ const magnetItem = fromGroups({ 'igen, vonzza': ['vasszög', 'gemkapocs', 'vascs
   w => `Vonzza a mágnes: <b>${w}</b>?`, 'A mágnes a vasat és az acélt vonzza. A fát, a papírt, a műanyagot, az üveget és az alumíniumot nem.', { keep: true });
 const transportItem = fromGroups({ 'szárazföldön': [['vonat', '🚆'], ['busz', '🚌'], ['villamos', '🚋'], ['kerékpár', '🚲'], ['autó', '🚗'], ['metró', '🚇'], ['traktor', '🚜']], 'vízen': [['hajó', '🚢'], ['komp', '⛴️'], ['csónak', '🛶'], ['vitorlás', '⛵']], 'levegőben': [['repülőgép', '✈️'], ['helikopter', '🚁'], ['hőlégballon', '🎈']] },
   w => `Hol közlekedik ${artOf(w)} <b>${w}</b>?`, 'Szárazföldön: utakon, síneken. Vízen: folyón, tavon, tengeren. Levegőben: repülve.', { keep: true });
-const bpItem = fromGroups({ 'Budán': ['a Budai Vár', 'a Halászbástya', 'a Mátyás-templom', 'a Gellért-hegy', 'a Citadella'], 'Pesten': ['az Országház', 'a Szent István-bazilika', 'a Hősök tere', 'a Városliget', 'az Operaház', 'az Andrássy út'] },
+const bpItem = fromGroups({ 'Budán': ['a Budavári Palota', 'a Halászbástya', 'a Mátyás-templom', 'a Gellért-hegy', 'a Citadella'], 'Pesten': ['az Országház', 'a Szent István-bazilika', 'a Hősök tere', 'a Városliget', 'az Operaház', 'az Andrássy út'] },
   w => `Budán vagy Pesten van ${w}?`, 'Buda a Duna nyugati, dombos partján van (Vár, Gellért-hegy). Pest a keleti, sík parton (Országház, Hősök tere).', { keep: true });
 TOWN.push(
   [1, 'Melyik szárazföldi közlekedési eszköz?', 'a villamos', ['a komp', 'a helikopter', 'a vitorlás'], 'A villamos síneken jár a városban.'],

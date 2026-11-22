@@ -200,7 +200,7 @@ const magnetItem = fromGroups({ 'igen, vonzza': ['vasszög', 'gemkapocs', 'vascs
   w => `Vonzza a mágnes: <b>${w}</b>?`, 'A mágnes a vasat és az acélt vonzza. A fát, a papírt, a műanyagot, az üveget és az alumíniumot nem.', { keep: true });
 const transportItem = fromGroups({ 'szárazföldön': [['vonat', '🚆'], ['busz', '🚌'], ['villamos', '🚋'], ['kerékpár', '🚲'], ['autó', '🚗'], ['metró', '🚇'], ['traktor', '🚜']], 'vízen': [['hajó', '🚢'], ['komp', '⛴️'], ['csónak', '🛶'], ['vitorlás', '⛵']], 'levegőben': [['repülőgép', '✈️'], ['helikopter', '🚁'], ['hőlégballon', '🎈']] },
   w => `Hol közlekedik ${artOf(w)} <b>${w}</b>?`, 'Szárazföldön: utakon, síneken. Vízen: folyón, tavon, tengeren. Levegőben: repülve.', { keep: true });
-const bpItem = fromGroups({ 'Budán': ['a Budai Vár', 'a Halászbástya', 'a Mátyás-templom', 'a Gellért-hegy', 'a Citadella'], 'Pesten': ['az Országház', 'a Szent István-bazilika', 'a Hősök tere', 'a Városliget', 'az Operaház', 'az Andrássy út'] },
+const bpItem = fromGroups({ 'Budán': ['a Budavári Palota', 'a Halászbástya', 'a Mátyás-templom', 'a Gellért-hegy', 'a Citadella'], 'Pesten': ['az Országház', 'a Szent István-bazilika', 'a Hősök tere', 'a Városliget', 'az Operaház', 'az Andrássy út'] },
   w => `Budán vagy Pesten van ${w}?`, 'Buda a Duna nyugati, dombos partján van (Vár, Gellért-hegy). Pest a keleti, sík parton (Országház, Hősök tere).', { keep: true });
 TOWN.push(
   [1, 'Melyik szárazföldi közlekedési eszköz?', 'a villamos', ['a komp', 'a helikopter', 'a vitorlás'], 'A villamos síneken jár a városban.'],
