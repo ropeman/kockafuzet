@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /kockafuzet/dev/
-Sitemap: https://ropeman.github.io/kockafuzet/sitemap.xml
+Disallow: /dev/
+Sitemap: https://kockafuzet.hu/sitemap.xml

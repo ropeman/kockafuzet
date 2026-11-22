@@ -19,7 +19,9 @@ A weboldal a repó gyökerében van (GitHub Pages ezt szolgálja ki). A forrás 
 
 Építés (a repó gyökeréből):
 
-    python3 dev/build.py --base /kockafuzet/
+    python3 dev/build.py
+
+A webhely címe https://kockafuzet.hu (GitHub Pages egyéni domain, a `CNAME` fájlt az építés írja). Az alapértelmezés `--base /` és `--host https://kockafuzet.hu`; a régi ropeman.github.io/kockafuzet/ cím erre irányít át.
 
 Tesztek (Playwright kell hozzá):
 

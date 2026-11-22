@@ -1,7 +1,7 @@
 """Kockafüzet build: assembles the static site from dev/src into the repository root.
 
 Usage (from the repository root):
-    python3 dev/build.py [--base /kockafuzet/] [--out .]
+    python3 dev/build.py [--base /] [--host https://kockafuzet.hu] [--out .]
 
 Sources:
     dev/src/*.js     concatenated in ORDER below into assets/app.js
@@ -18,10 +18,12 @@ import sys; sys.path.insert(0, str(DEV))
 import redesign
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--base", default="/kockafuzet/")
+ap.add_argument("--base", default="/")
+ap.add_argument("--host", default="https://kockafuzet.hu")  # public address, used in sitemap.xml, robots.txt and CNAME
 ap.add_argument("--out", default=str(DEV.parent))
 args = ap.parse_args()
 BASE = args.base.rstrip("/") + "/"
+HOST = args.host.rstrip("/")
 OUT = Path(args.out)
 SITE = "Kockafüzet"
 
@@ -150,9 +152,12 @@ pre = [BASE + p for p in pages] + [f"{BASE}assets/app.css?v={VER}", f"{BASE}asse
 sw = (SRC / "sw.js").read_text(encoding="utf-8").replace("__VER__", VER).replace("__PRECACHE__", json.dumps(pre, indent=1)).replace("__BASE__", BASE)
 (OUT / "sw.js").write_text(sw, encoding="utf-8")
 
-sitemap = "".join(f"<url><loc>https://ropeman.github.io{BASE}{p}</loc></url>" for p in pages if p not in ("feladatsor/", "nyomtatas/"))
+sitemap = "".join(f"<url><loc>{HOST}{BASE}{p}</loc></url>" for p in pages if p not in ("feladatsor/", "nyomtatas/"))
 (OUT / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{sitemap}</urlset>\n', encoding="utf-8")
 with open(OUT / "robots.txt", "a", encoding="utf-8") as f:
-    f.write(f"Sitemap: https://ropeman.github.io{BASE}sitemap.xml\n")
+    f.write(f"Sitemap: {HOST}{BASE}sitemap.xml\n")
+# GitHub Pages custom domain (served at the domain root)
+if BASE == "/" and not HOST.endswith(".github.io"):
+    (OUT / "CNAME").write_text(HOST.split("://", 1)[-1] + "\n", encoding="utf-8")
 
 print("version", VER, "| pages:", ", ".join(page_ids), "| modes:", ", ".join(mode_ids) or "-")

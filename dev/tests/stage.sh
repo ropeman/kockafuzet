@@ -5,4 +5,4 @@ ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 rm -rf /tmp/kfsite && mkdir -p /tmp/kfsite/kockafuzet/assets
 cp -r "$ROOT/assets/fonts" /tmp/kfsite/kockafuzet/assets/
 [ -f "$ROOT/assets/icon-192.png" ] && cp "$ROOT"/assets/icon-*.png /tmp/kfsite/kockafuzet/assets/ || true
-python3 "$ROOT/dev/build.py" --out /tmp/kfsite/kockafuzet
+python3 "$ROOT/dev/build.py" --base /kockafuzet/ --out /tmp/kfsite/kockafuzet
