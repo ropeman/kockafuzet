@@ -1,38 +1,38 @@
-/* Kockafüzet service worker: works offline after the first visit. Version 54d52e2a */
-const CACHE = 'kockafuzet-54d52e2a';
+/* Kockafüzet service worker: works offline after the first visit. Version 00bfafb5 */
+const CACHE = 'kockafuzet-00bfafb5';
 const PRECACHE = [
- "/kockafuzet/",
- "/kockafuzet/adatvedelem/",
- "/kockafuzet/szuloknek/",
- "/kockafuzet/feladatsor/",
- "/kockafuzet/nyomtatas/",
- "/kockafuzet/matek/1/",
- "/kockafuzet/matek/2/",
- "/kockafuzet/matek/3/",
- "/kockafuzet/matek/4/",
- "/kockafuzet/magyar/1/",
- "/kockafuzet/magyar/2/",
- "/kockafuzet/magyar/3/",
- "/kockafuzet/magyar/4/",
- "/kockafuzet/kornyezet/4/",
- "/kockafuzet/kornyezet/3/",
- "/kockafuzet/jatek/ora/",
- "/kockafuzet/jatek/penz/",
- "/kockafuzet/jatek/szorzo/",
- "/kockafuzet/jatek/hibak/",
- "/kockafuzet/assets/app.css?v=54d52e2a",
- "/kockafuzet/assets/app.js?v=54d52e2a",
- "/kockafuzet/assets/theme.js?v=54d52e2a",
- "/kockafuzet/favicon.svg",
- "/kockafuzet/manifest.webmanifest",
- "/kockafuzet/assets/fonts/fredoka-latin-500-normal.woff2",
- "/kockafuzet/assets/fonts/fredoka-latin-600-normal.woff2",
- "/kockafuzet/assets/fonts/fredoka-latin-ext-500-normal.woff2",
- "/kockafuzet/assets/fonts/fredoka-latin-ext-600-normal.woff2",
- "/kockafuzet/assets/fonts/nunito-latin-600-normal.woff2",
- "/kockafuzet/assets/fonts/nunito-latin-700-normal.woff2",
- "/kockafuzet/assets/fonts/nunito-latin-ext-600-normal.woff2",
- "/kockafuzet/assets/fonts/nunito-latin-ext-700-normal.woff2"
+ "/",
+ "/adatvedelem/",
+ "/szuloknek/",
+ "/feladatsor/",
+ "/nyomtatas/",
+ "/matek/1/",
+ "/matek/2/",
+ "/matek/3/",
+ "/matek/4/",
+ "/magyar/1/",
+ "/magyar/2/",
+ "/magyar/3/",
+ "/magyar/4/",
+ "/kornyezet/4/",
+ "/kornyezet/3/",
+ "/jatek/ora/",
+ "/jatek/penz/",
+ "/jatek/szorzo/",
+ "/jatek/hibak/",
+ "/assets/app.css?v=00bfafb5",
+ "/assets/app.js?v=00bfafb5",
+ "/assets/theme.js?v=00bfafb5",
+ "/favicon.svg",
+ "/manifest.webmanifest",
+ "/assets/fonts/fredoka-latin-500-normal.woff2",
+ "/assets/fonts/fredoka-latin-600-normal.woff2",
+ "/assets/fonts/fredoka-latin-ext-500-normal.woff2",
+ "/assets/fonts/fredoka-latin-ext-600-normal.woff2",
+ "/assets/fonts/nunito-latin-600-normal.woff2",
+ "/assets/fonts/nunito-latin-700-normal.woff2",
+ "/assets/fonts/nunito-latin-ext-600-normal.woff2",
+ "/assets/fonts/nunito-latin-ext-700-normal.woff2"
 ];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(PRECACHE.map(u => c.add(u).catch(() => null)))).then(() => self.skipWaiting()));
@@ -46,7 +46,7 @@ self.addEventListener('fetch', e => {
   if (req.mode === 'navigate') {
     // pages: network first (fresh content), fall back to cache when offline
     e.respondWith(fetch(req).then(r => { const c = r.clone(); caches.open(CACHE).then(x => x.put(req, c)); return r; })
-      .catch(() => caches.match(req, { ignoreSearch: true }).then(r => r || caches.match('/kockafuzet/'))));
+      .catch(() => caches.match(req, { ignoreSearch: true }).then(r => r || caches.match('/'))));
     return;
   }
   // versioned assets and fonts: cache first
