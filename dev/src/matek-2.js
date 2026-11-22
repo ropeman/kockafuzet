@@ -85,9 +85,11 @@ const M2 = {
       const [txt, ans] = pick([
         ['Egy ceruza hossza körülbelül 15', 'cm'], ['Az ajtó magassága körülbelül 2', 'm'], ['Egy vödörbe körülbelül 10', 'l'],
         ['Egy pohárba körülbelül 2', 'dl'], ['Egy zsák krumpli tömege körülbelül 10', 'kg'], ['A tanterem hossza körülbelül 8', 'm'],
-        ['Egy kenyér tömege körülbelül 1', 'kg'], ['Egy radír hossza körülbelül 4', 'cm'], ['Egy fazékba körülbelül 5', 'l'], ['Egy bögrébe körülbelül 3', 'dl']]);
+        ['Egy kenyér tömege körülbelül 1', 'kg'], ['Egy radír hossza körülbelül 4', 'cm'], ['Egy fazékba körülbelül 5', 'l'], ['Egy bögrébe körülbelül 3', 'dl'],
+        ['A füzet hossza körülbelül 20', 'cm'], ['Egy kádba körülbelül 150', 'l'], ['Egy kistestű kutya tömege körülbelül 8', 'kg'], ['A ház magassága körülbelül 10', 'm'], ['Egy kancsóba körülbelül 1', 'l'],
+        ['Egy csészébe körülbelül 2', 'dl'], ['A tanító néni magassága körülbelül 170', 'cm'], ['Egy görögdinnye tömege körülbelül 5', 'kg'], ['Az uszoda hossza 25', 'm'], ['Egy hátizsák tömege körülbelül 4', 'kg'], ['Egy locsolókannába körülbelül 10', 'l'], ['A kisujjad hossza körülbelül 5', 'cm']]);
       const wr = shuffle(['cm', 'm', 'l', 'dl', 'kg'].filter(u => u !== ans)).slice(0, 2);
-      const end = /vödörbe|pohárba|fazékba|bögrébe/.test(txt) ? ' fér.' : '.';
+      const end = /\S(ba|be) körülbelül/.test(txt) ? ' fér.' : '.';
       return mcq(`Melyik mértékegység illik ide?<br>${txt} <span class="blank">?</span>${end}`, ans, wr, { fmt: v => v, hint: 'Hosszúság: cm, m. Űrtartalom (mennyi fér bele): l, dl. Tömeg (milyen nehéz): kg.' });
     }
     if (L === 2) {
@@ -129,6 +131,7 @@ const M2 = {
         : { type: 'input', prompt: `Egy háromszög minden oldala ${s} cm. Mennyi az oldalak hosszának összege? (cm)`, answer: 3 * s, hint: 'A háromszögnek 3 oldala van.', visual: SHAPES['háromszög'](0) };
     }
     const ask = Math.random() < .5 ? 'oldala' : 'csúcsa';
+    if (L < 3 && Math.random() < .35) { const ks = L === 1 ? ['háromszög', 'négyzet', 'téglalap'] : Object.keys(SIDES), a = pick(ks), b = pick(ks), da = SHAPE_DAT[a][0], db = SHAPE_DAT[b][0]; return { type: 'input', prompt: a === b ? `Hány ${ask} van összesen két ${da}?` : `Hány ${ask} van összesen egy ${da} és egy ${db}?`, answer: SIDES[a] + SIDES[b], visual: `<div class="row">${SHAPES[a](0)}${SHAPES[b](0)}</div>`, hint: 'Számold meg mindkét alakzat oldalait (csúcsait), és add össze!' }; }
     return { type: 'input', prompt: `Hány ${ask} van ennek az alakzatnak?`, visual: SHAPES[name](L === 1 ? 0 : pick([0, 15, 30])), answer: SIDES[name], hint: 'Az oldal az alakzat egyenes vonala. A csúcs az a pont, ahol két oldal találkozik. A sokszögnek ugyanannyi csúcsa van, mint oldala.' };
   },
   word(L) {

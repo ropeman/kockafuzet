@@ -1,8 +1,16 @@
 /* ===== Matematika 1 (számkör 20, 100) ===== */
+const COUNT_EM = [['🍎', 'alma'], ['🐟', 'hal'], ['⭐', 'csillag'], ['🎈', 'lufi'], ['🚗', 'autó'], ['🐞', 'katica'], ['🌸', 'virág'], ['🍐', 'körte'], ['⚽', 'labda'], ['🐥', 'csibe'], ['🍓', 'eper'], ['🦋', 'pillangó']];
+const SHAPE_RID = [['Három oldala és három csúcsa van.', 'háromszög', 1], ['Négy egyforma hosszú oldala van, és minden sarka derékszög.', 'négyzet', 1], ['Kerek, nincs se oldala, se csúcsa.', 'kör', 1],
+  ['Négy oldala van: két hosszabb és két rövidebb, a szemközti oldalai egyformák.', 'téglalap', 1], ['Öt oldala és öt csúcsa van.', 'ötszög', 2], ['Hat oldala van, olyan, mint egy méhsejt.', 'hatszög', 3]];
+const SHAPE_OBJ = [['egy pénzérme', 'kör', 1], ['az ablaküveg', 'téglalap', 1], ['a dobókocka egy lapja', 'négyzet', 1], ['a figyelmeztető közlekedési tábla', 'háromszög', 1], ['az óra számlapja', 'kör', 1],
+  ['egy füzetlap', 'téglalap', 1], ['a sakktábla egy mezője', 'négyzet', 1], ['a tányér', 'kör', 1], ['az ajtó', 'téglalap', 1], ['a kockacukor egy lapja', 'négyzet', 2], ['a sátor bejárata', 'háromszög', 2], ['egy méhsejt', 'hatszög', 3], ['a focilabda fekete foltja', 'ötszög', 3]];
+const SHAPE_DAT = { 'háromszög': ['háromszögnek', 3], 'négyzet': ['négyzetnek', 4], 'téglalap': ['téglalapnak', 4], 'ötszög': ['ötszögnek', 5], 'hatszög': ['hatszögnek', 6] };
 const M1 = {
   count(L) {
-    const n = L === 1 ? ri(1, 6) : L === 2 ? ri(5, 10) : ri(11, 20);
-    return mcq('Hány pötty van a képen?', n, near(n, 3, 1, 20), { visual: L === 1 ? diceSvg(n) : frames([[n, 'f-blue']]), hint: 'Számold meg egyesével. A tízes keretben egy sor 5 pötty, és 10 pötty tölt meg egy keretet.' });
+    const n = L === 1 ? ri(1, 10) : L === 2 ? ri(5, 15) : ri(11, 20), r = Math.random();
+    const hint = 'Számold meg egyesével. A tízes keretben egy sor 5 pötty, és 10 pötty tölt meg egy keretet. A képeken ötösével vannak a sorok.';
+    if (r < .45) { const [e, nm] = pick(COUNT_EM); return mcq(`Hány ${nm} van a képen?`, n, near(n, 3, 1, 20), { visual: `<div class="cnt-em">${Array.from({ length: n }, () => `<span>${e}</span>`).join('')}</div>`, hint }); }
+    return mcq('Hány pötty van a képen?', n, near(n, 3, 1, 20), { visual: L === 1 && n <= 6 && r < .75 ? diceSvg(n) : frames([[n, 'f-blue']]), hint });
   },
   add(L) {
     let a, b;
@@ -61,13 +69,18 @@ const M1 = {
     return { type: 'input', prompt: `Folytasd a sort!<br>${txt}`, answer: seq[hide], hint: `Nézd meg, mennyivel ${step > 0 ? 'nő' : 'csökken'} a szám két szomszédos tag között.` };
   },
   shape(L) {
+    const r = Math.random(), lv = x => x[2] <= L;
+    if (r < .22) { const [d, a] = pick(SHAPE_RID.filter(lv)); return mcq(`Melyik alakzatra igaz?<br><b>${d}</b>`, a, shuffle(SHAPE_RID.filter(lv).map(x => x[1]).filter(x => x !== a)).slice(0, 3), { fmt: v => v, hint: 'Számold meg az oldalakat és a csúcsokat. A körnek nincs sarka.' }); }
+    if (r < .42) { const [o, a] = pick(SHAPE_OBJ.filter(lv)), names = [...new Set(SHAPE_RID.filter(lv).map(x => x[1]))]; return mcq(`Milyen alakú ${o}?`, a, shuffle(names.filter(x => x !== a)).slice(0, 3), { fmt: v => v, hint: 'Képzeld el a tárgyat, és nézd meg, hány oldala és sarka van.' }); }
+    if (L > 1 && r < .6) { const nm = pick(Object.keys(SHAPE_DAT).filter(x => L === 3 || x !== 'hatszög')), ask = pick(['oldala', 'csúcsa']); return { type: 'input', prompt: `Hány ${ask} van ${artOf(nm)} <b>${SHAPE_DAT[nm][0]}</b>?`, answer: SHAPE_DAT[nm][1], hint: 'A sokszögnek ugyanannyi csúcsa van, mint oldala.' }; }
     const pool = L === 1 ? ['háromszög', 'négyzet', 'kör', 'téglalap'] : L === 2 ? ['háromszög', 'négyzet', 'kör', 'téglalap', 'ötszög'] : ['háromszög', 'négyzet', 'kör', 'téglalap', 'ötszög', 'hatszög'];
     const name = pick(pool), rot = L === 1 ? 0 : pick([0, 0, 15, 30, 45]);
     return mcq('Milyen alakzat ez?', name, shuffle(pool.filter(x => x !== name)).slice(0, 3), { visual: SHAPES[name](rot), fmt: v => v, hint: 'Számold meg az oldalakat és a csúcsokat. A körnek nincs sarka.' });
   },
   clock(L) {
-    const hh = ri(1, 12), mm = L === 1 ? 0 : pick([0, 30]), t = (x, y) => `${x}:${String(y).padStart(2, '0')}`;
-    if (L === 3 && Math.random() < .5) {
+    const hh = ri(1, 12), mm = L === 1 ? 0 : pick([0, 30]), t = (x, y) => `${x}:${String(y).padStart(2, '0')}`, rr = Math.random();
+    if (L === 1 && rr < .3) { const d = pick([1, 1, 2]), later = Math.random() < .6, a = later ? (hh + d - 1) % 12 + 1 : (hh - d + 11) % 12 + 1, opts = new Set([t(a, 0)]); while (opts.size < 4) opts.add(t(ri(1, 12), 0)); return { type: 'choice', prompt: later ? `Most ennyi az idő. Hány óra lesz ${d} órával később?` : `Most ennyi az idő. Hány óra volt ${d} órával korábban?`, visual: clockSvg(hh, 0), answer: t(a, 0), options: shuffle([...opts]).map(v => ({ value: v, html: v })), hint: 'Először olvasd le, hány óra van most, aztán számolj tovább vagy vissza a számlapon!' }; }
+    if ((L === 3 && rr < .5) || (L === 1 && rr < .55)) {
       const times = new Set([t(hh, mm)]); while (times.size < 3) times.add(t(ri(1, 12), pick([0, 30])));
       const ans = t(hh, mm);
       return { type: 'choice', prompt: `Melyik óra mutatja ezt: <b>${ans}</b>?`, answer: ans, options: shuffle([...times]).map(x => { const [a, b] = x.split(':').map(Number); return { value: x, html: clockSvg(a, b, 120) }; }), answerText: ans, hint: 'A rövid mutató az órát, a hosszú mutató a percet jelzi.' };

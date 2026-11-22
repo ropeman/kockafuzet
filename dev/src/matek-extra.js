@@ -116,7 +116,12 @@ const patternQ = L => {
 };
 
 /* ---------- doubling and halving ---------- */
-const dblQ = L => { const max = L === 1 ? 5 : 10; if (Math.random() < .5) { const n = ri(1, max); return { type: 'input', prompt: `Mennyi ${azN(n)} <b>${n}</b> duplája (kétszerese)?`, answer: 2 * n, hint: `A dupla azt jelenti: ${n} + ${n}.` }; } const n = ri(1, max); return { type: 'input', prompt: `Mennyi ${azN(2 * n)} <b>${2 * n}</b> fele?`, answer: n, hint: `Melyik számot kell önmagához adni, hogy ${2 * n} legyen?` }; };
+const DBL_STORY = [n => [`Petinek ${n} matricája van, Annának kétszer annyi. Hány matricája van Annának?`, 2 * n], n => [`Egy biciklinek 2 kereke van. Hány kereke van ${n} biciklinek?`, 2 * n],
+  n => [`Egy zokni-pár 2 zokniból áll. Hány zokni van ${n} párban?`, 2 * n], n => [`${2 * n} szem cukrot igazságosan elosztunk két gyerek között. Hány szemet kap egy gyerek?`, n],
+  n => [`Gondoltam egy számot. A kétszerese ${2 * n}. Melyik számra gondoltam?`, n], n => [`Gondoltam egy számot. A fele ${n}. Melyik számra gondoltam?`, 2 * n], n => [`A kosárban ${2 * n} tojás van. A felét megsütjük. Hány tojás marad?`, n]];
+const dblQ = L => { if (Math.random() < (L === 3 ? .6 : .35)) { const n = L === 1 ? ri(1, 5) : ri(L === 2 ? 2 : 3, 10), [p, a] = pick(DBL_STORY)(n); return { type: 'input', prompt: p, answer: a, hint: 'A kétszerese (duplája) azt jelenti: kétszer annyi. A fele: két egyenlő részre osztjuk.' }; }
+  if (L === 3 && Math.random() < .4) { const n = pick([4, 8, 12, 16, 20]); return { type: 'input', prompt: `Mennyi ${azN(n)} <b>${n}</b> felének a fele?`, answer: n / 4, hint: `Először felezd meg: ${n} fele ${n / 2}. Aztán azt is felezd meg!` }; }
+  { const max = L === 1 ? 5 : 10; if (Math.random() < .5) { const n = ri(1, max); return { type: 'input', prompt: `Mennyi ${azN(n)} <b>${n}</b> duplája (kétszerese)?`, answer: 2 * n, hint: `A dupla azt jelenti: ${n} + ${n}.` }; } const n = ri(1, max); return { type: 'input', prompt: `Mennyi ${azN(2 * n)} <b>${2 * n}</b> fele?`, answer: n, hint: `Melyik számot kell önmagához adni, hogy ${2 * n} legyen?` }; } };
 
 /* ---------- word problems, grade 1 ---------- */
 const NAMES1 = [['Anna', 'Annának'], ['Bence', 'Bencének'], ['Zsófi', 'Zsófinak'], ['Máté', 'Máténak'], ['Lili', 'Lilinek'], ['Dani', 'Daninak'], ['Hanna', 'Hannának'], ['Ádám', 'Ádámnak'], ['Emma', 'Emmának'], ['Levente', 'Leventének']];
@@ -144,9 +149,16 @@ const spanQ = L => {
 };
 
 /* ---------- combinatorics ---------- */
+const OUTFITS = [[(a, b) => `Lilinek ${a} pólója és ${b} szoknyája van. Hányféleképpen öltözhet fel, ha egy pólót és egy szoknyát vesz fel?`, '👕 × 👗'],
+  [(a, b) => `A fagyizóban ${a}-féle tölcsér és ${b}-féle fagyi van. Hányféle egygombócos fagyit kérhetsz?`, '🍦'],
+  [(a, b) => `Bence ${a} sapka és ${b} sál közül választ. Hányféleképpen választhat egy sapkát és egy sálat?`, '🧢 × 🧣'],
+  [(a, b) => `A menüben ${a}-féle leves és ${b}-féle főétel van. Hányféle ebédet állíthatsz össze egy levesből és egy főételből?`, '🍲 × 🍝'],
+  [(a, b) => `Annának ${a} színes ceruzája és ${b} filctolla van. Hányféleképpen választhat ki egy ceruzát és egy filctollat?`, '✏️ × 🖊️'],
+  [(a, b) => `A háztól a parkig ${a} út vezet, a parktól az iskoláig ${b} út. Hányféleképpen juthatsz el a parkon át az iskolába?`, '🏠 → 🌳 → 🏫'],
+  [(a, b) => `Egy szendvicshez ${a}-féle kenyér és ${b}-féle feltét közül választhatsz. Hányféle szendvicset készíthetsz egy kenyérből és egy feltétből?`, '🍞 × 🧀']];
 const combiQ = L => {
   const t = L === 1 ? 'outfit' : pick(L === 2 ? ['outfit', 'cards2', 'order3'] : ['outfit', 'cards3', 'order3', 'hands', 'cards2']);
-  if (t === 'outfit') { const a = ri(2, L === 1 ? 3 : 5), b = ri(2, L === 1 ? 3 : 4); return { type: 'input', prompt: `Lilinek ${a} pólója és ${b} szoknyája van. Hányféleképpen öltözhet fel, ha egy pólót és egy szoknyát vesz fel?`, answer: a * b, visual: `<div class="big-emoji">👕 × 👗</div>`, hint: `Minden pólóhoz ${b}-féle szoknya választható. Ez ${a} · ${b}.` }; }
+  if (t === 'outfit') { const a = ri(2, L === 1 ? 3 : 5), b = ri(2, L === 1 ? 3 : 4), [mk, em] = pick(OUTFITS); return { type: 'input', prompt: mk(a, b), answer: a * b, visual: `<div class="big-emoji">${em}</div>`, hint: `Az első dolog mindegyik választásához ${b}-féle második választható. Ez összesen ${a} · ${b}. Rajzold le, ha segít!` }; }
   if (t === 'cards2') { const ds = shuffle([1, 2, 3, 4, 5, 6, 7]).slice(0, 3).sort(); return { type: 'input', prompt: `Hány különböző kétjegyű számot rakhatsz ki ezekből a kártyákból: ${ds.join(', ')}? (Egy kártyát egy számban csak egyszer használhatsz.)`, answer: 6, hint: 'Az első helyre 3 kártya kerülhet, a második helyre a maradék 2: 3 · 2.' }; }
   if (t === 'cards3') { const ds = shuffle([1, 2, 3, 4, 5, 6, 7]).slice(0, 3).sort(); return { type: 'input', prompt: `Hány különböző háromjegyű számot rakhatsz ki ${azN(ds[0])} ${ds.join(', ')} kártyákból, ha mindhármat felhasználod?`, answer: 6, hint: 'Az első helyre 3, a másodikra 2, a harmadikra 1 kártya marad: 3 · 2 · 1.' }; }
   if (t === 'order3') return { type: 'input', prompt: 'Hányféle sorrendben állhat be 3 gyerek a sorba?', answer: 6, hint: 'Az első helyre 3 gyerek állhat, a másodikra 2, a harmadikra 1: 3 · 2 · 1.' };

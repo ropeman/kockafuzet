@@ -30,7 +30,7 @@ try:
     with sync_playwright() as p:
         br = p.chromium.launch()
         ctx = br.new_context(viewport={"width": 1100, "height": 900})
-        pg = ctx.new_page()
+        pg = ctx.new_page(); pg.add_init_script("localStorage.setItem('tt.autonext','0')")
         pg.on("pageerror", lambda e: errs.append(f"{pg.url}: {e}"))
         pg.on("console", lambda m: m.type == "error" and "404" not in m.text and errs.append(f"{pg.url}: {m.text}"))
 
@@ -149,7 +149,7 @@ try:
         print("shared set: same questions on another device")
         firsts = []
         for k in range(2):
-            c2 = br.new_context(); p2 = c2.new_page(); p2.on("pageerror", lambda e: errs.append(f"set: {e}"))
+            c2 = br.new_context(); p2 = c2.new_page(); p2.add_init_script("localStorage.setItem('tt.autonext','0')"); p2.on("pageerror", lambda e: errs.append(f"set: {e}"))
             p2.goto(link); p2.wait_for_timeout(200)
             p2.get_by_role("button", name="Kezdés").click(); p2.wait_for_timeout(100)
             firsts.append(p2.evaluate("S.list.map(q => q.prompt + '|' + q.answer).join('\\n')"))
@@ -193,7 +193,7 @@ try:
         ctx.set_offline(False)
 
         print("mobile + dark")
-        m = br.new_context(viewport={"width": 390, "height": 844}, color_scheme="dark").new_page()
+        m = br.new_context(viewport={"width": 390, "height": 844}, color_scheme="dark").new_page(); m.add_init_script("localStorage.setItem('tt.autonext','0')")
         m.on("pageerror", lambda e: errs.append(f"mobile: {e}"))
         for href, name in [("/", "m-hub"), ("/szuloknek/", "m-szulo"), ("/jatek/szorzo/", "m-szorzo"), ("/magyar/2/", "m-magyar2")]:
             m.goto(B + href); m.wait_for_timeout(300)

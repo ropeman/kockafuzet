@@ -8,8 +8,11 @@ A weboldal a repó gyökerében van (GitHub Pages ezt szolgálja ki). A forrás 
 - `dev/src/modes.js` – Játékok: Szorzótábla-bajnok, Óra-mester, Pénzszámolás, Hibáim gyakorlása
 - `dev/src/features.js` – Szülőknek oldal, nyomtatható feladatlap, megosztható feladatsor, telepítés
 - `dev/src/explain.js` – Így működik: lépésenkénti magyarázatok (a kérdésből ismeri fel a típust)
+- `dev/src/history.js` – automatikus továbblépés visszaszámlálással (alapból 3 mp, a ⏱ gombbal állítható) és a korábbi válaszok visszanézése a pöttyökre koppintva
 - `dev/src/review.js` – Napi 5 perc: ismétlés témánkénti dobozokkal (1–5), heti cél
 - `dev/src/kornyezet-3.js`, `dev/src/kornyezet-4.js` – Környezetismeret (NAT 2020 kerettanterv); a 3. osztály a 4. osztály segédfüggvényeit is használja, ezért utána töltődik be
+- `dev/src/more.js` – plusz kérdések a témákhoz (szövegértés, helyesírás, tényanyag), vaktérkép és a Nagy földrajzdolgozat; minden tantárgyfájl után töltődik be
+- `dev/src/sections.js` – a témalisták témakörökre bontása (címsorok és ugró gombok)
 - `dev/src/matek-extra.js` – további matekfeladatok minden évfolyamra: számegyenes, számpiramis, bűvös négyzet, párosító, számkártyák, nyitott mondatok, oszthatóság, diagramok, testek, szimmetria, szabályjáték, kombinatorika, óra beállítása
 - `dev/src/interact.js` – interaktív típusok: Válogató (húzd a kosárba), Címkézd fel!, Állítsd be (hőmérő, iránytű), Ki vagyok én?
 - `dev/src/lab.js` – Kísérletező: „Mit gondolsz? → Próbáld ki! → Mit láttál?” kísérletek (melegítés-hűtés, úszik vagy elsüllyed, oldódás)
@@ -30,6 +33,7 @@ Tesztek (Playwright kell hozzá):
     python3 dev/tests/flow.py 3        # minden téma minden szintje végigjátszva (jó/rossz válaszok, eredménylap)
     python3 dev/tests/print_all.py     # minden téma nyomtatható feladatlapja
     python3 dev/tests/no_repeats.py    # egy körben nem ismétlődik kérdés
+    python3 dev/tests/flow_extras.py   # visszaszámlálás és a válaszok visszanézése
     python3 dev/tests/render_phone.py  # minden téma kirajzolva telefon méreten
     python3 dev/tests/pool_sizes.py    # témák, ahol kevés a különböző kérdés
     python3 dev/tests/interact_test.py # húzás, koppintás, térkép egérrel és érintéssel

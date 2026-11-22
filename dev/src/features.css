@@ -121,3 +121,9 @@ body[data-page^="kornyezet"],.subj-kornyezet{--accent:#2f9e44;--accent-deep:#237
 .opts.xlong{grid-template-columns:minmax(0,1fr);max-width:560px}
 .opts.xlong .opt{font:700 clamp(16px,3.2vw,19px)/1.35 var(--f-body);justify-content:flex-start;text-align:left;min-height:56px;padding:.6em 1em}
 .vis.thermo{width:150px}.vis.compass{width:240px}.vis.plant{width:250px}
+
+/* topic sections */
+.tsects{display:flex;flex-direction:column;gap:22px}
+.sect-nav{flex-wrap:wrap;gap:8px}
+.sect-h{font-size:1.15rem;margin:4px 0 10px;scroll-margin-top:80px}
+.sect-n{font-weight:400;font-size:.85rem}

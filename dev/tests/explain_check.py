@@ -42,7 +42,7 @@ JS = r"""
 srv = subprocess.Popen([sys.executable, "-m", "http.server", "8774", "-d", "/tmp/kfsite"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(1)
 try:
     with sync_playwright() as p:
-        br = p.chromium.launch(); pg = br.new_page(); pg.goto("http://localhost:8774/kockafuzet/"); pg.wait_for_timeout(300)
+        br = p.chromium.launch(); pg = br.new_page(); pg.add_init_script("localStorage.setItem('tt.autonext','0')"); pg.goto("http://localhost:8774/kockafuzet/"); pg.wait_for_timeout(300)
         res = pg.evaluate(JS, N); br.close()
 finally: srv.terminate()
 topics = {}

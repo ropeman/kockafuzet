@@ -120,7 +120,7 @@ const MG = {
     const [w, em] = pick(good.length ? good : pool), tk = tok(w);
     const tiles = tk.slice();
     if (L === 3) { const d = distract(pick(tk), [...set], 1)[0]; if (d) tiles.push(d); }
-    return { type: 'build', prompt: 'Rakd ki a szót a képhez!', visual: `<div class="big-emoji" role="img" aria-label="kép">${em}</div>`, answer: tk, tiles: shuffle(tiles), say: w, explain: `A szó: <b>${w}</b>.`, hint: 'Mondd ki lassan a kép nevét, és keresd az első hangot, aztán a következőt.' };
+    return { type: 'build', prompt: 'Rakd ki a szót a képhez!', visual: `<div class="big-emoji" role="img" aria-label="kép">${em}</div>`, answer: tk, tiles: shuffle(tiles), joiner: '', say: w, explain: `A szó: <b>${w}</b>.`, hint: 'Mondd ki lassan a kép nevét, és keresd az első hangot, aztán a következőt.' };
   }
 };
 

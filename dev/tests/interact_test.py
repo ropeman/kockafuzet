@@ -17,7 +17,7 @@ def mapclick(pg, xy, tap=False):
 try:
     with sync_playwright() as p:
         br = p.chromium.launch()
-        pg = br.new_page(viewport={"width": 1100, "height": 1000}); pg.on("pageerror", lambda e: errs.append(str(e)))
+        pg = br.new_page(viewport={"width": 1100, "height": 1000}); pg.add_init_script("localStorage.setItem('tt.autonext','0')"); pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto(B + "/kornyezet/4/"); pg.wait_for_timeout(300)
         check(pg.locator("button.tile", has_text="Válogató").count() == 1 and pg.locator("button.tile", has_text="Ki vagyok én?").count() == 1, "new topics on the page")
         check(pg.locator("button.tile", has_text="Budapest hídjai").count() == 1 and pg.locator("button.tile", has_text="Megyék a térképen").count() == 1, "map topics on the page")
@@ -159,7 +159,7 @@ try:
 
         print("touch screen")
         ctx = br.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True)
-        m = ctx.new_page(); m.on("pageerror", lambda e: errs.append("touch: " + str(e)))
+        m = ctx.new_page(); m.add_init_script("localStorage.setItem('tt.autonext','0')"); m.on("pageerror", lambda e: errs.append("touch: " + str(e)))
         m.goto(B + "/kornyezet/4/"); m.wait_for_timeout(300)
         show(m, "SORTS.burn(1)")
         for k in range(m.evaluate("S.q.items.length")):

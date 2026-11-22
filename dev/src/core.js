@@ -221,15 +221,18 @@ function showHub() {
 function showTopics(page) {
   runCleanups();
   const who = profiles[active].name;
-  const tiles = h('div', { class: 'tiles' });
-  page.topics.forEach(t => {
+  const tile = t => {
     const lock = t.unavailable ? t.unavailable() : null;
-    tiles.append(h('button', { class: 'tile', disabled: !!lock, onclick: () => startTopic(page, t) },
+    return h('button', { class: 'tile', disabled: !!lock, onclick: () => startTopic(page, t) },
       h('span', { class: 'glyph', html: t.sample }),
       h('span', { class: 'nm' }, t.name),
       h('span', { class: 'ds' }, lock || t.desc),
-      h('span', { html: starsHtml(store.get(pk(page.id, t.id, 'stars'), 0)) })));
-  });
+      h('span', { html: starsHtml(store.get(pk(page.id, t.id, 'stars'), 0)) }));
+  };
+  const groups = typeof topicGroups === 'function' ? topicGroups(page) : [[null, page.topics]];
+  const tiles = groups.length === 1 && !groups[0][0] ? h('div', { class: 'tiles' }, groups[0][1].map(tile)) : h('div', { class: 'tsects' },
+    h('nav', { class: 'chips sect-nav', 'aria-label': 'Témakörök' }, groups.map(([title], i) => h('button', { class: 'chip', onclick: () => { const el = document.getElementById('sect-' + i); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, title))),
+    groups.map(([title, ts], i) => h('section', { class: 'tsect' }, h('h2', { class: 'sect-h', id: 'sect-' + i }, title, h('span', { class: 'mute sect-n' }, ` · ${ts.length} téma`)), h('div', { class: 'tiles' }, ts.map(tile)))));
   const nodes = [
     h('div', { class: 'bar' },
       h('nav', { class: 'crumbs', 'aria-label': 'Útvonal' },
@@ -283,7 +286,8 @@ function renderQ() {
   runCleanups();
   const q = S.q, page = (q._page && PAGES[q._page]) || S.page;
   const dots = h('div', { class: 'dots', 'aria-label': `${S.n}. kérdés, összesen ${S.total}` });
-  for (let i = 0; i < S.total; i++) dots.append(h('i', { class: S.res[i] || (i === S.n - 1 ? 'now' : '') }));
+  for (let i = 0; i < S.total; i++) dots.append(reviewDot(i));
+  S.dotsEl = dots;
   const fb = h('div', { 'aria-live': 'polite', style: 'width:100%;display:flex;flex-direction:column;align-items:center;gap:12px' });
   const actions = h('div', { class: 'actions' });
   const card = h('div', { class: 'qcard' });
@@ -337,6 +341,7 @@ function submit(resp) {
   if (!S || S.done) return;
   const q = S.q, ok = judge(q, resp);
   S.tries++;
+  recordTry(S.n - 1, q, resp, ok);
   S.fb.replaceChildren(); S.actions.querySelectorAll('.next').forEach(n => n.remove());
   if (ok) {
     beep(true);
@@ -363,7 +368,7 @@ function submit(resp) {
     let extra = '';
     if (!S.fixed && S.wrongRun >= 2 && S.level > 1) { S.level--; S.wrongRun = 0; extra = 'Menjünk egy kicsit könnyebben.'; }
     S.ui.lock && S.ui.lock(resp, false);
-    const ans = q.answerText || (q.type === 'read' ? q.text : q.type === 'choice' ? (q.options.find(o => o.value === q.answer) || {}).html : q.type === 'build' ? q.answer.join('') : String(q.answer));
+    const ans = answerTextOf(q);
     S.fb.append(h('div', { class: 'fb bad', html: `A helyes válasz: <b>${ans}</b>${q.explain ? `<small>${q.explain}</small>` : ''}${extra ? `<small>${extra}</small>` : ''}` }));
     const exS = typeof exSource === 'function' ? exSource(q) : null;
     if (exS) S.fb.append(h('button', { class: 'btn small exbtn', onclick: () => openExplain(exS.ex, 'A te feladatod') }, '💡 Mutasd lépésről lépésre'));
@@ -373,9 +378,15 @@ function submit(resp) {
 function endQ() {
   S.ui.done && S.ui.done();
   const last = S.n >= S.total;
-  const b = h('button', { class: 'btn primary next', onclick: () => nextQ() }, last ? 'Eredmény' : 'Tovább');
-  S.actions.replaceChildren(b);
+  const label = last ? 'Eredmény' : 'Tovább';
+  const b = h('button', { class: 'btn primary next', onclick: () => { stopAuto(); nextQ(); } }, label);
+  const ok = S.res[S.n - 1] === 'ok' && S.tries === 1;
+  const chip = h('button', { class: 'btn small autochip', title: 'Ennyi másodperc múlva jön magától a következő feladat', onclick: () => { const i = AUTO_STEPS.indexOf(autoSecs()); store.set('tt.autonext', AUTO_STEPS[(i + 1) % AUTO_STEPS.length]); startAuto(b, label, ok); } });
+  S.autoChip = chip;
+  S.actions.replaceChildren(b, chip);
+  refreshDot(S.n - 1);
   b.focus();
+  startAuto(b, label, ok);
   const onKey = e => { if (e.key === 'Enter') { e.preventDefault(); b.click(); } };
   setTimeout(() => document.addEventListener('keydown', onKey), 50);
   cleanups.push(() => document.removeEventListener('keydown', onKey));
@@ -388,19 +399,20 @@ function finish() {
   runCleanups();
   if (S.onFinish) return S.onFinish(S);
   const { page, topic, correct, total } = S;
-  const st = correct >= 9 ? 3 : correct >= 7 ? 2 : correct >= 5 ? 1 : 0;
+  const ratio = correct / total, st = ratio >= .9 ? 3 : ratio >= .7 ? 2 : ratio >= .5 ? 1 : 0;
   const best = store.get(pk(page.id, topic.id, 'stars'), 0);
   if (st > best) store.set(pk(page.id, topic.id, 'stars'), st);
   store.set(pk(page.id, topic.id, 'lvl'), S.level);
   store.set(pk(page.id, topic.id, 'last'), correct);
   store.set(pk(page.id, topic.id, 'plays'), store.get(pk(page.id, topic.id, 'plays'), 0) + 1);
   store.set(pk(page.id, topic.id, 'date'), Date.now());
-  if (typeof reviewAfterRound === 'function') reviewAfterRound(page, topic, correct);
+  if (typeof reviewAfterRound === 'function') reviewAfterRound(page, topic, Math.round(correct * 10 / total));   // scaled to a 10-question round
   const msg = st === 3 ? 'Hibátlan közelében! Nagyszerű munka.' : st === 2 ? 'Nagyon jó! Még egy kör, és meglesz a három csillag.' : st === 1 ? 'Jó kezdés. Gyakoroljunk még egy kört!' : 'Semmi baj, a gyakorlás segít. Próbáld újra!';
   mount(h('div', { class: 'qcard results' },
     h('h2', null, `${correct} / ${total} jó válasz`),
     h('div', { class: 'pop', html: starsHtml(st) }),
     h('p', { class: 'mute' }, msg + (st < best ? ` (Eddigi legjobb: ${best} csillag.)` : '')),
+    reviewRow(),
     h('div', { class: 'actions' },
       h('button', { class: 'btn primary', onclick: () => startTopic(page, topic) }, 'Újra'),
       h('button', { class: 'btn', onclick: () => showTopics(page) }, 'Másik téma'))));

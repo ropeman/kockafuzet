@@ -21,7 +21,7 @@ JS = r"""() => {
   for (const pid of PAGE_IDS) { const P = PAGES[pid]; if (!P.topics) continue;
     for (const t of P.topics) for (const L of [1, 2, 3]) { const tag = `${pid}/${t.id} L${L}`;
       try { startTopic(P, t); S.level = L; S.n = 0; S.res = []; S.seen = new Set(); nextQ();
-        for (let k = 0; k < 10 && S.q; k++) { const q = S.q, R = right(q);
+        for (let k = 0; k < (t.total || 10) && S.q; k++) { const q = S.q, R = right(q);
           if (R === undefined) { out.push(tag + ' unknown type ' + q.type); break; }
           if (!judge(q, R)) out.push(tag + ' RIGHT REJECTED ' + q.type + ': ' + plain(q.prompt).slice(0, 80));
           const W = wrong(q); if (W !== null && W !== undefined && judge(q, W)) out.push(tag + ' WRONG ACCEPTED ' + q.type + ': ' + plain(q.prompt).slice(0, 80) + ' / ' + JSON.stringify([...(W instanceof Set ? W : [W])]));
@@ -30,12 +30,12 @@ JS = r"""() => {
           submit(R);
           const nb = document.querySelector('button.next'); if (!nb) { out.push(tag + ' no Tovább button after ' + q.type); break; } nb.click(); }
         if (!document.querySelector('.results')) out.push(tag + ' no results card');
-        if (S.res.length !== 10) out.push(tag + ' res length ' + S.res.length);
+        if (S.res.length !== (t.total || 10)) out.push(tag + ' res length ' + S.res.length);
       } catch (e) { out.push(tag + ' THROW ' + e.message); } } }
   return out; }"""
 try:
   with sync_playwright() as p:
-    b = p.chromium.launch(); pg = b.new_page(); errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
+    b = p.chromium.launch(); pg = b.new_page(); pg.add_init_script("localStorage.setItem('tt.autonext','0')"); errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto("http://localhost:8777/kockafuzet/"); pg.wait_for_timeout(400)
     for run in range(int(sys.argv[1]) if len(sys.argv) > 1 else 3):
         r = pg.evaluate(JS)

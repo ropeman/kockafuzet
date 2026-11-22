@@ -81,7 +81,7 @@ srv = subprocess.Popen([sys.executable, "-m", "http.server", "8771", "-d", "/tmp
 time.sleep(1)
 try:
     with sync_playwright() as p:
-        br = p.chromium.launch(); pg = br.new_page()
+        br = p.chromium.launch(); pg = br.new_page(); pg.add_init_script("localStorage.setItem('tt.autonext','0')")
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto("http://localhost:8771/kockafuzet/"); pg.wait_for_timeout(400)
         res = pg.evaluate(JS, N)

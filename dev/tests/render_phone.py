@@ -3,7 +3,7 @@ from playwright.sync_api import sync_playwright
 srv = subprocess.Popen([sys.executable, "-m", "http.server", "8777", "-d", "/tmp/kfsite"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(1)
 try:
   with sync_playwright() as p:
-    b = p.chromium.launch(); ctx = b.new_context(viewport={"width": 375, "height": 800}, has_touch=True, is_mobile=True); pg = ctx.new_page(); errs = []
+    b = p.chromium.launch(); ctx = b.new_context(viewport={"width": 375, "height": 800}, has_touch=True, is_mobile=True); pg = ctx.new_page(); pg.add_init_script("localStorage.setItem('tt.autonext','0')"); errs = []
     pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto("http://localhost:8777/kockafuzet/"); pg.wait_for_timeout(400)
     r = pg.evaluate("""() => { const out = []; window.LETTERS_OVERRIDE = ALL_G.slice(); window.speak = () => {};

@@ -161,12 +161,12 @@ function progressPanel() {
   for (const p of Object.values(PAGES)) for (const t of p.topics || []) {
     const plays = store.get(pk(p.id, t.id, 'plays'), 0); if (!plays) continue;
     const last = store.get(pk(p.id, t.id, 'last'), null), st = store.get(pk(p.id, t.id, 'stars'), 0), d = store.get(pk(p.id, t.id, 'date'), 0);
-    rounds += plays; stars += st; rows.push({ p, t, plays, last, st, d });
+    rounds += plays; stars += st; rows.push({ p, t, plays, last, st, d, of: t.total || 10 });
   }
   const miss = getMistakes().length;
   if (!rows.length) return h('div', { class: 'panel empty' }, h('h3', null, 'Még nincs eredmény ezen az eszközön'), h('p', { class: 'mute' }, 'Amint a gyerek befejez egy kört, itt látod, melyik téma megy jól, és melyiket érdemes még gyakorolni.'));
   rows.sort((a, b) => b.d - a.d);
-  const weak = rows.filter(r => r.last !== null && r.last < 7);
+  const weak = rows.filter(r => r.last !== null && r.last / r.of < .7);
   const fmtD = d => d ? new Date(d).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }) : '';
   return h('div', { class: 'panel' },
     h('div', { class: 'kpis' },
@@ -178,9 +178,9 @@ function progressPanel() {
     weak.length ? h('div', { class: 'hint' }, h('b', null, 'Érdemes gyakorolni: '), weak.slice(0, 6).map(r => `${r.t.name} (${pageLabel(r.p.id)})`).join(', ') + '.') : null,
     h('div', { class: 'scroll' }, h('table', { class: 'prog stack' },
       h('thead', null, h('tr', null, ['Téma', 'Csillag', 'Legutóbb', 'Körök', 'Dátum'].map(x => h('th', null, x)))),
-      h('tbody', null, rows.map(r => h('tr', { class: r.last !== null && r.last < 7 ? 'weak' : '' },
+      h('tbody', null, rows.map(r => h('tr', { class: r.last !== null && r.last / r.of < .7 ? 'weak' : '' },
         h('td', { 'data-l': 'Téma' }, h('a', { href: pageUrl(r.p.id) }, r.t.name), h('small', null, pageLabel(r.p.id))),
-        h('td', { 'data-l': 'Csillag', html: starsHtml(r.st) }), h('td', { 'data-l': 'Legutóbb' }, r.last === null ? '–' : `${r.last} / 10`), h('td', { 'data-l': 'Körök' }, String(r.plays)), h('td', { 'data-l': 'Dátum' }, fmtD(r.d))))))));
+        h('td', { 'data-l': 'Csillag', html: starsHtml(r.st) }), h('td', { 'data-l': 'Legutóbb' }, r.last === null ? '–' : `${r.last} / ${r.of}`), h('td', { 'data-l': 'Körök' }, String(r.plays)), h('td', { 'data-l': 'Dátum' }, fmtD(r.d))))))));
 }
 
 function setBuilder() {
